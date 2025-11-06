@@ -1,6 +1,6 @@
 ---
 title: "Building a Design-Based Matching Pipeline: From Principles to Practical Implementation in R"
-author: \href{mailto:thomas.leavitt@baruch.cuny.edu}{Thomas Leavitt} and \href{mailto:luke_miratrix@gse.harvard.edu }{Luke Miratrix}
+author: \href{mailto:thomas.leavitt@baruch.cuny.edu}{Thomas Leavitt} and \href{mailto:luke_miratrix@gse.harvard.edu }{Luke W. Miratrix}
 date: ""
 output: 
   pdf_document:
@@ -22,49 +22,66 @@ biblio-style: apsr
 editor_options: 
   chunk_output_type: console
 ---
-```{r setup-matchingguide, include=TRUE, message=FALSE}
-# Prefer the installed package; otherwise source helpers from the local R/ folder when knitting the vignette standalone.
-if (requireNamespace("matchingguide", quietly = TRUE)) {
-  library(matchingguide)
-} else {
-  message("matchingguide not installed; sourcing local helper functions.")
-  source("../R/utils.R")
-  source("../R/data.R")
-}
-```
-
 
 ```{r setup, include = FALSE}
 
-hook_chunk = knitr::knit_hooks$get('chunk')
+library(knitr) # For controlling knitting behavior and chunk options
+
+# ---- Define custom knit hook for single-spaced code chunks ----
+# This adds LaTeX commands around each chunk to render code/output single-spaced
+# while keeping regular text double-spaced.
+hook_chunk <- knit_hooks$get("chunk")
 
 knitr::knit_hooks$set(chunk = function(x, options) {
-  regular_output = hook_chunk(x, options)
-  # add latex commands if chunk option singlespacing is TRUE
-  if (isTRUE(options$singlespacing)) 
-    sprintf("\\singlespacing\n %s \n\\doublespacing", regular_output)
+  regular_output <- hook_chunk(x, options)
+  if (isTRUE(options$singlespacing))
+    sprintf("\\singlespacing\n%s\n\\doublespacing", regular_output)
   else
     regular_output
 })
 
-knitr::opts_chunk$set(echo = TRUE, singlespacing = TRUE,
-                      fig.align = "center")
+# ---- Set default chunk options ----
+# These control how code and figures are displayed throughout the guide.
+opts_chunk$set(
+  echo = TRUE,            # Show R code in output
+  singlespacing = TRUE,   # Use single spacing for code
+  fig.align = "center"    # Center all figures
+)
 
-#install.packages("rmdformats")
-library(knitr)
-library(rmdformats)
+# ---- Load required packages ----
+# If you get an error such as "there is no package called '<name>'",
+# install the missing package first using install.packages("<name>"))
+# Repeat for any other packages not already installed.
+library(rmdformats)   # For polished R Markdown / HTML / PDF formatting
+library(here)         # For consistent project file paths
 
-# Global options
-options(max.print = "75")
-opts_chunk$set(echo = TRUE,
-	             cache = TRUE,
-               prompt = FALSE,
-               tidy = TRUE,
-               comment = NA,
-               message = FALSE,
-               warning = FALSE)
+# ---- Anchor project root for reproducible paths ----
+# The {here} package finds the top-level directory of your project.
+# This ensures relative paths (e.g., data/peace_pre_match.rds) work
+# whether knitting from the root, vignettes/, or guide/ subfolders.
+# If {here} cannot find a root, create a .here file in the repo root:
+#   file.create(".here")
+if (requireNamespace("here", quietly = TRUE)) {
+  here::i_am("vignettes/Building_Design-Based_Matching_Pipeline.Rmd")  # tell {here} which file is knitting
+  knitr::opts_knit$set(root.dir = here::here())                         # set knitr root to project root
+}
+
+# ---- Set global options for knitting ----
+# These affect printed output, caching, and console appearance.
+options(max.print = 75)  # Limit how many rows/values print by default
+
+opts_chunk$set(
+  echo = TRUE,       # Show R code
+  cache = TRUE,      # Cache results to speed up re-knitting
+  prompt = FALSE,    # Don’t show ">" prompts in code blocks
+  tidy = TRUE,       # Format R code nicely
+  comment = NA,      # Suppress "#" in printed output
+  message = FALSE,   # Hide messages (e.g., from loading packages)
+  warning = FALSE    # Hide warnings for clean rendering
+)
+
+# Set max line width for knitted text output
 opts_knit$set(width = 75)
-
 ```
 
 \begin{abstract}
@@ -118,8 +135,12 @@ Below we present a flow diagram that summarizes the overall pipeline. The diagra
 
 ```{r diagram, echo = FALSE, fig.pos = "H", fig.cap = NULL, out.width = "\\linewidth"}
 
-# Insert matching pipeline flowchart (PDF) into document
-knitr::include_graphics("flowchart/matching_pipeline_flowchart.pdf")
+# Load the here package for consistent file paths
+library(here)
+
+# Insert the matching pipeline flowchart (PDF) into the document
+# Use the full path from the project root (the file is inside vignettes/fig/)
+include_graphics(here("vignettes", "fig", "matching_pipeline_flowchart.pdf"))
 
 ```
 
@@ -193,60 +214,40 @@ As @gilligansergenti2008 state, "UN missions are not randomly assigned" (p. 89).
 
 To load the data, you could first download the replication files from the supplementary information on the article's webpage (DOI: [10.1561/100.00007051](https://doi.org/10.1561/100.00007051)), save the files to your working directory, and then use a package such as \texttt{haven} to load the Stata (.dta) file, \texttt{peace\_pre\_match.dta}, into \texttt{R}. However, for our purposes we recommend loading our pre-created .RData file (\texttt{peace\_pre\_match.RData}), in which Stata's monthly numeric dates have been converted to \texttt{R}'s year-month format and the geographic region indicators recoded into a single factor variable (\texttt{region}). The command below loads this pre-created dataset (\texttt{peace\_pre\_match.RData}) into the \texttt{R} environment as an object named \texttt{data}.
 
-```{r, tidy = FALSE, include = FALSE}
+```{r load-data, include = FALSE, message = TRUE}
 
-# Install packages (only run these lines if you don't already have them installed)
-# install.packages("haven")
-# install.packages("dplyr")
-# install.packages("lubridate")
-# install.packages("readr")
+# Packages (install first if needed: install.packages("<name>"))
+library(readr)
+library(here)
 
-# Load required packages
-library(haven)      # For reading and writing Stata (.dta) files
-library(dplyr)      # For data manipulation functions like mutate(), if_else(), etc.
-library(lubridate)  # For handling and converting date-time objects (ym(), months())
-library(readr)      # For reading and writing .rds files (read_rds(), write_rds())
+# Paths (anchored at project root via here::i_am() in setup)
+rds_path   <- here("data", "peace_pre_match.rds")            # the RDS you want to read
+build_path <- here("data-raw", "build_peace_pre_match.R")    # the script that creates it
 
-# Load the Stata dataset into \texttt{R} as a dataframe called 'data'
-data <- read_dta(file = "qjps_8051_supp/peace_pre_match.dta")
-
-# Convert Stata monthly numeric dates to actual year-month dates in R
-data <- data |>
-  mutate(
-    # date0 in Stata's %tm format (monthly), starting from January 1960
-    date0 = ym("1960-01") + months(date0),
-    
-    # date1 in Stata's %tm format (monthly), starting from January 1960
-    date1 = ym("1960-01") + months(date1)
-  )
-
-# Recode binary geographic region variables into one factor variable
-data <- data |>
-  mutate(
-    region = NA_character_,
-    region = if_else(eeurop == 1, "eeurop", region),
-    region = if_else(lamerica == 1, "lamerica", region),
-    region = if_else(asia == 1, "asia", region),
-    region = if_else(ssafrica == 1, "ssafrica", region),
-    region = if_else(nafrme == 1, "nafrme", region),
-    region = factor(region)
-  )
-
-# Recode ethnic fractionalization index to 0-1 range
-data <- data |>
-  mutate(
-    ethfrac = ethfrac / 100
-  )
-
-# Save the dataset as an .rds file
-write_rds(x = data, file = "peace_pre_match.rds")
+# Build the RDS if it's missing
+if (!file.exists(rds_path)) {
+  message("peace_pre_match.rds not found. Attempting to build…")
+  if (file.exists(build_path)) {
+    message("Sourcing local build script: ", build_path)
+    source(build_path)
+  } else {
+    message("Local build script not found at: ", build_path,
+            "\nFalling back to GitHub raw copy…")
+    source("https://raw.githubusercontent.com/tl2624/matching-guide/main/data-raw/build_peace_pre_match.R")
+  }
+}
 
 ```
 
+
 ```{r}
 
-# Load the pre-created dataset with converted dates and region factor
-data <- read_rds(file = "peace_pre_match.rds")
+# Load the readr package (for reading and writing .rds files)
+# install.packages("readr")   # Run this line if it is not already installed
+library(readr)
+
+# Load the cleaned dataset
+data <- read_rds(file = rds_path)
 
 ```
 
