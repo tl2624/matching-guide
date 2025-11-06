@@ -32,7 +32,7 @@ library(knitr) # For controlling knitting behavior and chunk options
 # while keeping regular text double-spaced.
 hook_chunk <- knit_hooks$get("chunk")
 
-knitr::knit_hooks$set(chunk = function(x, options) {
+knit_hooks$set(chunk = function(x, options) {
   regular_output <- hook_chunk(x, options)
   if (isTRUE(options$singlespacing))
     sprintf("\\singlespacing\n%s\n\\doublespacing", regular_output)
@@ -82,6 +82,7 @@ opts_chunk$set(
 
 # Set max line width for knitted text output
 opts_knit$set(width = 75)
+
 ```
 
 \begin{abstract}
@@ -135,13 +136,14 @@ Below we present a flow diagram that summarizes the overall pipeline. The diagra
 
 ```{r diagram, echo = FALSE, fig.pos = "H", fig.cap = NULL, out.width = "\\linewidth"}
 
-# Load the here package for consistent file paths
-library(here)
+# If you get an error such as "there is no package called 'here'"
+# install the missing package(s) first using install.packages("here")
+library(here)   # For constructing file paths relative to the project root
+library(knitr)  # For knitting R Markdown and including external figures or files
 
-# Insert the matching pipeline flowchart (PDF) into the document
-# Use the full path from the project root (the file is inside vignettes/fig/)
-include_graphics(here("vignettes", "fig", "matching_pipeline_flowchart.pdf"))
-
+# ---- Insert the matching pipeline flowchart (PDF) into the document ----
+# The file path is relative to the project root, set via here::i_am() in the setup chunk
+include_graphics(path = here("fig", "matching_pipeline_flowchart.pdf"))
 ```
 
 ## Related Topics Beyond Our Scope
@@ -216,24 +218,31 @@ To load the data, you could first download the replication files from the supple
 
 ```{r load-data, include = FALSE, message = TRUE}
 
-# Packages (install first if needed: install.packages("<name>"))
-library(readr)
-library(here)
+# ---- Load required packages ----
+# If you get an error such as "there is no package called '<name>'",
+# install the missing package first using install.packages("<name>").
+library(readr)   # For reading and writing .rds files
 
-# Paths (anchored at project root via here::i_am() in setup)
-rds_path   <- here("data", "peace_pre_match.rds")            # the RDS you want to read
-build_path <- here("data-raw", "build_peace_pre_match.R")    # the script that creates it
+# ---- Define paths ----
+# Anchored at the project root using {here} (set in the setup chunk)
+rds_path   <- here("data", "peace_pre_match.rds")  # Path to the cleaned dataset
+build_path <- here("data", "raw", "build_peace_pre_match.R")  # Path to build script
+# Note: the build script itself expects raw data under data/raw/qjps_8051_supp/
 
-# Build the RDS if it's missing
+# ---- Build the .rds file if it does not exist ----
 if (!file.exists(rds_path)) {
   message("peace_pre_match.rds not found. Attempting to build…")
+  
+  # Try the local build script first
   if (file.exists(build_path)) {
     message("Sourcing local build script: ", build_path)
     source(build_path)
+    
+  # Fall back to the GitHub version if the local file is missing
   } else {
     message("Local build script not found at: ", build_path,
             "\nFalling back to GitHub raw copy…")
-    source("https://raw.githubusercontent.com/tl2624/matching-guide/main/data-raw/build_peace_pre_match.R")
+    source("https://raw.githubusercontent.com/tl2624/matching-guide/main/data/raw/build_peace_pre_match.R")
   }
 }
 

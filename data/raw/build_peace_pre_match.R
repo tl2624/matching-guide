@@ -30,7 +30,7 @@ library(here)
 
 # ---- Define input and output paths ----
 # Paths are anchored to the repository root via the `.here` marker file.
-raw_dta <- here("data-raw", "qjps_8051_supp", "peace_pre_match.dta")
+raw_dta <- here("data", "raw", "qjps_8051_supp", "peace_pre_match.dta")
 out_dir <- here("data")
 out_rds <- file.path(out_dir, "peace_pre_match.rds")
 
