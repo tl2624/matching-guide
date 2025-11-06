@@ -1,0 +1,15 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.Rprofile
+.Rhistory
+.Rapp.history
+.Rproj.user/
+.Rproj
+.DS_Store
+/docs/
+/renv/
+renv.lock
+.Rbuildignore
+.Rproj.user

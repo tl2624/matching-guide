@@ -1,0 +1,22 @@
+url: https://OWNER.github.io/matching-guide
+template:
+  bootstrap: 5
+destination: docs
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [github]
+  components:
+    intro:
+      text: "Guide"
+      href: articles/Matching_Guide_full.html
+    github:
+      icon: fab fa-github
+      href: https://github.com/OWNER/matching-guide
+home:
+  title: "Design‑Based Matching Pipeline"
+  description: "Companion package & website for the matching guide by Thomas Leavitt and Luke Miratrix."
+articles:
+  - title: "Guide"
+    contents:
+      - matches("Matching_Guide_.*")
