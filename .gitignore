@@ -1,15 +1,28 @@
-.Rproj.user
+# R Markdown cache and output
+*_cache/
+*_files/
+
+# Ignore all knitting and build artifacts
+.Rproj.user/
 .Rhistory
 .RData
 .Ruserdata
-.Rprofile
-.Rhistory
-.Rapp.history
-.Rproj.user/
-.Rproj
 .DS_Store
-/docs/
-/renv/
-renv.lock
-.Rbuildignore
-.Rproj.user
+
+# Common LaTeX build artifacts
+*.log
+*.aux
+*.out
+*.toc
+*.tex
+*.bbl
+*.blg
+*.synctex.gz
+
+# R Markdown intermediates
+*.knit.md
+*.utf8.md
+
+# OS and IDE cruft
+Thumbs.db
+*.swp
