@@ -7,7 +7,7 @@ by
 Assistant Professor, Marxe School of Public and International Affairs, Baruch College, City University of New York (CUNY)  
 and  
 **Luke W. Miratrix**  
-Professor of Education at Harvard Graduate School of Education, Harvard University
+Professor of Education, Harvard Graduate School of Education, Harvard University
 
 ---
 
@@ -23,10 +23,3 @@ This repository contains all materials for the *Matching Guide*, including:
 All resources are open for replication, teaching, and reuse.
 
 ---
-
-## Using the Functions
-
-You can load all helper functions used in the guide with a single command:
-
-```r
-source("https://raw.githubusercontent.com/tl2624/matching-guide/main/load_matching-guide.R")
