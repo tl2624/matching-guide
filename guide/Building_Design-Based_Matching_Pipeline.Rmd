@@ -200,12 +200,11 @@ To load the data, you could first download the replication files from the supple
 
 ```{r}
 
-# Load the readr package (for reading and writing .rds files)
-# install.packages("readr")   # Run this line if it is not already installed
-library(readr)
+# Define base URL for the Matching Guide GitHub repository
+base_url <- "https://raw.githubusercontent.com/tl2624/matching-guide/main"
 
 # Load the cleaned dataset
-data <- read_rds(file = "../data/peace_pre_match.rds")
+data <- readRDS(url(paste0(base_url, "/data/peace_pre_match.rds")))
 
 ```
 
@@ -935,35 +934,15 @@ data_matched <- data_matched |>
 
 ```
 
-We next source a helper function that performs the rescaling described above, ensuring that the sum of the rescaled outcomes across treated units equals the harmonic-mean–weighted Difference-in-Means statistic.
+We now source a helper function that rescales the outcome variable so that the sum of the rescaled values among treated units equals the harmonic-mean–weighted Difference-in-Means statistic. After sourcing the function, we apply it to the matched dataset to generate a new column containing the rescaled outcomes. We then use this rescaled outcome to compute the observed test statistic.
 
 ```{r, tidy = FALSE}
 
-# Load the hm_stat_rescale() function
-# Check if the function is already loaded; if not, load it below
-if (!exists("hm_stat_rescale", mode = "function")) {
-  
-  # If the function file exists locally, load it from the R/ folder
-  if (file.exists("../R/hm_stat_rescale.R")) {
-    sys.source(file = "../R/hm_stat_rescale.R",
-               envir = environment())  # make it available in the current session
-  
-  # Otherwise, download and load it directly from the GitHub repository
-  } else {
-    sys.source(file = paste0(
-      "https://raw.githubusercontent.com/tl2624/",
-      "matching-guide/main/R/hm_stat_rescale.R"
-    ),
-    envir = environment()
-    )
-  }
-}
-
-```  
-
-We next apply the rescaling procedure and calculate the observed test statistic.
-
-```{r, tidy = FALSE}
+# Load the hm_stat_rescale() function from the GitHub repo
+# base_url (defined earlier as 
+# "https://raw.githubusercontent.com/tl2624/matching-guide/main") 
+# points to the main GitHub repo URL
+source(paste0(base_url, "/R/hm_stat_rescale.R"))
 
 # Apply the rescaling function: adds a new column (.hm_scaled)
 # and returns the full matched dataset with this rescaled outcome
@@ -1221,29 +1200,12 @@ res$var_est
 
 ```
 
-We can also estimate the variance of the Difference-in-Means in a finely stratified design using the approach of @fogarty2018. Rather than defining the function within the script, we load a custom \texttt{R} function (\texttt{fine\_strat\_var\_est()}) from the accompanying replication files. If the local file is available, the function is sourced directly from the \texttt{R/} folder; otherwise, it is automatically retrieved from the online repository.
+We can also estimate the variance of the Difference-in-Means in a finely stratified design using the approach of @fogarty2018. Rather than defining the function within the script, we load a custom \texttt{R} function (\texttt{fine\_strat\_var\_est()}) from the accompanying replication files. 
 
 ```{r, tidy = FALSE}
 
-# Load the fine_strat_var_est() function
-# Check if the function is already loaded; if not, load it below
-if (!exists("fine_strat_var_est", mode = "function")) {
-  
-  # If the function file exists locally, load it from the R/ folder
-  if (file.exists("../R/fine_strat_var_est.R")) {
-    sys.source(file = "../R/fine_strat_var_est.R",
-               envir = environment())  # make it available in the current session
-  
-  # Otherwise, download and load it directly from the GitHub repository
-  } else {
-    sys.source(file = paste0(
-      "https://raw.githubusercontent.com/tl2624/",
-      "matching-guide/main/R/fine_strat_var_est.R"
-    ),
-    envir = environment()
-    )
-  }
-}
+# Load the fine_strat_var_est() function from the GitHub repo
+source(paste0(base_url, "/R/fine_strat_var_est.R"))
 
 ```  
 
@@ -1420,8 +1382,8 @@ ggplot(data = sens_df_long,
   scale_x_continuous(breaks = seq(from = 1, to = 1.5, by = 0.1)) +
   scale_y_continuous(breaks = seq(from = 0, to = 0.1, by = 0.01),
                      limits = c(0, 0.1)) +
-  xlab(expression(Gamma)) +       # x-axis label
-  ylab("p-value") +               # y-axis label
+  xlab(expression(Gamma)) +          # x-axis label
+  ylab("One-sided upper p-value") +  # y-axis label
   theme(legend.position = "right")
 
 ```
@@ -1446,7 +1408,7 @@ for all $\bm{z}_s \in \Omega_s$ and for all matched sets $s$.
 
 Since the IPW Difference-in-Means in \eqref{eq: weighted diff-in-means} cannot be directly computed when $\Gamma > 1$, @fogarty2023 instead uses the bounds in \eqref{eq: prob bounds} to construct a worst-case version of this IPW Difference-in-Means. For tests of a null hypothesis about the overall ATE across all matched sets, the procedure replaces $p(\bm{z}_s)$ with the upper bound from \eqref{eq: prob bounds} whenever $\hat{\tau}_s$ is greater than or equal to the null value of the overall ATE, and with the lower bound whenever $\hat{\tau}_s$ is less than that null value. When testing the null against a smaller alternative, the procedure reverses these substitutions.
 
-To see the value of this procedure, consider testing a null hypothesis about the ATE against the alternative of a larger ATE. @fogarty2023 shows that, for any $\Gamma \geq 1$, the expected value of the worst-case IPW Difference-in-Means --- defined under whatever the true distribution on $\Omega$ consistent with that $\Gamma$ happens to be --- is always less than or equal to the null when it is true. Conversely, when testing against the alternative of a smaller ATE, this expectation is greater than or equal to the null when it is true. Importantly, these properties hold for all possible values of $\bm{u}$ and all configurations of potential outcomes that are consistent with the null hypothesis.
+To see the value of this procedure, consider testing a null hypothesis about the ATE against the alternative of a larger ATE. @fogarty2023 shows that, for any $\Gamma \geq 1$, the expected value of this worst-case IPW Difference-in-Means --- defined under whatever the true distribution on $\Omega$ consistent with that $\Gamma$ happens to be --- is always less than or equal to the null when it is true. Conversely, when testing against the alternative of a smaller ATE, this expectation is greater than or equal to the null when it is true. Importantly, these properties hold for all possible values of $\bm{u}$ and all configurations of potential outcomes that are consistent with the null hypothesis.
 
 How does this property of the expected value ensure a valid test in sufficiently large studies? Consider testing the null hypothesis against the alternative of a larger ATE. If the expected value of the worst-case IPW Difference-in-Means is less than or equal to the null when it is true, then the worst-case IPW Difference-in-Means tends to fall at or below the null rather than above it. In other words, the procedure intentionally "tilts" the worst-case IPW Difference-in-Means in the direction opposite the alternative, making the procedure conservative.
 
@@ -1463,25 +1425,8 @@ To implement this approach from @fogarty2023, we first source an \texttt{R} func
 
 ```{r, tidy = FALSE}
 
-# Load the worst_case_IPW() function
-# Check if the function is already loaded; if not, load it below
-if (!exists("worst_case_IPW", mode = "function")) {
-  
-  # If the function file exists locally, load it from the R/ folder
-  if (file.exists("../R/worst_case_IPW.R")) {
-    sys.source(file = "../R/worst_case_IPW.R",
-               envir = environment())  # make it available in the current session
-  
-  # Otherwise, download and load it directly from the GitHub repository
-  } else {
-    sys.source(file = paste0(
-      "https://raw.githubusercontent.com/tl2624/",
-      "matching-guide/main/R/worst_case_IPW.R"
-    ),
-    envir = environment()
-    )
-  }
-}
+# Load the worst_case_IPW() function from the GitHub repo
+source(paste0(base_url, "/R/worst_case_IPW.R"))
 
 ```
 
@@ -1560,8 +1505,8 @@ ggplot(data = weak_sens_df,
   scale_x_continuous(breaks = seq(from = 1, to = 1.5, by = 0.1)) + # x-axis ticks
   scale_y_continuous(breaks = seq(from = 0, to = 0.1, by = 0.01),  # y-axis ticks
                      limits = c(0, 0.1)) +
-  xlab(expression(Gamma)) + # label for Gamma
-  ylab("p-value")           # label for p-values
+  xlab(expression(Gamma)) +        # label for Gamma
+  ylab("One-sided upper p-value") # label for p-values
 
 ```
 
