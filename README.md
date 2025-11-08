@@ -1,13 +1,8 @@
----
-output:
-  pdf_document: default
-  html_document: default
----
 # Building a Design-Based Matching Pipeline <a href="https://tl2624.github.io/matching-guide/"><img src="https://img.shields.io/badge/guide-online-blue" align="right" /></a>
 
 Companion materials for  
 **_Building a Design-Based Matching Pipeline: From Principles to Practical Implementation in R_**  
-by  
+by 
 **Thomas Leavitt**  
 Assistant Professor, Marxe School of Public and International Affairs, Baruch College, City University of New York (CUNY)  
 and  
