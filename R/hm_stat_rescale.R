@@ -1,57 +1,50 @@
 #' Rescale outcomes for harmonic-mean weighting
-#'
-#' Given a dataset with treatment indicator and matched-set ID,
-#' this function rescales the outcome so that summing the rescaled
-#' values among treated units yields the harmonic-mean–weighted
-#' difference-in-means statistic.
-#'
-#' @param data   Data frame containing the variables.
-#' @param outcome Outcome variable (unquoted, e.g. ldur_tilde).
-#' @param treat  Treatment indicator (unquoted, e.g. UN; must be 0/1).
-#' @param strata Matched-set ID (unquoted, e.g. fm).
-#' @return A copy of `data` with an added column named
-#'         `<outcome>_hm_scaled` containing the rescaled outcome values.
+#' 
+#' @param data   Data frame with outcome, treat, and strata
+#' @param outcome Bare name of outcome column
+#' @param treat   Bare name of 0/1 treatment column
+#' @param strata  Bare name of matched set id column
+#' @return Data frame of matched units with <outcome>_hm_scaled added
 
-hm_stat_rescale <- function(data, outcome, treat, strata) {
+hm_stat_rescale_base <- function(data, outcome, treat, strata) {
+  # get column names from bare names
+  out_nm <- deparse(substitute(outcome))
+  trt_nm <- deparse(substitute(treat))
+  str_nm <- deparse(substitute(strata))
   
-  # Ensure the rlang package is available (used for tidy evaluation)
-  if (!requireNamespace("rlang", quietly = TRUE)) install.packages("rlang")
+  # fail fast if columns missing
+  need <- c(out_nm, trt_nm, str_nm)
+  miss <- need[!(need %in% names(data))]
+  if (length(miss)) stop("Column(s) not found in `data`: ", paste(miss, collapse = ", "))
   
-  # Capture variable names so they can be used inside dplyr functions
-  outcome <- rlang::enquo(outcome)
-  treat   <- rlang::enquo(treat)
-  strata  <- rlang::enquo(strata)
+  # drop unmatched units
+  d <- data[!is.na(data[[str_nm]]), , drop = FALSE]
   
-  # Drop unmatched units (NA strata)
-  d <- dplyr::filter(data, !is.na(!!strata))
+  # per set counts
+  s <- d[[str_nm]]
+  m_by <- tapply(d[[trt_nm]] == 1L, s, sum)
+  n_by <- tapply(d[[trt_nm]] == 0L, s, sum)
   
-  # Compute total harmonic weight H = sum_s h_s
-  H <- d |>
-    dplyr::group_by(!!strata) |>
-    dplyr::summarise(
-      m = sum((!!treat) == 1L),             # number treated in each set
-      n_minus_m = sum((!!treat) == 0L),     # number of controls in each set
-      h = 1 / (1 / m + 1 / n_minus_m),      # harmonic mean weight for the set
-      .groups = "drop"
-    ) |>
-    dplyr::summarise(H = sum(.data$h), .groups = "drop") |>
-    dplyr::pull(.data$H)                    # extract scalar total weight H
+  # keep sets with at least one treated and one control
+  valid_sets <- names(which(m_by > 0 & n_by > 0))
+  d <- d[s %in% valid_sets, , drop = FALSE]
+  s <- d[[str_nm]]
   
-  # Construct the new column name dynamically: <outcome>_hm_scaled
-  new_col <- paste0(rlang::as_name(outcome), "_hm_scaled")
+  # recompute per set summaries on filtered data
+  m_by <- tapply(d[[trt_nm]] == 1L, s, sum)
+  n_by <- tapply(d[[trt_nm]] == 0L, s, sum)
+  h_by <- 1 / (1 / m_by + 1 / n_by)
+  sumy_by <- tapply(d[[out_nm]], s, sum)
   
-  # Rescale outcome so the treated sum equals the HM-weighted diff-in-means
-  d |>
-    dplyr::group_by(!!strata) |>
-    dplyr::mutate(
-      m = sum((!!treat) == 1L),             # treated count in the set
-      n_minus_m = sum((!!treat) == 0L),     # control count in the set
-      h = 1 / (1 / m + 1 / n_minus_m),      # set-specific harmonic weight
-      sum_outcome = sum(!!outcome),         # sum of outcomes within set
-      !!new_col := (                        # dynamically named new column
-        (!!outcome) - h * sum_outcome / (m * n_minus_m)
-      ) / H                                 # normalize by total H
-    ) |>
-    dplyr::ungroup() |>
-    dplyr::select(-m, -n_minus_m, -h, -sum_outcome)  # remove helper vars
+  # total harmonic weight
+  H <- sum(h_by)
+  
+  # per row adjustment using its set's values
+  idx <- match(s, names(h_by))
+  adj <- (h_by[idx] * sumy_by[idx]) / (m_by[idx] * n_by[idx])
+  
+  new_col <- paste0(out_nm, "_hm_scaled")
+  d[[new_col]] <- (d[[out_nm]] - adj) / H
+  
+  d
 }
