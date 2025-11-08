@@ -2,7 +2,7 @@
 
 Companion materials for  
 **_Building a Design-Based Matching Pipeline: From Principles to Practical Implementation in R_**  
-by 
+by  
 **Thomas Leavitt**  
 Assistant Professor, Marxe School of Public and International Affairs, Baruch College, City University of New York (CUNY)  
 and  
@@ -13,7 +13,7 @@ Professor of Education, Harvard Graduate School of Education, Harvard University
 
 This repository contains all materials for the matching guide, including:
 
-- 📘 The full manuscript (`guide/Building_Design-Based_Matching_Pipeline.Rmd` and `.pdf`)
+- 📘 The full manuscript (`guide/Building_Design-Based_Matching_Pipeline.Rmd` and `.pdf`), along with all source files necessary for PDF compilation (`guide/` folder)
 
 - 🧰 R functions used throughout the manuscript (`R/` folder)
 
@@ -23,9 +23,9 @@ This repository contains all materials for the matching guide, including:
     
     - Original raw data (`raw-data/` folder), accessed from the article's supplementary materials (publicly available from the *Quarterly Journal of Political Science*, DOI: [10.1561/100.00007051](https://doi.org/10.1561/100.00007051))
     
-    - The code used to clean and prepare the analysis-ready dataset used throughout the manuscript (`raw-data/` folder)
+    - The code for cleaning and preparing the analysis-ready dataset used throughout the manuscript (`raw-data/` folder)
 
-- 📊 Flowcharts and figures (`guide/fig/`)
+- 📊 Figure of the matching pipeline flowchart (`guide/fig/`)
 
 All resources are open for replication, teaching, and reuse.
 
