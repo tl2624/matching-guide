@@ -1232,8 +1232,8 @@ strat_stats <- data_matched |>
 
 # Apply Fogarty (2018/2023) variance estimator
 fine_strat_var_est(
-  strat_ns = strat_stats$n,              # Vector of stratum sizes
-  strat_ests = strat_stats$diff_in_means # Vector of stratum estimates
+  strat_ns = strat_stats$n,               # Vector of stratum sizes
+  strat_ests = strat_stats$diff_in_means  # Vector of stratum estimates
 )
 
 ```  
