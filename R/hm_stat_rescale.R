@@ -6,13 +6,14 @@
 #' @param strata  Bare name of matched set id column
 #' @return Data frame of matched units with <outcome>_hm_scaled added
 
-hm_stat_rescale_base <- function(data, outcome, treat, strata) {
+hm_stat_rescale <- function(data, outcome, treat, strata) {
+  
   # get column names from bare names
   out_nm <- deparse(substitute(outcome))
   trt_nm <- deparse(substitute(treat))
   str_nm <- deparse(substitute(strata))
   
-  # fail fast if columns missing
+  # fail if columns missing
   need <- c(out_nm, trt_nm, str_nm)
   miss <- need[!(need %in% names(data))]
   if (length(miss)) stop("Column(s) not found in `data`: ", paste(miss, collapse = ", "))
