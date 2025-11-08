@@ -17,6 +17,8 @@ This repository contains all materials for the matching guide, including:
 
 - 🧰 R functions used throughout the manuscript (`R/` folder)
 
+- 💻 The runnable code script (`guide/Building_Design-Based_Matching_Pipeline_script.R`), containing all code from the manuscript for direct use in R
+
 - 🗂️ Example dataset and supporting files, including:
     
     - Clean, analysis-ready dataset (`data/` folder) originally from Gilligan, M. J., and E. J. Sergenti (2008). Do UN Interventions Cause Peace? Using Matching to Improve Causal Inference. *Quarterly Journal of Political Science* 3(2): 89-122
