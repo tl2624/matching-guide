@@ -4,7 +4,7 @@ Companion materials for
 **_Building a Design-Based Matching Pipeline: From Principles to Practical Implementation in R_**  
 by  
 **Thomas Leavitt**  
-Assistant Professor, Marxe School of Public and International Affairs, Baruch College, City University of New York (CUNY)  
+Assistant Professor,&nbsp;Marxe School of Public and International Affairs,&nbsp;Baruch College,&nbsp;City University of New York&nbsp;(CUNY)
 and  
 **Luke W. Miratrix**  
 Professor of Education, Harvard Graduate School of Education, Harvard University
