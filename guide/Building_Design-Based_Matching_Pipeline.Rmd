@@ -1301,9 +1301,24 @@ To address this challenge, @gastwirthetal2000 propose a practical shortcut calle
 
 The separable approximation is a useful shortcut, but can break down in designs with only a moderate number of small strata or when most units are concentrated in only a few strata. In such cases, the $\bm{u}$ chosen by the separable approximation may yield $p$-values that are smaller than the worst-case $p$-value. To address this limitation, @rosenbaum2018 provides a refinement that guarantees valid hypothesis tests.
 
-The basic logic of this approach is as follows: Define a function that takes as input a possible pattern of hidden bias across the matched sets and outputs a number on the real line. The function maps onto hypothesis testing in that, if we would reject the null hypothesis, then the value the function produces will be less than or equal to $0$; if we would not reject the null, the value will be greater than $0$. The essential property is that this function is concave, which means that if you draw its tangent line at any point, the line always lies above the curve itself.
+The basic logic of this approach is as follows. For a fixed value of $\Gamma$, @rosenbaum2018 constructs a function $\lambda(\bm{u};\Gamma)$ that, for each possible configuration of hidden confounding $\bm{u}$, quantifies how far the observed test statistic lies beyond the upper one-sided Normal rejection threshold implied by $\bm{u}$ under the null hypothesis. Formally,
+\begin{equation}
+\label{eq: lambda}
+\lambda(\bm{u};\Gamma) \coloneqq
+\underbrace{\E_{\bm{u},\Gamma}\left[T(\bm{Z}; \tau_h)\right]}_{\text{Null expectation}} + \underbrace{\Phi^{-1}(1 - \alpha)}_{\text{Upper one-sided Normal critical value}} \underbrace{\sqrt{\Var_{\bm{u},\Gamma}\left[T(\bm{Z}; \tau_h)\right]}}_{\text{Null standard deviation}} - \underbrace{T^{\mathrm{obs}}(\tau_h)}_{\text{Observed statistic}} .
+\end{equation}
+For an upper one-sided test at significance level $\alpha$, the quantity $\E_{\bm{u},\Gamma}[T(\bm{Z};\tau_h)] + \Phi^{-1}(1-\alpha)\sqrt{\Var_{\bm{u},\Gamma}[T(\bm{Z};\tau_h)]}$ is the Normal rejection cutoff under the null. For example, when $\alpha = 0.05$, this cutoff lies approximately $1.64$ standard deviations above the null expectation. Consequently, $\lambda(\bm{u};\Gamma) \leq 0$ if and only if the observed test statistic exceeds this cutoff, in which case the null hypothesis is rejected.
 
-The specific configuration of $\bm{u}$ selected by the separable approximation serves as the expansion point. At that point, the function and its tangent line coincide. The tangent line, however, defines a new linear function over all possible configurations of $\bm{u}$. Because linear functions are straightforward to maximize, we can easily identify the configuration of $\bm{u}$ that makes the tangent line largest. And since the tangent line always lies above the original function, if the tangent line’s worst-case value is at or below $0$, then the original function must also be at or below $0$ for every configuration of $\bm{u}$, including its own (unknown) worst-case.
+For a given $\Gamma$, we would reject the null, i.e., the function in \eqref{eq: lambda} would be non-positive, over all possible $\bm{u}$ if \eqref{eq: lambda} is non-positive under the $\bm{u}$ that makes the value of the function largest. Thus, to determine rejection of the null or not, we can assess whether \eqref{eq: lambda} is non-positive at the worst-case $\bm{u}$. The $\bm{u}$ returned by the separable approximation may not truly be the worst-case $\bm{u}$, but instead of finding trying to find the worst-case $\bm{u}$, @rosenbaum2018 shows that the function in \eqref{eq: lambda} is concave, which means that if you draw its tangent line at any point, the line always lies above the curve itself.
+
+The separable configuration of hidden confounding serves as the point at which we construct a linear approximation to $\lambda(\bm{u};\Gamma)$. This linear function coincides with $\lambda(\bm{u};\Gamma)$ at the separable configuration and, because $\lambda(\bm{u};\Gamma)$ is concave, lies above it for all other configurations of $\bm{u}$. We therefore evaluate the linear approximation itself as a global upper bound on how large $\lambda(\bm{u};\Gamma)$ could be. If even this upper bound is at or below zero, then $\lambda(\bm{u};\Gamma)$ must be nonpositive for every possible configuration of hidden confounding, implying rejection of the null hypothesis.
+
+```{r}
+
+
+
+```
+
 
 Although valid, this approach is conservative because sometimes the tangent line stays above $0$, even though the original function would be below $0$ at its worst-case $\bm{u}$. In those situations, the test will say "do not reject," even though rejection would have been justified. The separable approximation, by contrast, can be liberal: It may lead to rejection even when the function at its worst-case $\bm{u}$ is positive.
 
