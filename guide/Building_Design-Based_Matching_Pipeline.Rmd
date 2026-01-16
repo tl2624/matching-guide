@@ -128,26 +128,6 @@ include_graphics(path = "fig/matching_pipeline_flowchart.pdf")
 
 ```
 
-## Related Topics Beyond Our Scope
-
-For clarity and focus, we exclude several important topics, though we point to references where relevant. Some of the topics we exclude are not specific to matching or observational studies. These topics include imperfect compliance with treatment assignment, missing outcomes, clustered (rather than individual) assignment, and interference in which a subject's outcome depends on others' treatment assignments.
-
-We focus on inferences about only two types of causal effects: a constant, additive effect for all units and the average effect. We do not consider other effect models, such as dilated [@rosenbaum1999], multiplicative or tobit effects [@rosenbaum2010, pp. 46-49]. In what follows, we treat causal targets as fixed (over possible assignments consistent with the matched design) rather than as random quantities. Thus, we do not cover attributable effects [@rosenbaum2001; @rosenbaum2003; @hansenbowers2009] or the average treatment effect on the treated [@sekhonshem-tov2021]. We also set aside methods that jointly infer both types of causal effects [@ding2017; @wuding2021; @cohenfogarty2022], as well as strategies for improving the power of hypothesis tests by rescaling outcomes or choosing different test statistics (functions that summarize data to test hypotheses), e.g., with regression-based tools [@lin2013; @cohenfogarty2023; @guobasse2023].
-
-For issues specific to matching, the most noteworthy omissions are as follows: 
-
-  - **Additional matching and balancing approaches**. We do not cover nonbipartite matching for multi-valued treatments [@luetal2001; @luetal2011; @rosenbaum2010, pp. 207–221], template [@silberetal2014], multilevel [@zubizarretakeele2017; @pimenteletal2018], risk-set [@lietal2001], cardinality [@zubizarretaetal2014], coarsened exact [@iacusetal2012], or generalized full matching [@savjeetal2021]. We also omit balance constraints such as fine and near-fine balance [@rosenbaumetal2007; @yangetal2012], which ensure exact (or nearly exact) equality in marginal distributions of categorical covariates across groups. The principles we present, however, apply broadly, and our pipeline can be readily adapted to these additional methods.
-  
-  - **Prognostic covariates**. We do not cover methods that use pilot or external data to figure out which covariates best predict outcomes and then incorporate them into matching. For theoretical foundations, see @hansen2008a. For a clear exposition of both how to implement such methods and why they improve inference, see @salesetal2018.
-  
-  - **Design sensitivity**. We do not include methods that form matched sets to improve design sensitivity --- that is, to make inferences more robust to moderate hidden bias. Beyond the construction of matches, researchers can also enhance design sensitivity by selecting particular test statistics, among other strategies [@rosenbaum2004; @helleretal2009; @hsuetal2013; @smalletal2013].
-  
-  - **Extensions to balance testing**. We omit extensions of the covariate balance testing framework in @hansenbowers2008, including those developed in @gagnon-bartschshem-tov2019 and @branson2021, and related approaches, such as those building on the stepwise-intersection-union principle (SIUP) [@hansensales2015].
-  
-  - **Residual imbalance on observed covariates**. We make the simplifying assumption that membership in a matched set is sufficient to achieve as-if randomization, at least with respect to observed covariates. We therefore subsume any residual imbalances on observed covariates after matching into the sensitivity analysis for imbalances on hidden covariates. However, residual imbalances on observed covariates are not truly "hidden," and several approaches propose alternatives that explicitly account for such imbalances, either in methods targeting individual effects [@rosenbaum1988; @pimentelhuang2024; @chenetal2023; @hengetal2025] or in those targeting average effects [@zhuetal2025].
-  
-  - **$\bm{Z}$-dependence**. In some settings, matched set membership may itself change over treatment assignments [@pashleyetal2021; @pimentelhuang2024; @pimentelyu2024]. Our exposition relies on an analogy to Rubin's framework of “assignment to treatment group on the basis of a covariate” [@rubin1977], where matched set membership plays the role of the covariate. This analogy assumes that membership is fixed, but in practice it could be a random variable if the matched structure depends on the observable assignments. We set aside this issue, which may be minor when practitioners use sufficiently tight calipers for matching.
-
 # Implementation of the Matching Pipeline
 
 We provide a high-level overview of the ideas behind matching and include code that demonstrates how to implement those ideas with various \texttt{R} packages. We also work through some of these steps "by hand" to underscore the underlying conceptual issues. Doing so also gives practitioners more flexibility to adapt the matching pipeline to their own needs.
@@ -504,11 +484,11 @@ em_region + euc_dist_polity_cal_3
 
 ```
 
-Relaxing calipers allows more units to be included in the matched design, since units without eligible matches would otherwise be discarded. However, loosening calipers does not necessarily yield large gains in effective sample size. The issue is that additional units admitted by a looser caliper often cluster within a few sets. Because those sets still contain only a single treated or control unit, the extra observations contribute little to the effective sample size. In other words, the additional units often provide more information where it is least useful.
+Relaxing calipers allows more units to be included in the matched design, since units without eligible matches would otherwise be discarded. Including additional units can increase the effective sample size, but such gains are not guaranteed to be large. Sometimes additional units admitted by a looser caliper cluster within a few sets; because those sets still contain only a single treated or control unit, the extra observations contribute little to the effective sample size.
 
-Instead of loosening calipers, we can shape the effective sample size by using the `min.controls` and `max.controls` arguments in \texttt{optmatch}'s `fullmatch()` function. These arguments set lower and upper bounds, respectively, on the ratio of controls to treated units allowed within each matched set. By default, the `min.controls` argument is set to `0` and the `max.controls` argument is set to `Inf`, imposing no restrictions on the structure of the matched sets. By moving away from these default values, researchers can control how balanced or lopsided the sets may be.
+Instead of relying solely on caliper width, researchers can also shape the effective sample size by controlling the structure of matched sets via the `min.controls` and `max.controls` arguments in \texttt{optmatch}'s `fullmatch()` function. These arguments specify lower and upper bounds, respectively, on the ratio of control to treated units within each matched set. By default, `min.controls = 0` and `max.controls = Inf`, which impose no restrictions on matched-set composition. Departing from these defaults allows researchers to control how balanced or lopsided matched sets may be, thereby influencing the effective sample size.
 
-To illustrate, suppose we want to restrict matches using the `overall_dist_mat` introduced earlier. When we ultimately construct our matches, full matching will divide the data into matched sets containing one treated unit and any positive number of controls, or one control unit and any positive number of treated units. However, we can impose additional constraints on this full matching, such as requiring at least $1$ control for every $2$ treated units (`min.controls = 0.5`) and no more than $2$ controls per treated unit (`max.controls = 2`). Under these restrictions, allowable matched sets could include $2$ treated units with $1$ control, $1$ treated unit with $1$ control (a matched pair), or $1$ treated unit with $2$ controls.
+To illustrate, suppose we want to restrict matches using the `overall_dist_mat` introduced earlier. When we ultimately construct our matches, full matching will divide the data into matched sets containing one treated unit and any positive number of controls, or one control unit and any positive number of treated units. However, we can impose additional constraints on this full matching, such as requiring a minimum control-to-treated ratio of $1{:}2$ --- that is, at least one control for every two treated units (`min.controls = 0.5`) --- and no more than two controls per treated unit (max.controls = 2). Under these restrictions, allowable matched sets could include $2$ treated units with $1$ control, $1$ treated unit with $1$ control (a matched pair), or $1$ treated unit with $2$ controls.
 
 ```{r, tidy = FALSE, results = "hide"}
 
@@ -519,7 +499,7 @@ fullmatch(x = overall_dist_mat, min.controls = 0.5, max.controls = 2, data = dat
 
 Imposing ratio constraints can introduce trade-offs. In some cases, balance may worsen if a control is forced to match with a less similar treated unit --- though still within the specified calipers --- in order to satisfy the minimum and maximum ratio rules. In other cases, such constraints may improve effective sample size by redistributing how units are grouped. However, if the restrictions are too stringent, they can reduce effective sample size by forcing too many units to be discarded.
 
-In applied settings, final choices of calipers and ratio constraints typically follow iterative checks of both covariate balance and effective sample size. Practitioners often compare several specifications to identify the most useful trade-off between these two goals. @hansensales2015 outline how this process can be carried out in a structured way, drawing on the aforementioned stepwise-intersection-union principle (SIUP) of hypothesis testing.
+In applied settings, final choices of calipers and ratio constraints typically follow iterative checks of both covariate balance and effective sample size. Practitioners often compare several specifications to identify the most useful trade-off between these two goals. @hansensales2015 outline how this process can be carried out in a structured way, drawing on the stepwise-intersection-union principle (SIUP) of hypothesis testing.
 
 ### How Do I Actually Form the Matches?
 
@@ -599,6 +579,8 @@ We then combine the `ps_mat`, `rank_mah_mat`, `eth_mat`, `bwgdp_mat`, and `em_re
 # Full matching on PS + rank-based Mahalanobis + separate Euclidean distances
 # (ethfrac, bwgdp) + region exact match
 fm <- fullmatch(
+  # x specifies the distance for matching: it can be a formula, a precomputed
+  # distance matrix, or (as here) a sum of distance specifications from match_on()
   x            = ps_mat + rank_mah_mat + eth_mat + bwgdp_mat + em_region,
   data         = data,
   max.controls = 4  # Up to 4 controls per treated; min.controls = 0 by default
@@ -665,20 +647,15 @@ Below we calculate the adjusted means (averaged across matched sets, weighted by
 # Install "RItools" package (only run if you don't already have it installed)
 # Install.packages("RItools")
 
-# Load RItools package for balance diagnostics (xBalance)
+# Load RItools package for balance diagnostics (balanceTest)
 library(RItools)
-
-# Compute covariate balance statistics with xBalance
-cov_bal <- xBalance(
-  fmla = cov_fmla,  # Formula: treatment ~ covariates
-  strata = list(
-    unstrat = NULL, # Overall balance without stratification
-    fm = ~ fm       # Assess balance within matched sets (stratify by fm)
-  ),
-  data = data,
-  report = c("adj.means", "std.diffs")
-# Return adjusted means (weighted by effective sample size)
-# And standardized differences (mean differences scaled by pooled SD)
+# Covariate balance test
+cov_bal <- balanceTest(
+  # Formula: treatment ~ covariates
+  # update(): keep the original formula (. ~ .)
+  # and add stratification by matched set, strata(fm)
+  fmla = update(cov_fmla, . ~ . + strata(fm)),
+  data = data
 )
 
 ```
@@ -695,8 +672,8 @@ library(tibble)
 # Load kableExtra for formatting tables for LaTeX/HTML output
 library(kableExtra)
 
-# Extract xBalance 3-D results:
-# [vars, stats (Control,Treatment,std.diff,p), strata (unstrat, fm)]
+# Extract balanceTest 3-D results:
+# [vars, stats (Control,Treatment,std.diff,p), strata (fm, --)]
 arr  <- cov_bal$results
 vars <- dimnames(arr)$vars
 
@@ -737,7 +714,8 @@ slice_mat <- function(a, stratum) {
 }
 
 # Before/after matrices
-before <- slice_mat(arr, "unstrat")
+# In balanceTest output, "--" is the overall (unstratified) result
+before <- slice_mat(arr, "--")
 after  <- slice_mat(arr, "fm")
 
 # Build tibble with distinct internal names
@@ -796,25 +774,15 @@ In addition to assessing balance on each covariate individually, @hansenbowers20
 
 ```{r, include = FALSE}
 
-# Extract overall chi-square balance test statistic (rounded to 2 decimals)
+# Extract overall chi-square test statistic (rounded to 2 decimals)
 bal_stat <- round(
-  x = xBalance(
-    fmla   = cov_fmla,         # treatment ~ covariates
-    strata = list(fm = ~ fm),  # Assess balance within matched sets (stratify by fm)
-    data   = data,             
-    report = "chisquare.test"  # request chi-square test results
-  )$overall["fm", "chisquare"], 
+  x = cov_bal$overall["fm", "chisquare"],
   digits = 2
 )
 
-# Extract overall chi-square balance test p-value (rounded to 2 decimals)
+# Extract overall chi-square test p-value (rounded to 2 decimals)
 bal_p_val <- round(
-  x = xBalance(
-    fmla   = cov_fmla,         
-    strata = list(fm = ~ fm),  
-    data   = data,             
-    report = "chisquare.test"  
-  )$overall["fm", "p.value"], 
+  x = cov_bal$overall["fm", "p.value"],
   digits = 2
 )
 
@@ -822,17 +790,12 @@ bal_p_val <- round(
 
 ```{r,  tidy = FALSE}
 
-xBalance(
-  fmla = cov_fmla,
-  strata = list(fm = ~ fm),  # Assess balance within matched sets (stratify by fm)
-  data = data,
-  report = "chisquare.test"  # Return chi-square test results for overall balance
-)
+# Extract overall chi-square balance test results, stratified by matched set (fm)
+cov_bal$overall["fm", ]
 
 ```
 
 This $\chi^2$ balance test yields an observed test statistic of `r bal_stat` and a corresponding $p$-value of `r bal_p_val`. Our high $p$-value indicates that the observed level of covariate balance is consistent with what we would expect in a completely randomized experiment within blocks. 
-
 Despite the high $p$-value, there is no guarantee that balance is sufficient. Residual imbalance on observed covariates and hidden imbalance on unobserved ones may undermine the as-if randomization assumption. For now, we proceed under the as-if randomization assumption, but we will later assess how sensitive our inferences are to violations of it due to such imbalances.
 
 ## Part 2: Causal Inference from the Matched Design (under As-If Randomization)
@@ -924,7 +887,11 @@ Of course, we do not know the true collection of individual effects, $\bm{\tau}$
 
 More formally, when outcomes are reconstructed under a null hypothesis, the observed test statistic will tend to fall in the upper tail of the null distribution if the hypothesized effect is too small, and in the lower tail if it is too large. To generate this null distribution, we reconstruct the outcomes under the hypothesized effect. Under the null, these reconstructed outcomes would remain fixed across assignments, so we hold them constant and recalculate the test statistic for every possible assignment.
 
-A canonical choice of test statistic in this setting is a *sum statistic*, which first adds up the treated outcomes within each set, and then adds those set-level sums across all sets. Many familiar test statistics can be expressed in this form by applying to the outcomes scale and shift transformations that do not depend on the treatment assignments. For example, suppose we want the sum statistic from a test of $\tau_h = 0$ to reproduce the Difference-in-Means computed within sets and then averaged across sets, with each set's contribution weighted by its effective sample size. We first reconstruct what the treated outcomes would have been without treatment, as implied by the null hypothesis $\tau_h = 0$.
+A canonical choice of test statistic in this setting is a *sum statistic*, which first adds up the treated outcomes within each set, and then adds those set-level sums across all sets. Many familiar test statistics can be expressed in this form by applying to the outcomes scale and shift transformations that do not depend on the treatment assignments. One such useful test-statistic that can be expressed as a sum statistic is the Difference-in-Means, which is often the default choice for practitioners, computed within sets and then averaged across sets, with each set's contribution weighted by its effective sample size.
+
+This harmonic-mean–weighted Difference-in-Means is useful because, as discussed earlier, assuming constant, additive treatment effects within a set, the variance of the within-set Difference-in-Means is minimized when the harmonic mean of the numbers of treated and control units is largest. Sets with larger harmonic means therefore yield more precise within-set comparisons, while highly lopsided sets contribute relatively little information. By consequence, a test will have greater power when it places more weight on sets in which the Difference-in-Means is most informative, rather than weighting sets solely by their share of units. The harmonic-mean–weighted Difference-in-Means also has the practical advantage of coinciding with the coefficient on the treatment indicator from a fixed-effects regression that includes matched-set indicators, an approach commonly used in practice after matching.
+
+To implement a sum statistic equivalent to the harmonic-mean–weighted Difference-in-Means for hypothesis testing, we first reconstruct the outcomes that treated units would have exhibited under the null hypothesis $\tau_h = 0$.
 
 ```{r, tidy = FALSE}
 
@@ -961,8 +928,39 @@ data_matched <- hm_stat_rescale(
 
 # Observed HM-weighted diff-in-means statistic
 obs_stat <- sum(data_matched$ldur_tilde_hm_scaled[data_matched$UN == 1])
-# Equivalent to xBalance(fmla = UN ~ ldur, strata = list(fm = ~ fm),
-# Data = data_matched, report = "adj.mean.diffs")
+
+```
+
+We can see in \texttt{R} that this observed sum statistic coincides with the harmonic-mean–weighted Difference-in-Means computed using \texttt{optmatch}’s harmonic weights, and also with the coefficient on the treatment indicator from a fixed-effects regression that includes matched-set indicators.
+
+```{r}
+
+# Harmonic-mean–weighted Difference-in-Means (weights computed within sets)
+dim_hm <- data_matched |>
+  group_by(fm) |>
+  summarize(
+    n_treated = sum(UN == 1),
+    n_control = sum(UN == 0),
+    
+    # Within-set Difference-in-Means
+    dim_set = mean(ldur_tilde[UN == 1]) - mean(ldur_tilde[UN == 0]),  
+    
+    # Harmonic-mean weight for the set (equals its contribution to effective sample size)
+    w_hm      = 2 * n_treated * n_control / (n_treated + n_control),
+    .groups   = "drop"
+  ) |>
+  summarize(
+    # Harmonic-mean–weighted average of within-set Differences-in-Means
+    dim_hm = sum(w_hm * dim_set) / sum(w_hm)
+  ) |>
+  pull(dim_hm)
+
+# Compare both to the fixed-effects regression coefficient on UN
+fe_fit <- lm(formula = ldur_tilde ~ UN + fm,
+             data = data_matched)
+
+# Drop the coefficient name ("UN") so values compared numerically, not by names
+all.equal(dim_hm, unname(coef(fe_fit)["UN"]), obs_stat)
 
 ```
 
@@ -1168,7 +1166,99 @@ norm_upper_p_value <- pnorm(
 
 This Normal-approximation $p$-value of `r round(x = norm_upper_p_value, digits = 4)` is close to the exact and simulation-based $p$-values of `r round(x = exact_upper_p_value, digits = 4)` and `r round(x = sim_upper_p_value, digits = 4)`, respectively. All $p$-values lead to the same conclusion in which we reject the sharp null of no effect in favor of a larger effect.
 
-To form a confidence set, one could invert the hypothesis test by evaluating a grid of null hypotheses and retaining those not rejected at the chosen significance level. Likewise, for a point estimate, one could follow @hodgeslehmann1963 and @rosenbaum1993 by identifying the null value that makes the observed sum statistic equal to its null expectation. With our test statistic, this would occur when the null equals the harmonic-mean weighted Difference-in-Means computed from the observed outcomes (roughly `r round(x = obs_stat, digits = 3)`), which yields a null expectation of $0$.
+To form a confidence set for a homogeneous treatment effect using a Normal approximation, one can invert the hypothesis test over a grid of constant-effect null hypotheses. We first construct a one-sided confidence set by retaining all null values that are not rejected by the upper-tail test at the chosen $\alpha$-level. We then form a two-sided confidence set by allocating $\alpha/2 = 0.025$ to each tail, corresponding to the upper- and lower-tail rejection regions.
+
+```{r, tidy = FALSE}
+
+# Significance level
+alpha <- 0.05
+
+# ----------------------------
+# Upper-tail test (H1: tau > tau_0):
+# The lower endpoint is the smallest null value tau_0 for which the
+# upper-tail p-value is still >= alpha; any smaller tau_0 would be rejected.
+cs_sharp_lower_one_sided <- c(
+  lower = obs_stat - qnorm(1 - alpha) * sqrt(null_var),
+  upper = Inf
+)
+# qnorm(1 - alpha): standard Normal critical value for upper one-sided test
+
+cs_sharp_two_sided <- c(
+  lower = obs_stat - qnorm(1 - alpha / 2) * sqrt(null_var),
+  upper = obs_stat + qnorm(1 - alpha / 2) * sqrt(null_var)
+)
+# At the lower endpoint, the upper-tail one-sided p-value equals alpha/2;
+# any smaller null value would be rejected by the two-sided test
+# At the upper endpoint, the lower-tail one-sided p-value equals alpha/2;
+# any larger null value would be rejected by the two-sided test
+
+```
+
+An analogous procedure applies when constructing confidence sets without relying on a Normal approximation, instead using a simulation-based approximation to the null randomization distribution.
+
+```{r}
+
+# Grid of constant-effect null values (sharp framework)
+tau_grid <- seq(from = -0.02, to = 1.5, by = 0.0001)
+
+# For each tau_0, compute upper- and lower-tail randomization p-values
+p_mat <- sapply(X = tau_grid, FUN = function(tau_0) {
+
+  # Shift outcomes under null: ldur_i - tau_0 * UN_i
+  dat_tau <- hm_stat_rescale(
+    # transform(): create copy of data_matched with shifted-outcome column
+    data    = transform(data_matched,
+                        ldur_tilde_shift = ldur - tau_0 * UN),
+    outcome = ldur_tilde_shift,
+    treat   = UN,
+    strata  = fm
+  )
+  
+  q <- dat_tau$ldur_tilde_shift_hm_scaled
+  
+  # Observed statistic under null tau_0
+  obs_stat_tau <- sum(dat_tau$UN * q)
+
+  # Randomization distribution via simulated assignments (defined above)
+  sim_null_dist <- as.numeric(t(q) %*% sim_assigns)
+
+  # Upper-tail and lower-tail randomization p-values
+  p_upper <- mean(sim_null_dist >= obs_stat_tau)
+  p_lower <- mean(sim_null_dist <= obs_stat_tau)
+
+  c(upper_tail = p_upper,
+    lower_tail = p_lower)
+})
+
+# Extract vectors of p-values
+p_upper <- p_mat["upper_tail", ]
+p_lower <- p_mat["lower_tail", ]
+
+# Simulation-based confidence sets
+
+# Upper-tail confidence set (inversion of H1: tau > tau_0):
+# retain all tau_0 with upper-tail p >= alpha
+cs_sharp_upper_tail_sim <- tau_grid[p_upper >= alpha]
+
+# Lower bound of the upper-tail confidence set
+cs_sharp_upper_tail_sim_bound <- min(cs_sharp_upper_tail_sim)
+
+# Two-sided confidence set (inversion using alpha/2 in each tail):
+# retain tau_0 only if neither one-sided test rejects at level alpha/2
+cs_sharp_two_sided_sim <- tau_grid[
+  p_upper >= alpha / 2 &
+  p_lower >= alpha / 2
+]
+
+# Two-sided confidence set summarized by its bounds
+cs_sharp_two_sided_sim_bounds <- c(
+  lower = min(cs_sharp_two_sided_sim),
+  upper = max(cs_sharp_two_sided_sim)
+)
+
+```
+
+Likewise, for a point estimate, one could follow @hodgeslehmann1963 and @rosenbaum1993 by identifying the null value that makes the observed sum statistic equal to its null expectation. With our test statistic, this would occur when the null equals the harmonic-mean weighted Difference-in-Means computed from the observed outcomes (roughly `r round(x = obs_stat, digits = 3)`), which yields a null expectation of $0$.
 
 ### How Do I Draw Inferences under the Weak Framework?
 
@@ -1254,7 +1344,22 @@ pnorm(
 
 We reject the weak null hypothesis that the ATE equals $0$ in favor of the alternative that the ATE is greater than $0$, using the conventional significance level of $\alpha = 0.05$. 
 
-We can also form 95% confidence sets by inverting these hypothesis tests. In this approach, we retain all null values that are not rejected at the $\alpha = 0.05$ level. However, for a two-sided test, we instead use $\alpha/2 = 0.025$ for each tail to account for testing every null value twice (once against each alternative).
+As in the construction of confidence sets for a homogeneous treatment effect under the sharp framework, we form 95% confidence sets by inverting the corresponding hypothesis tests. We first construct a one-sided confidence set obtained by inverting the upper-tail test and retaining all null values that are not rejected at the $\alpha = 0.05$ level. We then construct a two-sided confidence set by allocating $\alpha/2 = 0.025$ to each tail, reflecting that each null value is assessed against both directions of departure.
+
+```{r, tidy = FALSE}
+
+cs_weak_upper_tail <- c(
+  lower = res$ATE_hat - qnorm(1 - alpha) * sqrt(res$var_est),
+  upper = Inf
+)
+
+cs_weak_two_sided <- c(
+  lower = res$ATE_hat - qnorm(1 - alpha / 2) * sqrt(res$var_est),
+  upper = res$ATE_hat + qnorm(1 - alpha / 2) * sqrt(res$var_est)
+)
+
+```
+
 
 ## Part 3: Sensitivity Analysis for Hidden Confounding (Departures from As-If Randomization)
 
@@ -1314,9 +1419,6 @@ If even this maximum value of the tangent line is at or below zero, then the ori
 Below we illustrate a sensitivity analysis across different values of $\Gamma$, reporting two sets of $p$-values: one based on the worst-case $\bm{u}$ from the separable approximation and another based on the worst-case $\bm{u}$ from the Taylor series approximation. The simplest recommendation is to use the latter, as it is the more conservative of the two.
 
 ```{r}
-
-# Set significance (alpha) level
-alpha <- 0.05
 
 # Grid of Gamma values
 Gamma_vals <- seq(from = 1, to = 1.5, by = 0.0001)
@@ -1538,8 +1640,28 @@ It is important to emphasize that this sensitivity analysis guarantees validity 
 
 # Conclusion
 
-We have now completed the full matching pipeline. We began with the construction of matched sets, followed by inference under the as-if randomization assumption that the matched design is equivalent to a collection of completely randomized experiments within blocks. We examined inference under the sharp and weak frameworks --- corresponding, respectively, to inference about unit-level effects and the average effect. Finally, we considered the sensitivity of these inferences to possible violations of the as-if randomization assumption. The embedded code --- accompanied by extensive comments and illustrated through the running example from @gilligansergenti2008 --- should be easily adapted by practitioners to their own datasets. 
+We have now completed the full matching pipeline. We began by constructing matched sets and then conducted inference under the as-if randomization assumption, treating the matched design as a collection of completely randomized experiments within blocks. We examined inference under both sharp and weak null frameworks --- corresponding, respectively, to unit-level causal effects and average effects --- and then assessed the sensitivity of these inferences to potential violations of the as-if randomization assumption. The embedded code, accompanied by extensive comments and illustrated through the running example from @gilligansergenti2008, is intended to be readily adapted by practitioners to their own datasets.
 
-As we noted at the outset, this document does not cover several important extensions. For example, we do not discuss how to incorporate prognostic covariates or how to construct matches using alternative methods, such as optimization procedures that directly target objectives like covariate balance and effective sample size. Despite the omission of these extensions, the overall pipeline and the design-based principles it embodies provide a useful framework for understanding why these extensions matter and how they can be incorporated when building on the methods presented here.
+## Limitations and Related Topics Beyond Our Scope
+
+For clarity and focus, we have excluded several important topics, though we have pointed to relevant references where appropriate. Some of these omissions are not specific to matching or observational studies. In particular, we have not addressed imperfect compliance with treatment assignment, missing outcomes, clustered (rather than individual-level) assignment, or interference settings in which a subject’s outcome depends on others’ treatment assignments.
+
+Our analysis has focused on inference for two causal targets only: a constant, additive treatment effect and the average treatment effect. We have not considered alternative effect models, such as dilated effects [@rosenbaum1999], multiplicative effects, or Tobit effects [@rosenbaum2010, pp. 46–49]. Throughout, we have treated causal targets as fixed quantities over the set of treatment assignments consistent with the matched design, rather than as random variables. As a result, we have excluded attributable effects [@rosenbaum2001; @rosenbaum2003; @hansenbowers2009] and the average treatment effect on the treated [@sekhonshem-tov2021]. We have also set aside methods for joint inference on sharp and weak causal hypotheses [@ding2017; @wuding2021; @cohenfogarty2022], as well as strategies that improve the power of hypothesis tests by rescaling outcomes or choosing alternative test statistics, including regression-assisted approaches [@lin2013; @cohenfogarty2023; @guobasse2023].
+
+Several omissions are specific to matching methodology itself: 
+
+- First, we have not covered a range of **alternative matching and balancing approaches**, including nonbipartite matching for multivalued treatments [@luetal2001; @luetal2011; @rosenbaum2010, pp. 207–221], template matching [@silberetal2014], multilevel matching [@zubizarretakeele2017; @pimenteletal2018], risk-set matching [@lietal2001], cardinality matching [@zubizarretaetal2014], coarsened exact matching [@iacusetal2012], or generalized full matching [@savjeetal2021]. We have also omitted balance constraints such as fine and near-fine balance [@rosenbaumetal2007; @yangetal2012], which enforce exact or nearly exact equality of marginal covariate distributions. Although these methods are beyond our scope, the design-based principles and pipeline we have presented apply broadly and can be adapted to these settings.
+
+- Second, we have not discussed the use of **prognostic covariates** identified using pilot or external data. Such approaches can substantially improve efficiency by prioritizing covariates that strongly predict outcomes. For theoretical foundations, see @hansen2008a; for practical guidance and intuition, see @salesetal2018.
+
+- Third, we have not considered matching strategies designed explicitly to improve **design sensitivity** --- that is, to increase robustness to moderate levels of hidden bias. Beyond match construction, researchers can also enhance design sensitivity by selecting particular test statistics, among other strategies [@rosenbaum2004; @helleretal2009; @hsuetal2013; @smalletal2013]. [@rosenbaum2004; @helleretal2009; @hsuetal2013; @smalletal2013].
+
+- Fourth, we have excluded **extensions to covariate balance testing** beyond the framework developed in @hansenbowers2008, including subsequent contributions by @gagnon-bartschshem-tov2019 and @branson2021, as well as related approaches based on the stepwise intersection–union principle [@hansensales2015].
+
+- Fifth, we have ignored **residual imbalance on observed covariates**. Specifically, we have proceeded under the assumption that matched set membership can justify as-if randomization, even when small imbalances remain within matched sets. Under this approach, concerns about residual imbalance are absorbed into the sensitivity analysis for hidden bias. This approach is not entirely satisfying, however, because imbalances on observed covariates are not, in fact, hidden. Several methods therefore address such imbalances directly, either in approaches targeting individual effects [@rosenbaum1988; @pimentelhuang2024; @chenetal2023; @hengetal2025] or average effects [@zhuetal2025].
+
+- Finally, have not addressed the possibility that matched set membership itself may depend on the treatment assignments --- that is, settings with **$\bm{Z}$-dependence** [@pashleyetal2021; @pimentelhuang2024; @pimentelyu2024]. Our exposition has relied on an analogy to Rubin’s framework of "assignment to treatment on the basis of a covariate" [@rubin1977], where matched set membership plays the role of the covariate. This analogy assumes that membership is fixed, but in practice it could be a random variable if the matched structure depends on the observable assignments. We have set aside this issue, which may be minor when practitioners use sufficiently tight calipers for matching.
+
+Despite these limitations, the pipeline and design-based perspective developed here provide a coherent framework for understanding how matched designs support causal inference. The emphasis on design-based foundations clarifies the logic underlying the construction of matched sets and the subsequent steps of inference and sensitivity analysis under both weak and sharp frameworks. We present this work not as exhaustive, but as a foundation on which researchers can build when incorporating more specialized methods tailored to their substantive and inferential goals.
 
 \newpage
