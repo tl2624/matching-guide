@@ -84,6 +84,9 @@ d_out <- d %>%
     ethfrac = as.numeric(ethfrac) / 100
   )
 
+# Add variable label for ethnic fractionalization
+attr(d_out$ethfrac, "label") <- "Ethnic Fractionalization"
+
 # ---- Save cleaned dataset as .rds ----
 write_rds(x = d_out, file = out_rds, compress = "gz")
 

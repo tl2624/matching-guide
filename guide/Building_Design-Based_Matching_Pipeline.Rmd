@@ -655,7 +655,8 @@ cov_bal <- balanceTest(
   # update(): keep the original formula (. ~ .)
   # and add stratification by matched set, strata(fm)
   fmla = update(cov_fmla, . ~ . + strata(fm)),
-  data = data
+  data = data,
+  p.adjust.method = "none"
 )
 
 ```
@@ -663,8 +664,8 @@ cov_bal <- balanceTest(
 ```{r, tidy = FALSE, echo = FALSE, results = "asis"}
 
 # Install packages (only run these lines if not already installed)
-# Install.packages("tibble")
-# Install.packages("kableExtra")
+# install.packages("tibble")
+# install.packages("kableExtra")
 
 # Load tibble for cleaner data frame printing/handling
 library(tibble)
@@ -699,16 +700,19 @@ region_map <- c(
 # Use region_map if present; else dataset label; else raw name
 cov_labels <- sapply(
   X = vars,
-  FUN = function(v) { ifelse(test = v %in% names(region_map),
-                             yes = region_map[[v]],
-                             no = label_from_data(v))
+  FUN = function(v) {
+    ifelse(
+      test = v %in% names(region_map),
+      yes  = region_map[[v]],
+      no   = label_from_data(v)
+    )
   },
   USE.NAMES = FALSE
 )
 
 # Helper: slice a 2-D matrix (vars × stats) for one stratum
 slice_mat <- function(a, stratum) {
-  a[, c("Control","Treatment","std.diff","p"),
+  a[, c("Control", "Treatment", "std.diff", "p"),
     stratum,
     drop = FALSE][,,1, drop = TRUE]
 }
@@ -721,21 +725,24 @@ after  <- slice_mat(arr, "fm")
 # Build tibble with distinct internal names
 cov_tab <- tibble(
   Covariate      = cov_labels,
-  Control_before = round(x = before[, "Control"], digits = 2),
+  Control_before = round(x = before[, "Control"],   digits = 2),
   Treated_before = round(x = before[, "Treatment"], digits = 2),
   StdDiff_before = before[, "std.diff"],
-  Control_after  = round(x = after[,  "Control"], digits = 2),
+  Control_after  = round(x = after[,  "Control"],   digits = 2),
   Treated_after  = round(x = after[,  "Treatment"], digits = 2),
   StdDiff_after  = after[,  "std.diff"],
-  p_before = before[, "p"],  # Keep for star annotation
+  p_before       = before[, "p"],  # keep for star annotation
   p_after        = after[,  "p"]
 )
 
-# Star standardized differences when p <= 0.05
-fmt_sd <- function(x, p) {ifelse(test = p <= 0.05,
-                                 yes = sprintf("%.2f*", x),
-                                 no =  sprintf("%.2f", x))
-  }
+# Format standardized differences, adding * when p <= 0.05
+fmt_sd <- function(x, p) {
+  ifelse(
+    test = !is.na(p) & p <= 0.05,
+    yes  = sprintf("%.2f*", x),
+    no   = sprintf("%.2f",  x)
+  )
+}
 
 # Apply formatting; drop helper p-values
 cov_tab <- cov_tab |>
@@ -747,17 +754,19 @@ cov_tab <- cov_tab |>
 
 # Print LaTeX table:
 # - grouped headers: Before matching / After matching
-# - printed column names omit "(Before)/(After)" (clean labels)
+# - printed column names omit "(Before)/(After)"
 kbl(
   cov_tab,
   booktabs  = TRUE,
   align     = c("l","c","c","c","c","c","c"),
   col.names = c("Covariate", "Control mean", "Treated mean", "Std. diff",
                 "Control mean", "Treated mean", "Std. diff"),
-  linesep = ""  # No extra spacing after rows
+  linesep   = ""
 ) |>
-  add_header_above(c(" " = 1, "Before matching" = 3, "After matching" = 3),
-                   bold = TRUE) |>
+  add_header_above(
+    c(" " = 1, "Before matching" = 3, "After matching" = 3),
+    bold = TRUE
+  ) |>
   kable_styling(latex_options = c("hold_position", "scale_down"))
 
 ```
