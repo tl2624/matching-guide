@@ -192,6 +192,8 @@ data <- readRDS(url(paste0(base_url, "/data/peace_pre_match.rds")))
 
 In an observational setting, treatment is not assigned by the flip of a coin but depends on individuals’ covariates. The goal of matching is to compare treated and control units that have the same chances of treatment based on those covariates --- i.e., the same *propensity scores*. If we could observe propensity scores, it would be straightforward to compare treated and control units by matching directly on them. Because propensity scores are not directly observed, we instead aim to create a collection of matched sets that is *balanced* --- meaning that treated and control observations are similar in their covariates.
 
+Before turning to questions of covariate similarity and matching, it is important to note that substantive transformations of covariates play a central role, as they determine the inputs on which subsequent notions of similarity between units are based. These transformations reflect substantive judgments and are often among the most important decisions in practice. In this document, however, we do not address these substantive choices. Instead, we take the transformations used by @gilligansergenti2008 as given. For example, they measure ethnic fractionalization (\texttt{ethfrac}) on a 0-100 scale (rather than a 0–1 scale) and apply logarithmic transformations to covariates such as the number of deaths (\texttt{lwdeaths}) and the duration of the previous war (\texttt{lwdurat}), among others. Our focus is therefore on design and analysis decisions conditional on these substantively chosen scales.
+
 ### How Do I Measure Similarity on My Chosen Covariates?
 
 In the simplest terms, matching is about ensuring apples-to-apples, rather than apples-to-oranges, comparisons between treated and control observations [@rubinwaterman2006]. To create matched sets in which treated and control groups are similar in their covariates, we first need a distance measure that quantifies how close any two observations are. With such a measure in hand, we can then construct sets of treated and control observations that are close on this measure --- i.e., apples-to-apples in their pre-treatment characteristics.
@@ -640,7 +642,7 @@ Some covariates used in the propensity score model and the rank-based Mahalanobi
 
 Once we have constructed our matched sets, we want to evaluate the overall quality of the matched design. Covariate balance is an important aspect of this evaluation. To assess covariate balance, we compare the balance in our matched observational study with the balance we would expect to see in a completely randomized experiment within blocks [@hansenbowers2008].
 
-Below we calculate the adjusted means (averaged across matched sets, weighted by each set's contribution to the effective sample size) for treatment and control groups, along with standardized differences (the adjusted mean difference divided by the pooled standard deviation calculated from the treatment and control groups combined).
+Below we calculate adjusted covariate means for the treatment and control groups by averaging within matched sets, weighting each set by its contribution to the effective sample size. We also report standardized differences, defined as the adjusted mean difference scaled by the pooled standard deviation of the covariate across treated and control units, where the pooling and weighting are carried out under the matched-set design.
 
 ```{r,  tidy = FALSE}
 
@@ -898,7 +900,13 @@ More formally, when outcomes are reconstructed under a null hypothesis, the obse
 
 A canonical choice of test statistic in this setting is a *sum statistic*, which first adds up the treated outcomes within each set, and then adds those set-level sums across all sets. Many familiar test statistics can be expressed in this form by applying to the outcomes scale and shift transformations that do not depend on the treatment assignments. One such useful test-statistic that can be expressed as a sum statistic is the Difference-in-Means, which is often the default choice for practitioners, computed within sets and then averaged across sets, with each set's contribution weighted by its effective sample size.
 
-This harmonic-mean–weighted Difference-in-Means is useful because, as discussed earlier, assuming constant, additive treatment effects within a set, the variance of the within-set Difference-in-Means is minimized when the harmonic mean of the numbers of treated and control units is largest. Sets with larger harmonic means therefore yield more precise within-set comparisons, while highly lopsided sets contribute relatively little information. By consequence, a test will have greater power when it places more weight on sets in which the Difference-in-Means is most informative, rather than weighting sets solely by their share of units. The harmonic-mean–weighted Difference-in-Means also has the practical advantage of coinciding with the coefficient on the treatment indicator from a fixed-effects regression that includes matched-set indicators, an approach commonly used in practice after matching.
+This harmonic-mean–weighted Difference-in-Means is useful because, as discussed earlier, assuming constant, additive treatment effects within a set, the variance of the within-set Difference-in-Means is minimized when the harmonic mean of the numbers of treated and control units is largest. Sets with larger harmonic means therefore yield more precise within-set comparisons, while highly lopsided sets contribute relatively little information. By consequence, a test will have greater power when it places more weight on sets in which the Difference-in-Means is most informative, rather than weighting sets solely by their share of units.
+
+The harmonic-mean–weighted Difference-in-Means also has the practical advantage of coinciding with two other common approaches to analyzing matched data:
+
+- First, the harmonic-mean–weighted Difference-in-Means equals the coefficient on the treatment indicator from a fixed-effects regression that includes matched-set indicators [@hansenbowers2008, pp. 228-229], an approach commonly used in practice after matching.
+
+- Second, the harmonic-mean–weighted Difference-in-Means coincides with the overlap-weighted Difference-in-Means [@lietal2018] when overlap weights are constructed using the treatment assignment probabilities implied by as-if randomization. Overlap weights place the greatest weight on units with intermediate values of these assignment probabilities and downweight units with extreme values. In particular, using the assignment probability under as-if randomization, control units are weighted by that probability, while treated units are weighted by one minus that probability. Because these assignment probabilities are constant within each matched set, the resulting overlap weights are constant within treated units and within control units in a set, and they aggregate exactly to the harmonic-mean weights implied by the matched strata.
 
 To implement a sum statistic equivalent to the harmonic-mean–weighted Difference-in-Means for hypothesis testing, we first reconstruct the outcomes that treated units would have exhibited under the null hypothesis $\tau_h = 0$.
 
@@ -940,21 +948,19 @@ obs_stat <- sum(data_matched$ldur_tilde_hm_scaled[data_matched$UN == 1])
 
 ```
 
-We can see in \texttt{R} that this observed sum statistic coincides with the harmonic-mean–weighted Difference-in-Means computed using \texttt{optmatch}’s harmonic weights, and also with the coefficient on the treatment indicator from a fixed-effects regression that includes matched-set indicators.
+We can verify in \texttt{R} that this observed sum statistic coincides with the harmonic-mean-weighted Difference-in-Means, the coefficient on the treatment indicator from a fixed-effects regression that includes matched-set indicators, and the overlap-weighted Difference-in-Means constructed from the assignment probabilities implied by as-if randomization.
 
 ```{r}
 
-# Harmonic-mean–weighted Difference-in-Means (weights computed within sets)
+# Harmonic-mean–weighted difference in means (weights computed within sets)
 dim_hm <- data_matched |>
   group_by(fm) |>
   summarize(
     n_treated = sum(UN == 1),
     n_control = sum(UN == 0),
-    
     # Within-set Difference-in-Means
-    dim_set = mean(ldur_tilde[UN == 1]) - mean(ldur_tilde[UN == 0]),  
-    
-    # Harmonic-mean weight for the set (equals its contribution to effective sample size)
+    dim_set   = mean(ldur_tilde[UN == 1]) - mean(ldur_tilde[UN == 0]),
+    # Harmonic-mean weight (set's contribution to effective sample size)
     w_hm      = 2 * n_treated * n_control / (n_treated + n_control),
     .groups   = "drop"
   ) |>
@@ -964,12 +970,57 @@ dim_hm <- data_matched |>
   ) |>
   pull(dim_hm)
 
-# Compare both to the fixed-effects regression coefficient on UN
+# Fixed-effects (FE) regression coefficient on UN (matched-set indicators as FE)
 fe_fit <- lm(formula = ldur_tilde ~ UN + fm,
              data = data_matched)
 
-# Drop the coefficient name ("UN") so values compared numerically, not by names
-all.equal(dim_hm, unname(coef(fe_fit)["UN"]), obs_stat)
+# Install "PSweight" package (only run if you don't already have it installed)
+# Install.packages("PSweight")
+library(PSweight) # For overlap weights from Li et al (2018)
+
+# Encode the treatment assignment probabilities implied by as-if randomization
+# within matched sets: n_treated / n in each set
+ps_fit <- PSmethod(
+  ps.formula = UN ~ factor(fm),   # Reproduces n_treated / n in each set
+  method     = "glm",             # Logistic link for binary treatment
+  data       = as.data.frame(data_matched),
+  ncate      = 2L                 # Binary treatment (treated vs. control)
+)
+
+assign_prob <- ps_fit$e.h[, "1"]  # Column corresponding to treatment level "1"
+
+# Unit-level overlap weights implied by these assignment probabilities
+# Control units get weight equal to their assignment probability
+# Treated units get weight equal to one minus their assignment probability
+w_ow <- ifelse(
+  test = data_matched$UN == 1,
+  yes  = 1 - assign_prob,
+  no   = assign_prob
+)
+
+# Overlap-weighted difference in means
+dim_ow <- data_matched |>
+  dplyr::summarize(
+    # Overlap-weighted mean outcome for treated units
+    treated_weighted_mean =
+      sum(w_ow[UN == 1] * ldur_tilde[UN == 1]) / sum(w_ow[UN == 1]),
+
+    # Overlap-weighted mean outcome for control units
+    control_weighted_mean =
+      sum(w_ow[UN == 0] * ldur_tilde[UN == 0]) / sum(w_ow[UN == 0]),
+
+    # Difference between overlap-weighted treated and control means
+    dim_ow = treated_weighted_mean - control_weighted_mean
+  ) |>
+  dplyr::pull(dim_ow)
+
+# All three approaches coincide with the sum statistic
+all.equal(
+  dim_hm,
+  dim_ow,
+  unname(coef(fe_fit)["UN"]),  # Drop name so comparison is purely numeric
+  obs_stat
+)
 
 ```
 

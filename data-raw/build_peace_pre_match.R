@@ -80,8 +80,6 @@ d_out <- d %>%
     ),
     region = factor(x = region),
     
-    # Convert ethnic fractionalization index to 0–1 scale
-    ethfrac = as.numeric(ethfrac) / 100
   )
 
 # Add variable label for ethnic fractionalization
