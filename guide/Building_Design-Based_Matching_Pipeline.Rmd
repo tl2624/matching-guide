@@ -57,7 +57,7 @@ opts_chunk$set(
 options(max.print = 75)  # Limit how many rows/values print by default
 
 opts_chunk$set(
-  cache = TRUE,      # Cache results to speed up re-knitting
+  cache = FALSE,     # Cache results to speed up re-knitting
   prompt = FALSE,    # Don’t show ">" prompts in code blocks
   tidy = TRUE,       # Format R code nicely
   comment = NA,      # Suppress "#" in printed output
@@ -176,7 +176,7 @@ As @gilligansergenti2008 state, "UN missions are not randomly assigned" (p. 89).
 
 ### Loading the Data for the Running Example
 
-To load the data, you could first download the replication files from the supplementary information on the article's webpage (DOI: [10.1561/100.00007051](https://doi.org/10.1561/100.00007051)), save the files to your working directory, and then use a package such as \texttt{haven} to load the Stata (.dta) file, \texttt{peace\_pre\_match.dta}, into \texttt{R}. However, for our purposes we recommend loading our pre-created .RData file (\texttt{peace\_pre\_match.RData}), in which Stata’s monthly numeric dates have been converted to R's year-month format, the geographic region indicators recoded into a single factor variable (\texttt{region}), and the ethnic fractionalization index (\texttt{ethfrac}) rescaled from 0-100 to 0-1. The command below loads this pre-created dataset (\texttt{peace\_pre\_match.RData}) into the \texttt{R} environment as an object named \texttt{data}.
+To load the data, you could first download the replication files from the supplementary information on the article's webpage (DOI: [10.1561/100.00007051](https://doi.org/10.1561/100.00007051)), save the files to your working directory, and then use a package such as \texttt{haven} to load the Stata (.dta) file, \texttt{peace\_pre\_match.dta}, into \texttt{R}. However, for our purposes we recommend loading our pre-created .RData file (\texttt{peace\_pre\_match.RData}), in which Stata’s monthly numeric dates have been converted to R's year-month format and the geographic region indicators recoded into a single factor variable (\texttt{region}). The command below loads this pre-created dataset (\texttt{peace\_pre\_match.RData}) into the \texttt{R} environment as an object named \texttt{data}.
 
 ```{r}
 
@@ -292,7 +292,7 @@ One concern with Euclidean distance is that it depends on the scale of the covar
 
 Another concern with Euclidean distance is that it ignores correlations among covariates. For example, countries with larger populations (\texttt{pop}) usually have more military personnel (\texttt{milper}), if only because a larger population provides a greater pool of potential recruits. Therefore, differences in both covariates may largely reflect the same underlying factor --- population size. Yet Euclidean distance adds these differences separately, as if they were unrelated, which can exaggerate the overall distance between two observations.
 
-The Mahalanobis distance [@mahalanobis1936] addresses both of these concerns. It handles the first by standardizing the covariates so they are on a comparable scale. The Mahalanobis distance handles the second by adjusting for correlations so that highly related variables are not effectively counted twice. We can construct a distance matrix based on Mahalanobis rather than Euclidean distances as follows.
+The Mahalanobis distance [@mahalanobis1936] addresses both of these concerns. First, it standardizes covariates so that differences are placed on a comparable scale. This standardization is a statistical device used to compute distances across multiple covariates that typically differ in scale, regardless of the substantively chosen scales of those covariates prior to measuring similarity. Second, the Mahalanobis distance adjusts for correlations among covariates, ensuring that highly related variables are not effectively counted twice. We can therefore construct a distance matrix based on Mahalanobis rather than Euclidean distances as follows.
 
 ```{r, warning = FALSE,  tidy = FALSE}
 
@@ -550,14 +550,14 @@ rank_mah_mat <- match_on(
 
 ```
 
-Finally, we construct the Euclidean distance matrix for ethnic fractionalization (\texttt{ethfrac}) and logged GDP per capita (\texttt{bwgdp}) using calipers of $0.35$ and $2$, respectively. The exact-match constraint on region has already been defined through the object `em_region` above.
+Finally, we construct the Euclidean distance matrix for ethnic fractionalization (\texttt{ethfrac}) and logged GDP per capita (\texttt{bwgdp}) using calipers of $35$ and $2$, respectively. The exact-match constraint on region has already been defined through the object `em_region` above.
 
 ```{r, tidy = FALSE}
 
 # Compute Euclidean distance matrix for ethnic fractionalization
 eth_mat <- match_on(
   x = UN ~ ethfrac,
-  caliper = 0.35,
+  caliper = 35,
   data = data,
   standardization.scale = NULL,
   method = "euclidean"
@@ -634,7 +634,7 @@ data |>
 
 ```
 
-We can see that the exact match on geographic region holds: All $4$ countries are located in Sub-Saharan Africa. The logit of the estimated propensity score is similar across units, though not identical. The treated country, Rwanda, is matched to three controls --- Burundi, Somalia, and Lesotho --- and in each case the distance falls within $0.5$ standard deviations of the estimated logit propensity scores (approximately `r round(x = 0.5 * pop_sd_logit, digits = 2)`), the caliper we specified. Likewise, Rwanda's distances to each of the $3$ control units fall within the calipers of $0.35$ for ethnic fractionalization (\texttt{ethfrac}) and $2$ for logged GDP per capita (\texttt{bwgdp}). By contrast, distances between control countries may exceed these thresholds, since \texttt{optmatch} enforces calipers only between treated and control units, not among controls.
+We can see that the exact match on geographic region holds: All $4$ countries are located in Sub-Saharan Africa. The logit of the estimated propensity score is similar across units, though not identical. The treated country, Rwanda, is matched to three controls --- Burundi, Somalia, and Lesotho --- and in each case the distance falls within $0.5$ standard deviations of the estimated logit propensity scores (approximately `r round(x = 0.5 * pop_sd_logit, digits = 2)`), the caliper we specified. Likewise, Rwanda's distances to each of the $3$ control units fall within the calipers of $35$ for ethnic fractionalization (\texttt{ethfrac}) and $2$ for logged GDP per capita (\texttt{bwgdp}). By contrast, distances between control countries may exceed these thresholds, since \texttt{optmatch} enforces calipers only between treated and control units, not among controls.
 
 Some covariates used in the propensity score model and the rank-based Mahalanobis distance --- such as Polity score (\texttt{bwplty2}) --- still show modest imbalance within this matched set. This imbalance is unsurprising. We applied a caliper on the logit of the estimated propensity score and matched on the rank-based Mahalanobis distance including \texttt{bwplty2}, but we did not apply a caliper directly to \texttt{bwplty2}, though such a caliper could easily be added if desired.
 
@@ -814,6 +814,8 @@ Despite the high $p$-value, there is no guarantee that balance is sufficient. Re
 After forming matched sets that ideally satisfy the as-if randomization assumption, researchers must decide which framework to use for inference. In the sharp framework, inference pertains to unit-level causal effects for every subject, thereby fully specifying the pattern of counterfactual outcomes. The weak framework, by contrast, pertains to a summary quantity of the unit-level causal effects, such as the ATE, and thus admits multiple configurations of individual effects consistent with it.
 
 In both frameworks, the causal targets of inference are defined through potential outcomes. Under the stable unit treatment value assumption (SUTVA), each unit has two potential outcomes: a value the outcome would take if that unit were assigned to treatment and a value the outcome would take if that unit were assigned to control. Let $y_{si}(1)$ and $y_{si}(0)$ denote these potential outcomes for unit $i$ in set $s$, where the index $i$ runs over the $\{1, \ldots, n_s\}$ units in set $s$. The individual treatment effect is $\tau_{si} = y_{si}(1) - y_{si}(0)$. With $n = \sum_{s = 1}^S n_s$ total units, let $\bm{\tau} = (\tau_{1,1}, \tau_{1,2}, \ldots, \tau_{S,n_s})^{\top}$ be the collection all $n$ unit-level effects, and write the ATE as $\tau = (1/n) \sum_{s=1}^S \sum_{i=1}^{n_s} \tau_{si}$.
+
+These causal targets are defined conditional on the matched design: Design choices in Part 1 determine which units enter the matched population, but not how causal effects are defined or interpreted once the design is fixed. Nevertheless, the matched design is constructed only after treatment assignments have been realized according to some unknown assignment process. As a result, matched set membership—and, in particular, which units are included in the matches—could in principle vary across assignments, as emphasized by recent work on $\bm{Z}$-dependence [@pashleyetal2021; @pimentelhuang2024; @pimentelyu2024]. In keeping with standard practice, however, we treat the matched design as fixed once constructed and let randomness in the assignment process refer to a probability distribution over all possible ways of assigning treatment across these fixed matched sets, conditioning on the realized number of treated units in each set.
 
 Neither $\bm{\tau}$ nor $\tau$ can be directly calculated. Even in a randomized experiment, we cannot assign an individual to treatment, measure the outcome, then rewind time to assign the same individual to control and measure again. We therefore can observe only one potential outcome per unit. Denote this observed outcome by $y_{si}$, which is the treated potential outcome when individual $i$ in set $s$ is in the treatment condition or the control potential outcome when in the control condition. Because we observe only one of each unit's two potential outcomes, rather than the causal effect itself, we must rely on statistical inference.
 
