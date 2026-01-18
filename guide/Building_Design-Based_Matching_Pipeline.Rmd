@@ -1716,7 +1716,7 @@ Several omissions are specific to matching methodology itself:
 
 - Second, we have not discussed the use of **prognostic covariates** identified using pilot or external data. Such approaches can substantially improve efficiency by prioritizing covariates that strongly predict outcomes. For theoretical foundations, see @hansen2008a; for practical guidance and intuition, see @salesetal2018.
 
-- Third, we have not considered matching strategies designed explicitly to improve **design sensitivity** --- that is, to increase robustness to moderate levels of hidden bias. Beyond match construction, researchers can also enhance design sensitivity by selecting particular test statistics, among other strategies [@rosenbaum2004; @helleretal2009; @hsuetal2013; @smalletal2013]. [@rosenbaum2004; @helleretal2009; @hsuetal2013; @smalletal2013].
+- Third, we have considered only matching strategies aimed at justifying as-if randomization, not those designed explicitly to improve design sensitivity --- that is, robustness to moderate violations of as-if randomization. Beyond match construction, researchers can also enhance design sensitivity by selecting particular test statistics, among other strategies [@rosenbaum2004; @helleretal2009; @hsuetal2013; @smalletal2013]. [@rosenbaum2004; @helleretal2009; @hsuetal2013; @smalletal2013].
 
 - Fourth, we have excluded **extensions to covariate balance testing** beyond the framework developed in @hansenbowers2008, including subsequent contributions by @gagnon-bartschshem-tov2019 and @branson2021, as well as related approaches based on the stepwise intersection–union principle [@hansensales2015].
 
