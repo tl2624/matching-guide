@@ -57,7 +57,7 @@ opts_chunk$set(
 options(max.print = 75)  # Limit how many rows/values print by default
 
 opts_chunk$set(
-  cache = FALSE,     # Cache results to speed up re-knitting
+  cache = TRUE,      # Cache results to speed up re-knitting
   prompt = FALSE,    # Don’t show ">" prompts in code blocks
   tidy = TRUE,       # Format R code nicely
   comment = NA,      # Suppress "#" in printed output
@@ -119,12 +119,12 @@ Building on these design-based foundations, we now outline a pipeline that start
 
 Below we present a flow diagram that summarizes the overall pipeline. The diagram shows each step and decision point, the relevant \texttt{R} tools (whether existing packages or custom functions included herein) and core references.
 
-```{r diagram, echo = FALSE, fig.pos = "H", fig.cap = NULL, out.width = "\\linewidth"}
+```{r diagram, echo = FALSE, fig.pos = "H", fig.cap = "Flow diagram of the design-based matching pipeline", out.width = "\\linewidth"}
 
 library(knitr)  # For knitting R Markdown and including external figures or files
 
 # Insert the matching pipeline flowchart (PDF) from the project’s fig/ directory
-include_graphics(path = "fig/matching_pipeline_flowchart.pdf")
+include_graphics(path = "fig/version_2/matching_pipeline_flowchart_V2.pdf")
 
 ```
 
@@ -134,7 +134,7 @@ We provide a high-level overview of the ideas behind matching and include code t
 
 We break the implementation into specific decision points that practitioners commonly face, and present the pipeline in three main parts (see Figure 1):
 \begin{enumerate}
-\item Part 1: Making a Matched Dataset with Comparable Treatment and Control Groups
+\item[] \textbf{Part 1: Making a Matched Dataset (toward Justifying As-If Randomization)}
 \begin{enumerate}
 \item How Do I Measure Similarity on My Chosen Covariates?
 \begin{itemize}
@@ -145,12 +145,12 @@ We break the implementation into specific decision points that practitioners com
 \item How Do I Actually Form the Matches?
 \item How Do I Decide Whether to Move Ahead with My Matched Design?
 \end{enumerate}
-\item Part 2: Causal Inference from the Matched Design (under As-If Randomization)
+\item[] \textbf{Part 2: Causal Inference (under As-If Randomization)}
 \begin{enumerate}
 \item How Do I Draw Inferences under Sharp Framework?
 \item How Do I Draw Inferences under Weak Framework?
 \end{enumerate}
-\item Part 3: Sensitivity Analysis for Hidden Confounding (Departures from As-If Randomization)
+\item[] \textbf{Part 3: Sensitivity Analysis (Departures from As-If Randomization)}
 \begin{enumerate}
 \item How Do My Inferences under the Sharp Framework Change under these Departures?
 \begin{itemize}
@@ -172,11 +172,11 @@ We introduce matching through an example that examines the causal effect of Unit
 
 The dataset from @gilligansergenti2008 includes 87 observations, each corresponding to a country's peace-period episode following a civil war, with episodes beginning as early as January 1989 and data extending through December 2003. In some episodes, UN peacekeepers intervened (e.g., Sierra Leone, Jan 2001 - Dec 2003), while in others they did not (e.g., Macedonia, Sep 2001 - Dec 2003). The treatment variable is UN intervention (\texttt{UN}), coded as $1$ if a UN mission was present during the peace period and $0$ otherwise. The outcome variable is the duration of the peace spell, which @gilligansergenti2008 measure as the log of the number of days from the start of peace until either the outbreak of a new conflict or right-censoring at December 2003. This log-transformed outcome (\texttt{ldur}) captures the total length of the peace period rather than the time elapsed after a potential UN intervention. In practice, however, UN interventions almost always began immediately after the onset of peace: "Of the 19 post-conflict UN interventions, the United Nations was present within the first month for 16 of them" [@gilligansergenti2008, p. 118]. Going forward, we set aside these two measurement details.
 
-As @gilligansergenti2008 state, "UN missions are not randomly assigned" (p. 89). Whether peacekeepers are present in a country during a given peace period depends on baseline covariates such as the logged number of deaths (\texttt{lwdeaths}), the logged duration (\texttt{lwdurat}) of the last war, ethnic fractionalization (\texttt{ethfrac}, a 0 - 1 index intended to represent the chance that two randomly chosen individuals belong to different ethnic groups), logged population size (\texttt{pop}) and others. We implement matching using these same covariates, but emphasize that our exercise is expository and not intended as a replication of the original findings.
+As @gilligansergenti2008 state, "UN missions are not randomly assigned" (p. 89). Whether peacekeepers are present in a country during a given peace period depends on baseline covariates such as the logged number of deaths (\texttt{lwdeaths}), the logged duration (\texttt{lwdurat}) of the last war, ethnic fractionalization (\texttt{ethfrac}, a 0 - 100 index, where dividing by 100 is intended to represent the probability that two randomly chosen individuals belong to different ethnic groups), logged population size (\texttt{pop}) and others. We implement matching using these same covariates, but emphasize that our exercise is expository and not intended as a replication of the original findings.
 
 ### Loading the Data for the Running Example
 
-To load the data, you could first download the replication files from the supplementary information on the article's webpage (DOI: [10.1561/100.00007051](https://doi.org/10.1561/100.00007051)), save the files to your working directory, and then use a package such as \texttt{haven} to load the Stata (.dta) file, \texttt{peace\_pre\_match.dta}, into \texttt{R}. However, for our purposes we recommend loading our pre-created .RData file (\texttt{peace\_pre\_match.RData}), in which Stata’s monthly numeric dates have been converted to R's year-month format and the geographic region indicators recoded into a single factor variable (\texttt{region}). The command below loads this pre-created dataset (\texttt{peace\_pre\_match.RData}) into the \texttt{R} environment as an object named \texttt{data}.
+To load the data, you could first download the replication files from the supplementary information on the article's webpage (DOI: [10.1561/100.00007051](https://doi.org/10.1561/100.00007051)), save the files to your working directory, and then use a package such as \texttt{haven} to load the Stata (.dta) file, \texttt{peace\_pre\_match.dta}, into \texttt{R}. However, for our purposes, we recommend loading our pre-created .rds file (\texttt{peace\_pre\_match.rds}), in which Stata’s monthly numeric dates have been converted to \texttt{R}'s year-month format and the geographic region indicators recoded into a single factor variable (\texttt{region}). The command below loads this pre-created dataset (\texttt{peace\_pre\_match.rds}) into the \texttt{R} environment as an object named \texttt{data}.
 
 ```{r}
 
@@ -188,7 +188,7 @@ data <- readRDS(url(paste0(base_url, "/data/peace_pre_match.rds")))
 
 ```
 
-## Part 1: Making a Matched Dataset with Comparable Treatment and Control Groups
+## Part 1: Making a Matched Dataset (toward Justifying As-If Randomization)
 
 In an observational setting, treatment is not assigned by the flip of a coin but depends on individuals’ covariates. The goal of matching is to compare treated and control units that have the same chances of treatment based on those covariates --- i.e., the same *propensity scores*. If we could observe propensity scores, it would be straightforward to compare treated and control units by matching directly on them. Because propensity scores are not directly observed, we instead aim to create a collection of matched sets that is *balanced* --- meaning that treated and control observations are similar in their covariates.
 
@@ -348,7 +348,7 @@ lin_cov_inds <- psm$linear.predictors  # Same as model.matrix(psm) %*% coef(psm)
 
 ```
 
-Below we can see that the linear covariate indices from the model \texttt{psm} correspond exactly to the logits (i.e., the log-odds transformations) of the model's predicted probabilities of treatment, which range between $0$ and $1$.
+Below we can see that the linear covariate indices from the model `psm` correspond exactly to the logits (i.e., the log-odds transformations) of the model's predicted probabilities of treatment, which range between $0$ and $1$.
 
 ```{r, results = "hide"}
 
@@ -809,13 +809,13 @@ cov_bal$overall["fm", ]
 This $\chi^2$ balance test yields an observed test statistic of `r bal_stat` and a corresponding $p$-value of `r bal_p_val`. Our high $p$-value indicates that the observed level of covariate balance is consistent with what we would expect in a completely randomized experiment within blocks. 
 Despite the high $p$-value, there is no guarantee that balance is sufficient. Residual imbalance on observed covariates and hidden imbalance on unobserved ones may undermine the as-if randomization assumption. For now, we proceed under the as-if randomization assumption, but we will later assess how sensitive our inferences are to violations of it due to such imbalances.
 
-## Part 2: Causal Inference from the Matched Design (under As-If Randomization)
+## Part 2: Causal Inference (under As-If Randomization)
 
 After forming matched sets that ideally satisfy the as-if randomization assumption, researchers must decide which framework to use for inference. In the sharp framework, inference pertains to unit-level causal effects for every subject, thereby fully specifying the pattern of counterfactual outcomes. The weak framework, by contrast, pertains to a summary quantity of the unit-level causal effects, such as the ATE, and thus admits multiple configurations of individual effects consistent with it.
 
 In both frameworks, the causal targets of inference are defined through potential outcomes. Under the stable unit treatment value assumption (SUTVA), each unit has two potential outcomes: a value the outcome would take if that unit were assigned to treatment and a value the outcome would take if that unit were assigned to control. Let $y_{si}(1)$ and $y_{si}(0)$ denote these potential outcomes for unit $i$ in set $s$, where the index $i$ runs over the $\{1, \ldots, n_s\}$ units in set $s$. The individual treatment effect is $\tau_{si} = y_{si}(1) - y_{si}(0)$. With $n = \sum_{s = 1}^S n_s$ total units, let $\bm{\tau} = (\tau_{1,1}, \tau_{1,2}, \ldots, \tau_{S,n_s})^{\top}$ be the collection all $n$ unit-level effects, and write the ATE as $\tau = (1/n) \sum_{s=1}^S \sum_{i=1}^{n_s} \tau_{si}$.
 
-These causal targets are defined conditional on the matched design: Design choices in Part 1 determine which units enter the matched population, but not how causal effects are defined or interpreted once the design is fixed. Nevertheless, the matched design is constructed only after treatment assignments have been realized according to some unknown assignment process. As a result, matched set membership—and, in particular, which units are included in the matches—could in principle vary across assignments, as emphasized by recent work on $\bm{Z}$-dependence [@pashleyetal2021; @pimentelhuang2024; @pimentelyu2024]. In keeping with standard practice, however, we treat the matched design as fixed once constructed and let randomness in the assignment process refer to a probability distribution over all possible ways of assigning treatment across these fixed matched sets, conditioning on the realized number of treated units in each set.
+These causal targets are defined conditional on the matched design: Design choices in Part 1 determine which units enter the matched population, but not how causal effects are defined or interpreted once the design is fixed. Nevertheless, the matched design is constructed only after treatment assignments have been realized according to some unknown assignment process. As a result, matched set membership --- and, in particular, which units are included in the matches --- could in principle vary across assignments, as emphasized by recent work on $\bm{Z}$-dependence [@pashleyetal2021; @pimentelhuang2024; @pimentelyu2024]. In keeping with standard practice, however, we treat the matched design as fixed once constructed and let randomness in the assignment process refer to a probability distribution over all possible ways of assigning treatment across these fixed matched sets, conditioning on the realized number of treated units in each set.
 
 Neither $\bm{\tau}$ nor $\tau$ can be directly calculated. Even in a randomized experiment, we cannot assign an individual to treatment, measure the outcome, then rewind time to assign the same individual to control and measure again. We therefore can observe only one potential outcome per unit. Denote this observed outcome by $y_{si}$, which is the treated potential outcome when individual $i$ in set $s$ is in the treatment condition or the control potential outcome when in the control condition. Because we observe only one of each unit's two potential outcomes, rather than the causal effect itself, we must rely on statistical inference.
 
@@ -1423,7 +1423,7 @@ cs_weak_two_sided <- c(
 ```
 
 
-## Part 3: Sensitivity Analysis for Hidden Confounding (Departures from As-If Randomization)
+## Part 3: Sensitivity Analysis (Departures from As-If Randomization)
 
 Up to this point, we have supposed a framework in which each observation's chance of a UN intervention is like flipping a weighted coin. Each coin flip is independent across observations, but the probability of landing tails (i.e., receiving treatment) can differ from one unit to another depending on its baseline characteristics. With matching, we make our crucial assumption that all units within a set are similar enough on these characteristics that their coins have the same probability of landing tails.
 
