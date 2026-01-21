@@ -292,7 +292,7 @@ One concern with Euclidean distance is that it depends on the scale of the covar
 
 Another concern with Euclidean distance is that it ignores correlations among covariates. For example, countries with larger populations (\texttt{pop}) usually have more military personnel (\texttt{milper}), if only because a larger population provides a greater pool of potential recruits. Therefore, differences in both covariates may largely reflect the same underlying factor --- population size. Yet Euclidean distance adds these differences separately, as if they were unrelated, which can exaggerate the overall distance between two observations.
 
-The Mahalanobis distance [@mahalanobis1936] addresses both of these concerns. First, it standardizes covariates so that differences are placed on a comparable scale. This standardization is a statistical device used to compute distances across multiple covariates that typically differ in scale, regardless of the substantively chosen scales of those covariates prior to measuring similarity. Second, the Mahalanobis distance adjusts for correlations among covariates, ensuring that highly related variables are not effectively counted twice. We can therefore construct a distance matrix based on Mahalanobis rather than Euclidean distances as follows.
+The Mahalanobis distance [@mahalanobis1936] addresses both of these concerns. First, it standardizes covariates so that differences are placed on a comparable scale. This standardization is used solely to compute distances across covariates that typically differ in scale, regardless of the substantively chosen transformations, with the aim of constructing matches that ultimately support apples-to-apples comparisons on these original, substantively chosen scales. Second, the Mahalanobis distance adjusts for correlations among covariates, ensuring that highly related variables are not effectively counted twice. We can therefore construct a distance matrix based on Mahalanobis rather than Euclidean distances as follows.
 
 ```{r, warning = FALSE,  tidy = FALSE}
 
@@ -316,7 +316,7 @@ Consider, for example, a logistic model for the estimated propensity score of an
 \begin{align} \label{eq: linear index}
 \hat{\lambda}(\bm{x}_i) & \coloneqq \dfrac{1}{1 + \exp(-\bm{\hat{\beta}}^{\top}\bm{x}_i)},
 \end{align}
-where $\bm{x}_i$ is the covariate vector, $\bm{\hat{\beta}}$ is the vector of estimated coefficients, and the superscript $\top$ denotes transposition. The quantity $\bm{\hat{\beta}}^{\top}\bm{x}_i$ is the linear index, and the inverse logistic function, $1 / (1 + \exp(-x))$, maps any real-valued input, $x$, onto the interval $(0, \, 1)$. The linear covariate index for unit $i$, $\bm{\hat{\beta}}^{\top}\bm{x}_i$, is simply the logit, i.e., log odds, transformation of $\hat{\lambda}(\bm{x}_i)$ in \eqref{eq: linear index}.
+where $\bm{x}_i$ is the covariate vector, $\bm{\hat{\beta}}$ is the vector of estimated coefficients, and the superscript $\top$ denotes the transpose, turning the row vector $\bm{\hat{\beta}}$ into a column vector. The quantity $\bm{\hat{\beta}}^{\top}\bm{x}_i$ is the linear index, and the inverse logistic function, $1 / (1 + \exp(-x))$, maps any real-valued input, $x$, onto the interval $(0, \, 1)$. The linear covariate index for unit $i$, $\bm{\hat{\beta}}^{\top}\bm{x}_i$, is simply the logit, i.e., log odds, transformation of $\hat{\lambda}(\bm{x}_i)$ in \eqref{eq: linear index}.
 
 This quantity, $\hat{\lambda}(\bm{x}_i)$, is a simple transformation of a linear index of covariates that best "separates" treated from control units. The estimated coefficients ($\bm{\hat{\beta}}$) "separate" treated from control units on the linear index because the coefficients are chosen to maximize a likelihood that rewards large differences between the groups. When treated and control units have little or no covariate overlap, the linear indices can diverge substantially, very positive for treated units and very negative for controls. With greater overlap, the linear indices for treated and control units are similar, clustering near zero.
 
@@ -443,7 +443,7 @@ euc_dist_polity_cal_2 <- match_on(x = UN ~ bwplty2,
 
 ```
 
-Note that we used Euclidean distance here because, after exactly matching on geographic region, matching proceeds on only $1$ covariatev(Polity score), so we do not have to worry about covariates' relative scales.
+Note that we used Euclidean distance here because, after exactly matching on geographic region, matching proceeds on only $1$ covariate (Polity score), so we do not have to worry about covariates' relative scales.
 
 Finally, we combine the two constraints into distance matrices defined within each region. We construct these region-specific matrices by "adding" the `em_region` and `euc_dist_polity_cal_2` objects, as shown below.
 
@@ -486,7 +486,7 @@ em_region + euc_dist_polity_cal_3
 
 ```
 
-Relaxing calipers allows more units to be included in the matched design, since units without eligible matches would otherwise be discarded. Including additional units can increase the effective sample size, but such gains are not guaranteed to be large. Sometimes additional units admitted by a looser caliper cluster within a few sets; because those sets still contain only a single treated or control unit, the extra observations contribute little to the effective sample size.
+Relaxing calipers allows additional units to be included in the matched design, since units without eligible matches would otherwise be discarded. Including these additional units can increase the effective sample size, but such gains need not be large. In particular, as the formula for a set's harmonic mean in \eqref{eq: harmonic mean} makes clear, the number of treated-versus-control comparisons does not increase because optimally matched sets, as we noted earlier, contain a single treated unit with possibly many controls or a single control unit with possibly many treated units. As a result, the contribution of newly admitted units to the effective sample size is limited. The magnitude of any increase in effective sample size --- given by the sum of harmonic means across sets --- depends on how these newly admitted units are distributed across matched sets: If these units are concentrated within only a few sets, the resulting gain will be modest.
 
 Instead of relying solely on caliper width, researchers can also shape the effective sample size by controlling the structure of matched sets via the `min.controls` and `max.controls` arguments in \texttt{optmatch}'s `fullmatch()` function. These arguments specify lower and upper bounds, respectively, on the ratio of control to treated units within each matched set. By default, `min.controls = 0` and `max.controls = Inf`, which impose no restrictions on matched-set composition. Departing from these defaults allows researchers to control how balanced or lopsided matched sets may be, thereby influencing the effective sample size.
 
@@ -494,8 +494,14 @@ To illustrate, suppose we want to restrict matches using the `overall_dist_mat` 
 
 ```{r, tidy = FALSE, results = "hide"}
 
-# Full matching using overall distance matrix; allows 0.5 - 2 controls per treated
-fullmatch(x = overall_dist_mat, min.controls = 0.5, max.controls = 2, data = data)
+# Full matching using overall distance matrix
+fullmatch(
+  x = overall_dist_mat,
+  min.controls = 0.5,  # At least 0.5 controls per treated unit
+                       # (i.e., no more than 2 treated per control)
+  max.controls = 2,    # At most 2 controls per treated unit
+  data = data
+)
 
 ```
 
@@ -815,7 +821,7 @@ After forming matched sets that ideally satisfy the as-if randomization assumpti
 
 In both frameworks, the causal targets of inference are defined through potential outcomes. Under the stable unit treatment value assumption (SUTVA), each unit has two potential outcomes: a value the outcome would take if that unit were assigned to treatment and a value the outcome would take if that unit were assigned to control. Let $y_{si}(1)$ and $y_{si}(0)$ denote these potential outcomes for unit $i$ in set $s$, where the index $i$ runs over the $\{1, \ldots, n_s\}$ units in set $s$. The individual treatment effect is $\tau_{si} = y_{si}(1) - y_{si}(0)$. With $n = \sum_{s = 1}^S n_s$ total units, let $\bm{\tau} = (\tau_{1,1}, \tau_{1,2}, \ldots, \tau_{S,n_s})^{\top}$ be the collection all $n$ unit-level effects, and write the ATE as $\tau = (1/n) \sum_{s=1}^S \sum_{i=1}^{n_s} \tau_{si}$.
 
-These causal targets are defined conditional on the matched design: Design choices in Part 1 determine which units enter the matched population, but not how causal effects are defined or interpreted once the design is fixed. Nevertheless, the matched design is constructed only after treatment assignments have been realized according to some unknown assignment process. As a result, matched set membership --- and, in particular, which units are included in the matches --- could in principle vary across assignments, as emphasized by recent work on $\bm{Z}$-dependence [@pashleyetal2021; @pimentelhuang2024; @pimentelyu2024]. In keeping with standard practice, however, we treat the matched design as fixed once constructed and let randomness in the assignment process refer to a probability distribution over all possible ways of assigning treatment across these fixed matched sets, conditioning on the realized number of treated units in each set.
+Note, however, that the matched design may alter the study population over which these causal targets are defined relative to the original set of units [@rosenbaumrubin1985]. Units excluded from the matched design --- because they lack suitable matches under the chosen calipers or exact-match constraints --- are no longer part of the study population to which inference applies. Consequently, both $\bm{\tau}$ and $\tau$ refer only to the subpopulation of units retained after matching. This restriction has important implications for interpretation; yet the resulting study population is often difficult to interpret, particularly when matching is based on the estimated propensity score. For this reason, @rosenbaum2010 cautions that "it is usually better to go back to the covariates themselves ... perhaps redefining the population under study to be a subpopulation of the original population" (p. 86), a point echoed in @stuart2010. Several approaches explicitly address the issue of defining and interpreting these study populations in the context of propensity score methods and matching more generally [@rosenbaum2012; @fogartyetal2016; @traskinsmall2011; @crumpetal2009].
 
 Neither $\bm{\tau}$ nor $\tau$ can be directly calculated. Even in a randomized experiment, we cannot assign an individual to treatment, measure the outcome, then rewind time to assign the same individual to control and measure again. We therefore can observe only one potential outcome per unit. Denote this observed outcome by $y_{si}$, which is the treated potential outcome when individual $i$ in set $s$ is in the treatment condition or the control potential outcome when in the control condition. Because we observe only one of each unit's two potential outcomes, rather than the causal effect itself, we must rely on statistical inference.
 
@@ -827,7 +833,7 @@ We consider inference under the sharp and weak frameworks, targeting $\bm{\tau}$
 
 #### The Assignment Process as the Basis for Inference
 
-Regardless of the framework, inference is based on the treatment assignment process. Let $z_{si}$ denote an indicator for whether unit $i$ in matched set $s$ is treated ($z_{si} = 1$) or not ($z_{si} = 0$). We collect these indicators for all units in set $s$ into the vector $\bm{z}_s \coloneqq (z_{s1}, \ldots, z_{sn_s})^{\top}$, where the superscript $^{\top}$ denotes the transpose, turning the row vector $(z_{s1}, \ldots, z_{sn_s})$ into a column vector. Stacking these vectors across all sets gives the full assignment vector $\bm{z} = (z_{11}, \ldots, z_{Sn_S})^{\top}$. For inference, we condition on the number of treated units within each set, even if the actual assignment mechanism consisted of $n_s$ independent assignments. This conditioning represents a legitimate form of a "conditional as-if analysis" [@pashleyetal2021].
+Regardless of the framework, inference is based on the treatment assignment process. Let $z_{si}$ denote an indicator for whether unit $i$ in matched set $s$ is treated ($z_{si} = 1$) or not ($z_{si} = 0$). We collect these indicators for all units in set $s$ into the vector $\bm{z}_s \coloneqq (z_{s1}, \ldots, z_{sn_s})^{\top}$. Stacking these vectors across all sets gives the full assignment vector $\bm{z} = (z_{11}, \ldots, z_{Sn_S})^{\top}$. For inference, we condition on the number of treated units within each set, even if the actual assignment mechanism consisted of $n_s$ independent assignments. This conditioning represents a legitimate form of a "conditional as-if analysis" [@pashleyetal2021].
 
 We denote by $\Omega_s$ the set of all possible treatment assignments in set $s$ that have a fixed number of treated units. Formally, $\Omega_s$ includes every possible way the $n_s$ units in set $s$ could be assigned to treatment and control such that exactly $m_s$ units are treated. The number of possible assignments in $\Omega_s$ is denoted by $\abs{\Omega_s}$, where the notation $\abs{\cdot}$ indicates the number of elements in a set. This quantity equals $\abs{\Omega_s} = \binom{n_s}{m_s} = \frac{n_s!}{m_s! (n_s - m_s)!}$, where "!" denotes the factorial operator (e.g., $4! = 4 \times 3 \times 2 \times 1$).
 
@@ -1671,7 +1677,7 @@ weak_sens_value <- min(weak_sens_df$Gamma[weak_sens_df$p_value >= alpha])
 
 ```
 
-Below, we plot the upper one-sided $p$-values corresponding to $\Gamma$ values from $1$ to $2$.
+Below, we plot the upper one-sided $p$-values corresponding to $\Gamma$ values from `r min(Gamma_vals)` to `r max(Gamma_vals)`.
 
 ```{r, tidy = FALSE, echo = FALSE, fig.pos = "H", fig.width = 6.5, fig.height = 3.5}
 
@@ -1712,11 +1718,11 @@ Our analysis has focused on inference for two causal targets only: a constant, a
 
 Several omissions are specific to matching methodology itself: 
 
-- First, we have not covered a range of **alternative matching and balancing approaches**, including nonbipartite matching for multivalued treatments [@luetal2001; @luetal2011; @rosenbaum2010, pp. 207–221], template matching [@silberetal2014], multilevel matching [@zubizarretakeele2017; @pimenteletal2018], risk-set matching [@lietal2001], cardinality matching [@zubizarretaetal2014], coarsened exact matching [@iacusetal2012], or generalized full matching [@savjeetal2021]. We have also omitted balance constraints such as fine and near-fine balance [@rosenbaumetal2007; @yangetal2012], which enforce exact or nearly exact equality of marginal covariate distributions. Although these methods are beyond our scope, the design-based principles and pipeline we have presented apply broadly and can be adapted to these settings.
+- First, we have not covered a range of **alternative matching and balancing approaches**, including nonbipartite matching for multivalued treatments [@luetal2001; @luetal2011; @rosenbaum2010, pp. 207–221], template matching [@silberetal2014], multilevel matching [@zubizarretakeele2017; @pimenteletal2018], risk-set matching [@lietal2001], cardinality matching [@zubizarretaetal2014], coarsened exact matching [@iacusetal2012], tapered matching [@danieletal2008], or generalized full matching [@savjeetal2021] among others. We have also omitted balance constraints such as fine and near-fine balance [@rosenbaumetal2007; @yangetal2012; @yu2023; @pimenteletal2015a; @pimenteletal2015b], which enforce exact or nearly exact equality of marginal covariate distributions. Although these methods are beyond our scope, the design-based principles and pipeline we have presented apply broadly and can be adapted to these settings.
 
-- Second, we have not discussed the use of **prognostic covariates** identified using pilot or external data. Such approaches can substantially improve efficiency by prioritizing covariates that strongly predict outcomes. For theoretical foundations, see @hansen2008a; for practical guidance and intuition, see @salesetal2018.
+- Second, we have not discussed the use of **prognostic covariates** identified using pilot or external data. Such approaches can substantially improve efficiency by prioritizing covariates that strongly predict outcomes. For theoretical foundations, see @hansen2008a, with complementary theoretical results and practical insights in @salesetal2018.
 
-- Third, we have considered only matching strategies aimed at justifying as-if randomization, not those designed explicitly to improve design sensitivity --- that is, robustness to moderate violations of as-if randomization. Beyond match construction, researchers can also enhance design sensitivity by selecting particular test statistics, among other strategies [@rosenbaum2004; @helleretal2009; @hsuetal2013; @smalletal2013]. [@rosenbaum2004; @helleretal2009; @hsuetal2013; @smalletal2013].
+- Third, we have considered only matching strategies aimed at justifying as-if randomization, not those designed explicitly to improve **design sensitivity** --- that is, robustness to moderate violations of as-if randomization. Beyond match construction, researchers can also enhance design sensitivity by selecting particular test statistics, among other strategies [@rosenbaum2004; @helleretal2009; @hsuetal2013; @smalletal2013].
 
 - Fourth, we have excluded **extensions to covariate balance testing** beyond the framework developed in @hansenbowers2008, including subsequent contributions by @gagnon-bartschshem-tov2019 and @branson2021, as well as related approaches based on the stepwise intersection–union principle [@hansensales2015].
 
