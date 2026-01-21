@@ -821,7 +821,9 @@ After forming matched sets that ideally satisfy the as-if randomization assumpti
 
 In both frameworks, the causal targets of inference are defined through potential outcomes. Under the stable unit treatment value assumption (SUTVA), each unit has two potential outcomes: a value the outcome would take if that unit were assigned to treatment and a value the outcome would take if that unit were assigned to control. Let $y_{si}(1)$ and $y_{si}(0)$ denote these potential outcomes for unit $i$ in set $s$, where the index $i$ runs over the $\{1, \ldots, n_s\}$ units in set $s$. The individual treatment effect is $\tau_{si} = y_{si}(1) - y_{si}(0)$. With $n = \sum_{s = 1}^S n_s$ total units, let $\bm{\tau} = (\tau_{1,1}, \tau_{1,2}, \ldots, \tau_{S,n_s})^{\top}$ be the collection all $n$ unit-level effects, and write the ATE as $\tau = (1/n) \sum_{s=1}^S \sum_{i=1}^{n_s} \tau_{si}$.
 
-Note, however, that the matched design may alter the study population over which these causal targets are defined relative to the original set of units [@rosenbaumrubin1985]. Units excluded from the matched design --- because they lack suitable matches under the chosen calipers or exact-match constraints --- are no longer part of the study population to which inference applies. Consequently, both $\bm{\tau}$ and $\tau$ refer only to the subpopulation of units retained after matching. This restriction has important implications for interpretation; yet the resulting study population is often difficult to interpret, particularly when matching is based on the estimated propensity score. For this reason, @rosenbaum2010 cautions that "it is usually better to go back to the covariates themselves ... perhaps redefining the population under study to be a subpopulation of the original population" (p. 86), a point echoed in @stuart2010. Several approaches explicitly address the issue of defining and interpreting these study populations in the context of propensity score methods and matching more generally [@rosenbaum2012; @fogartyetal2016; @traskinsmall2011; @crumpetal2009].
+Note, however, that the matched design may alter the study population over which these causal targets are defined relative to the original set of units [@rosenbaumrubin1985; @rosenbaum2012]. Units excluded from the matched design --- because they lack suitable matches under the chosen calipers or exact-match constraints --- are no longer part of the study population to which inference applies. Consequently, both $\bm{\tau}$ and $\tau$ refer only to the subpopulation of units retained after matching. This resulting study population is often difficult to interpret. For this reason, @rosenbaum2010 cautions that "it is usually better to go back to the covariates themselves ... perhaps redefining the population under study to be a subpopulation of the original population" (p. 86), a point echoed in @stuart2010. Several approaches explicitly address how to define and interpret these study populations, including methods that trim units with extreme estimated propensity scores --- where overlap is limited [@crumpetal2009; @kingzeng2006] --- as well as approaches developed for matching more generally [@rosenbaum2012; @fogartyetal2016; @traskinsmall2011].
+
+The breadth of an interpretable study population with meaningful treatment–control comparisons depends in part on the relative abundance of treated and control units across covariate space. When either treatment arm is thinly represented in regions of covariate space dominated by the other, overlap may be confined to a restricted region of covariate space and include relatively few units. All else equal, a larger pool of units available for matching supports overlap over a wider region of covariate space and yields a larger, more interpretable study population over which the target of inference is defined.
 
 Neither $\bm{\tau}$ nor $\tau$ can be directly calculated. Even in a randomized experiment, we cannot assign an individual to treatment, measure the outcome, then rewind time to assign the same individual to control and measure again. We therefore can observe only one potential outcome per unit. Denote this observed outcome by $y_{si}$, which is the treated potential outcome when individual $i$ in set $s$ is in the treatment condition or the control potential outcome when in the control condition. Because we observe only one of each unit's two potential outcomes, rather than the causal effect itself, we must rely on statistical inference.
 
@@ -1435,7 +1437,7 @@ Up to this point, we have supposed a framework in which each observation's chanc
 
 The as-if randomization assumption may fail because of imbalances on hidden covariates (or residual imbalances on observed covariates, though the sensitivity analysis to follow subsumes both within the same framework). To represent such imbalances, consider a single hidden covariate, $\bm{u} = (u_{11}, \ldots , u_{Sn_S})^{\top}$ with each $u_{si}$ constrained to lie in the interval from $0$ to $1$. Although the restriction that each element of $\bm{u}$ is between 0 and 1 may seem strong, @rosenbaum2017[p. 300, fn. 33] shows that any departure from complete random assignment within blocks can be represented by such a $\bm{u}$ in the sense that as-if randomization would hold if we had access to and exactly matched on this $\bm{u}$.
 
-@rosenbaum1987 and @rosenbaumkrieger1990 then propose a model in which each unit's independent probability of assignment to treatment is given by
+@rosenbaum1987a and @rosenbaumkrieger1990 then propose a model in which each unit's independent probability of assignment to treatment is given by
 \begin{equation}
 \label{eq: indiv sens prob}
 \pi_{si} \coloneqq \frac{\exp\left[\kappa_s + \log(\Gamma) u_{si}\right]}{1 + \exp\left[\kappa_s + \log(\Gamma) u_{si}\right]}.
@@ -1578,6 +1580,128 @@ ggplot(data = sens_df_long,
 
 For this matched dataset, the separable and Taylor-series approximations yield nearly identical $p$-values for all values of $\Gamma$ between $1$ and $1.5$, with the two curves effectively overlapping. We can reject the sharp null of no effect under as-if randomization (i.e., $\Gamma = 1$), but this conclusion is sensitive to departures from that assumption. Under either approach, at a $\Gamma$ of roughly `r unique(sens_value_sep, sens_value_tay)`, we are no longer able to reject the sharp null of no effect against the alternative of a larger effect at an $\alpha$-level of $0.05$.
 
+Although this is rarely feasible in practice, our running example is small enough that we can enumerate the full set of ca configurations, $\mathcal{U}_+$, and then compute the corresponding exact (or Normal-approximation-based) worst-case $p$-value for a fixed sensitivity parameter $\Gamma$.
+
+We begin by constructing the candidate set $\mathcal{U}_+$, consisting of all vectors $\bm{u}$ that respect the matched-set structure and assign higher confounding values to units with larger outcomes within each matched set.
+
+```{r}
+
+u_plus <- construct_cand_u(
+  set      = data_matched$fm,
+  y_scaled = data_matched$ldur_tilde_hm_scaled
+)$U
+
+```
+
+We now compute the exact worst-case upper-tail $p$-value for the specific value $\Gamma = `r Gamma`$ by explicitly evaluating the upper $p$-value for every $\bm{u} \in \mathcal{U}_+$. For each candidate $\bm{u}$, the probability of each assignment in $\Omega$ can be calculated from the distribution implied by \eqref{eq: indiv sens prob} [see @rosenbaum2002].
+
+```{r}
+
+Gamma <- 1.1161
+
+# Sensitivity parameter
+gamma <- log(Gamma)
+
+# Number of candidate u vectors
+K <- ncol(u_plus)
+
+# Initialize worst-case p-value and position
+worst_p      <- -Inf
+worst_pos_u  <- NA_integer_
+
+# Loop over all block-respecting candidate u's
+for (k in seq_len(K)) {
+  
+  # Candidate u_k (length n, original row order)
+  u_vec <- u_plus[, k]
+  
+  # Compute z_j^T u_k for all assignments z_j
+  # exact_assigns is n x B
+  zu <- as.numeric(crossprod(u_vec, exact_assigns))  # length B
+  
+  # Assignment probabilities:
+  # Pr(Z = z_j | u_k) proportional to exp(gamma * z_j^T u_k)
+  w <- exp(gamma * zu)
+  w <- w / sum(w)
+  
+  # Exact upper-tail p-value for this u_k
+  p_val_k <- sum(w[exact_sharp_null_dist >= obs_stat])
+  
+  # Update worst-case p-value and location
+  if (p_val_k > worst_p) {
+    worst_p     <- p_val_k
+    worst_pos_u <- k
+  }
+}
+
+# Worst-case exact upper-tail p-value
+worst_p
+
+# Corresponding worst-case u vector (original row order)
+exact_u_worst <- u_plus[, worst_pos_u]
+
+```
+
+At this value of $\Gamma = `r Gamma`$, the worst-case upper-tail $p$-value already exceeds $\alpha = 0.05$. This implies that the changepoint values of `r sens_value_tay`, obtained from the Taylor series approximation, and `r sens_value_sep`, obtained from the separable approximation, are too large.
+
+To diagnose the source of this discrepancy, we repeat the same worst-case search over $\mathcal{U}_+$ using the Normal approximation to the null randomization distribution. In contrast to the exact calculation above, this approach replaces the exact randomization distribution with a Normal approximation whose mean and variance depend on $\bm{u}$ through block-level expectations and variances.
+
+```{r}
+
+# Initialize worst-case Normal-approximation p-value
+worst_p_norm <- -Inf
+
+# Loop over all block-respecting candidate u's
+for (k in seq_len(K)) {
+  
+  # Candidate u_k (original row order)
+  u_vec <- u_plus[, k]
+  
+  # Initialize null mean and variance for this u
+  null_mean <- 0
+  null_var  <- 0
+  
+  # Loop over matched sets
+  for (s in levels(data_matched$fm)) {
+    
+    rows_s <- which(data_matched$fm == s)
+    m_s    <- sum(u_vec[rows_s])
+    
+    moms <- ev(
+      sc     = data_matched$ldur_tilde_hm_scaled[rows_s],
+      z      = data_matched$UN[rows_s],
+      m      = m_s,
+      g      = Gamma,
+      method = "RK"
+    )
+    
+    # Accumulate block-level moments
+    null_mean <- null_mean + moms$expect
+    null_var  <- null_var  + moms$vari
+  }
+  
+  # Normal-approximation upper-tail p-value
+  z_stat <- (obs_stat - null_mean) / sqrt(null_var)
+  p_val_norm <- as.numeric(pnorm(z_stat, lower.tail = FALSE))
+  
+  # Update worst-case Normal p-value (force scalar)
+  if (p_val_norm > worst_p_norm) {
+    worst_p_norm <- p_val_norm
+  }
+}
+
+# Combine all three p-values for comparison
+data.frame(
+  Gamma       = Gamma,
+  p_worst_norm  = worst_p_norm,
+  p_sep       = sens_df[sens_df$Gamma == Gamma_target, ]$p_sep,
+  p_tay       = sens_df[sens_df$Gamma == Gamma_target, ]$p_tay
+)
+
+```
+
+Comparing the calculations, the discrepancy appears to stem from the Normal approximation itself rather than from the separable or Taylor-series approximations for the worst-case $\bm{u}$, since using the true worst-case $\bm{u}$ yields essentially the same Normal-approximation $p$-value.
+
 ### How Do My Inferences under the Weak Framework Change under these Departures?
 
 Compared to tests of the sharp null hypothesis of no effect, constructing valid tests of an analogous weak null hypothesis is more challenging. A sharp null hypothesis specifies all missing potential outcomes, so we do not have to consider $p$-values over many different configurations of potential outcomes. By contrast, a weak null permits many possible configurations of potential outcomes, so identifying the worst-case $p$-value over both $\bm{u}$ and the potential outcomes consistent with that null is often computationally intractable.
@@ -1704,7 +1828,7 @@ ggplot(data = weak_sens_df,
 
 Under as-if randomization ($\Gamma = 1$), we find evidence of a positive average effect. This conclusion about the weak null is slightly more robust to departures from as-if randomization than our earlier rejection of the sharp null of no effect at $\Gamma = 1$. However, in absolute terms, the evidence for a positive ATE remains sensitive. Our qualitative conclusion about the null hypothesis that the ATE equals zero changes once $\Gamma$ reaches `r weak_sens_value`.
 
-It is important to emphasize that this sensitivity analysis guarantees validity across all configurations of potential outcomes consistent with the weak null. By contrast, @fogarty2023 also describes an alternative sensitivity analysis that restricts attention to subsets of configurations that researchers may regard as more plausible. Such alternatives can produce smaller $p$-values, but at the cost of forfeiting validity for certain (possibly unrealistic) outcome configurations.
+It is important to emphasize that this sensitivity analysis guarantees validity across all configurations of potential outcomes consistent with the weak null. By contrast, @fogarty2023 also describes an alternative sensitivity analysis that restricts attention to subsets of configurations that researchers may regard as more plausible. Such alternatives can produce smaller $p$-values, but at the cost of forfeiting validity for certain (possibly unrealistic) outcome configurations. Other sensitivity analyses for tests of weak nulls directly optimize --- over the space of the hidden confounder and potential outcomes consistent with the null --- the worst-case $p$-value for a given $\Gamma \geq 1$, an optimization that is tractable in restricted settings such as binary outcomes [@fogartyetal2017] or matched-pair designs [@fogarty2020].
 
 # Conclusion
 
@@ -1727,6 +1851,8 @@ Several omissions are specific to matching methodology itself:
 - Fourth, we have excluded **extensions to covariate balance testing** beyond the framework developed in @hansenbowers2008, including subsequent contributions by @gagnon-bartschshem-tov2019 and @branson2021, as well as related approaches based on the stepwise intersection–union principle [@hansensales2015].
 
 - Fifth, we have ignored **residual imbalance on observed covariates**. Specifically, we have proceeded under the assumption that matched set membership can justify as-if randomization, even when small imbalances remain within matched sets. Under this approach, concerns about residual imbalance are absorbed into the sensitivity analysis for hidden bias. This approach is not entirely satisfying, however, because imbalances on observed covariates are not, in fact, hidden. Several methods therefore address such imbalances directly, either in approaches targeting individual effects [@rosenbaum1988; @pimentelhuang2024; @chenetal2023; @hengetal2025] or average effects [@zhuetal2025].
+
+- Sixth, we have not incorporated into the overall pipeline an explicit approach for defining an **interpretable study population** in matched designs. This omission matters because discarding units during matching can alter the population over which the causal estimand is defined [@rosenbaumrubin1985; @rosenbaum2012]. Common practice excludes units based on limited overlap in the estimated propensity score [@crumpetal2009; @kingzeng2006], but study populations defined in this way can be difficult to characterize substantively. This concern has motivated alternative approaches that define the study population directly in terms of a small number of covariates. For example, @traskinsmall2011 use a classification tree to define a study population that approximates one defined by trimming on the estimated propensity score, while @fogartyetal2016 use discrete optimization to define a maximal, rectangular region of covariate space with adequate overlap on key covariates.
 
 - Finally, have not addressed the possibility that matched set membership itself may depend on the treatment assignments --- that is, settings with **$\bm{Z}$-dependence** [@pashleyetal2021; @pimentelhuang2024; @pimentelyu2024]. Our exposition has relied on an analogy to Rubin’s framework of "assignment to treatment on the basis of a covariate" [@rubin1977], where matched set membership plays the role of the covariate. This analogy assumes that membership is fixed, but in practice it could be a random variable if the matched structure depends on the observable assignments. We have set aside this issue, which may be minor when practitioners use sufficiently tight calipers for matching.
 
