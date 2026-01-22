@@ -117,7 +117,7 @@ Building on these design-based foundations, we now outline a pipeline that start
 
   - **Assess sensitivity**. Finally, we turn to sensitivity analyses under both inferential frameworks. We review established methods for conducting sensitivity analysis for tests of sharp nulls under possible violations of as-if randomization [@rosenbaumkrieger1990; @gastwirthetal2000; @rosenbaum2018]. We then describe and implement new methods that extend sensitivity analysis to tests of weak null hypotheses [@fogarty2023].
 
-Below we present a flow diagram that summarizes the overall pipeline. The diagram shows each step and decision point, the relevant \texttt{R} tools (whether existing packages or custom functions included herein) and core references.
+Below we present a flow diagram summarizing the overall pipeline. The diagram displays each step and decision point, the relevant \texttt{R} tools (whether existing packages or custom functions included herein), and core references. The diagram is partitioned into three sections that align with the manuscript sections described below.
 
 ```{r diagram, echo = FALSE, fig.pos = "H", fig.cap = "Flow diagram of the design-based matching pipeline", out.width = "\\linewidth"}
 
@@ -164,7 +164,7 @@ We break the implementation into specific decision points that practitioners com
 \item How Do My Inferences under the Weak Framework Change under these Departures?  
 \end{enumerate}
 \end{enumerate}
-Before turning to Part 1, we introduce a running example taken from @gilligansergenti2008, which we use throughout this document.
+Before turning to Part 1, we introduce a running example taken from @gilligansergenti2008, which we use throughout this manuscript.
 
 ## Running Example: United Nations Peacekeeping and Post-Conflict Peace
 
@@ -192,7 +192,7 @@ data <- readRDS(url(paste0(base_url, "/data/peace_pre_match.rds")))
 
 In an observational setting, treatment is not assigned by the flip of a coin but depends on individuals’ covariates. The goal of matching is to compare treated and control units that have the same chances of treatment based on those covariates --- i.e., the same *propensity scores*. If we could observe propensity scores, it would be straightforward to compare treated and control units by matching directly on them. Because propensity scores are not directly observed, we instead aim to create a collection of matched sets that is *balanced* --- meaning that treated and control observations are similar in their covariates.
 
-Before turning to questions of covariate similarity and matching, it is important to note that substantive transformations of covariates play a central role, as they determine the inputs on which subsequent notions of similarity between units are based. These transformations reflect substantive judgments and are often among the most important decisions in practice. In this document, however, we do not address these substantive choices. Instead, we take the transformations used by @gilligansergenti2008 as given. For example, they measure ethnic fractionalization (\texttt{ethfrac}) on a 0-100 scale (rather than a 0–1 scale) and apply logarithmic transformations to covariates such as the number of deaths (\texttt{lwdeaths}) and the duration of the previous war (\texttt{lwdurat}), among others. Our focus is therefore on design and analysis decisions conditional on these substantively chosen scales.
+Before turning to questions of covariate similarity and matching, it is important to note that substantive transformations of covariates play a central role, as they determine the inputs on which subsequent notions of similarity between units are based. These transformations reflect substantive judgments and are often among the most important decisions in practice. In this manuscript, however, we do not address these substantive choices. Instead, we take the transformations used by @gilligansergenti2008 as given. For example, they measure ethnic fractionalization (\texttt{ethfrac}) on a 0-100 scale (rather than a 0–1 scale) and apply logarithmic transformations to covariates such as the number of deaths (\texttt{lwdeaths}) and the duration of the previous war (\texttt{lwdurat}), among others. Our focus is therefore on design and analysis decisions conditional on these substantively chosen scales.
 
 ### How Do I Measure Similarity on My Chosen Covariates?
 
@@ -385,7 +385,7 @@ In some cases, differences on individual covariates may offset each other; for e
 
 To illustrate these broader patterns, the boxplot below compares the empirical distributions of the linear covariate index for treated and control groups.
 
-```{r, echo = FALSE, fig.pos = "H", fig.width = 5, fig.height = 3}
+```{r, echo = FALSE, fig.pos = "H", fig.width = 5, fig.height = 3, fig.cap = "The empirical distributions of the linear covariate index for treated and control groups"}
 
 # Install "ggplot2" (only run if not already installed)
 # Install.packages("ggplot2")
@@ -821,7 +821,7 @@ After forming matched sets that ideally satisfy the as-if randomization assumpti
 
 In both frameworks, the causal targets of inference are defined through potential outcomes. Under the stable unit treatment value assumption (SUTVA), each unit has two potential outcomes: a value the outcome would take if that unit were assigned to treatment and a value the outcome would take if that unit were assigned to control. Let $y_{si}(1)$ and $y_{si}(0)$ denote these potential outcomes for unit $i$ in set $s$, where the index $i$ runs over the $\{1, \ldots, n_s\}$ units in set $s$. The individual treatment effect is $\tau_{si} = y_{si}(1) - y_{si}(0)$. With $n = \sum_{s = 1}^S n_s$ total units, let $\bm{\tau} = (\tau_{1,1}, \tau_{1,2}, \ldots, \tau_{S,n_s})^{\top}$ be the collection all $n$ unit-level effects, and write the ATE as $\tau = (1/n) \sum_{s=1}^S \sum_{i=1}^{n_s} \tau_{si}$.
 
-Note, however, that the matched design may alter the study population over which these causal targets are defined relative to the original set of units [@rosenbaumrubin1985; @rosenbaum2012]. Units excluded from the matched design --- because they lack suitable matches under the chosen calipers or exact-match constraints --- are no longer part of the study population to which inference applies. Consequently, both $\bm{\tau}$ and $\tau$ refer only to the subpopulation of units retained after matching. This resulting study population is often difficult to interpret. For this reason, @rosenbaum2010 cautions that "it is usually better to go back to the covariates themselves ... perhaps redefining the population under study to be a subpopulation of the original population" (p. 86), a point echoed in @stuart2010. Several approaches explicitly address how to define and interpret these study populations, including methods that trim units with extreme estimated propensity scores --- where overlap is limited [@crumpetal2009; @kingzeng2006] --- as well as approaches developed for matching more generally [@rosenbaum2012; @fogartyetal2016; @traskinsmall2011].
+Note, however, that the matched design may alter the study population over which these causal targets are defined relative to the original set of units [@rosenbaumrubin1985; @rosenbaum2012]. Because units that fail to satisfy the specified caliper or exact-match constraints are excluded from the matched design, both $\bm{\tau}$ and $\tau$ pertain only to the subpopulation of units retained after matching. This resulting study population is often difficult to interpret. For this reason, @rosenbaum2010 cautions that "it is usually better to go back to the covariates themselves ... perhaps redefining the population under study to be a subpopulation of the original population" (p. 86), a point echoed in @stuart2010. Several approaches explicitly address how to define and interpret these study populations, including methods that trim units with extreme estimated propensity scores --- where overlap is limited [@crumpetal2009; @kingzeng2006] --- as well as approaches developed for matching more generally [@rosenbaum2012; @fogartyetal2016; @traskinsmall2011].
 
 The breadth of an interpretable study population with meaningful treatment–control comparisons depends in part on the relative abundance of treated and control units across covariate space. When either treatment arm is thinly represented in regions of covariate space dominated by the other, overlap may be confined to a restricted region of covariate space and include relatively few units. All else equal, a larger pool of units available for matching supports overlap over a wider region of covariate space and yields a larger, more interpretable study population over which the target of inference is defined.
 
@@ -1542,7 +1542,7 @@ For this matched dataset, the conclusions from the separable and Taylor series a
 
 The plot below illustrates this comparison and clarifies how the two approaches relate across values of $\Gamma$
 
-```{r, tidy = FALSE, echo = FALSE, fig.pos = "H", fig.width = 7, fig.height = 4, fig.cap =  "The top panel reports the upper one-sided p-value under the separable approximation, while the bottom panel reports the Taylor-series margin (with zero marking the rejection boundary). The shaded vertical band highlights values of $\\Gamma$ for which the separable approximation and the Taylor-series approximation lead to different rejection decisions."}
+```{r, tidy = FALSE, echo = FALSE, fig.pos = "H", fig.width = 7, fig.height = 4, fig.cap =  "Sensitivity analysis for the sharp null of no individual treatment effect for all units. The top panel shows upper one-sided $p$-values under the separable approximation across values of $\\Gamma$; the bottom panel reports, across the same values of $\\Gamma$, the corresponding Taylor-series margin, with the zero line marking the rejection boundary. The shaded vertical band highlights values of $\\Gamma$ for which the separable approximation and the Taylor-series approximation lead to different rejection decisions."}
 
 # Install tidyr (only run if not already installed)
 # Install.packages("tidyr")
@@ -1777,7 +1777,7 @@ weak_sens_value <- min(weak_sens_df$Gamma[weak_sens_df$p_value >= alpha])
 
 Below, we plot the upper one-sided $p$-values corresponding to $\Gamma$ values from `r min(Gamma_vals)` to `r max(Gamma_vals)`.
 
-```{r, tidy = FALSE, echo = FALSE, fig.pos = "H", fig.width = 6.5, fig.height = 3.5}
+```{r, tidy = FALSE, echo = FALSE, fig.pos = "H", fig.width = 6.5, fig.height = 3.5, fig.cap = "One-sided upper $p$-values for the weak null hypothesis of zero average effect across values of the sensitivity parameter $\\Gamma$"}
 
 # Plot weak-null sensitivity results: Gammas vs. p-values
 ggplot(data = weak_sens_df,
@@ -1816,7 +1816,7 @@ Our analysis has focused on inference for two causal targets only: a constant, a
 
 Several omissions are specific to matching methodology itself: 
 
-- First, we have not covered a range of **alternative matching and balancing approaches**, including nonbipartite matching for multivalued treatments [@luetal2001; @luetal2011; @rosenbaum2010, pp. 207–221], template matching [@silberetal2014], multilevel matching [@zubizarretakeele2017; @pimenteletal2018], risk-set matching [@lietal2001], cardinality matching [@zubizarretaetal2014], coarsened exact matching [@iacusetal2012], tapered matching [@danieletal2008], or generalized full matching [@savjeetal2021], among others. We have also omitted balance constraints such as fine and near-fine balance [@rosenbaumetal2007; @yangetal2012; @yu2023; @pimenteletal2015a; @pimenteletal2015b], which enforce exact or nearly exact equality of marginal covariate distributions. Although these methods are beyond our scope, the design-based principles and pipeline we have presented apply broadly and can be adapted to these settings.
+- First, we have not covered a range of **alternative matching and balancing approaches**, including nonbipartite matching for multivalued treatments [@luetal2001; @luetal2011; @rosenbaum2010, pp. 207–221], template matching [@silberetal2014], multilevel matching [@zubizarretakeele2017; @pimenteletal2018], risk-set matching [@lietal2001], cardinality matching [@zubizarretaetal2014], coarsened exact matching [@iacusetal2012], exterior matching [@rosenbaumsilber2013], or generalized full matching [@savjeetal2021], among others. We have further assumed that researchers specify ex ante the set of covariates to be balanced, thereby excluding screening procedures that identify additional candidates for adjustment based on observed imbalances [@cochran1965], as in tapered matching approaches [@danieletal2008; @yuetal2021]. Finally, we have not considered balance constraints such as fine and near-fine balance [@rosenbaumetal2007; @yangetal2012; @yu2023; @pimenteletal2015a; @pimenteletal2015b], which enforce exact or nearly exact equality of marginal covariate distributions. Although these methods lie beyond our scope, the design-based principles and analytic pipeline we present apply broadly and can be adapted to these settings.
 
 - Second, we have not discussed the use of **prognostic covariates** identified using pilot or external data. Such approaches can substantially improve efficiency by prioritizing covariates that strongly predict outcomes. For theoretical foundations, see @hansen2008a, with complementary theoretical results and practical insights in @salesetal2018.
 
