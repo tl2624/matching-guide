@@ -17,7 +17,7 @@ output:
 fontsize: 12pt
 classoption: leqno
 geometry: margin = 1.5cm
-biblio-style: chicago
+biblio-style: unsrtnat
 bibliography: Bibliography.bib
 editor_options: 
   chunk_output_type: console
@@ -1476,17 +1476,18 @@ To address this challenge, @gastwirthetal2000 propose a practical shortcut calle
 
 The separable approximation is a useful shortcut, but it can fail in designs with relatively few strata or with highly unbalanced strata sizes. In such cases, the $\bm{u}$ selected by the separable approximation may yield $p$-values that are smaller than the true worst-case $p$-value. @rosenbaum2018 therefore introduces a refinement that guarantees valid inference.
 
-The key idea is to reframe hypothesis testing in terms of a function that, for each configuration of hidden confounding $\bm{u} \in \mathcal{U}_{+}$, quantifies how close the observed test statistic is to the Normal rejection cutoff implied by that $\bm{u}$. The null hypothesis is rejected exactly when this function is non-positive. Crucially, this function is concave over $\mathcal{U}_{+}$, which means that a tangent line drawn at *any* $\bm{u} \in \mathcal{U}_+$ lies above the function *everywhere* on $\mathcal{U}_{+}$.
+The key idea is to reframe hypothesis testing in terms of a function that, for each configuration of hidden confounding $\bm{u} \in \mathcal{U}_{+}$, combines the gap between the null expectation and the observed test statistic with a corresponding Normal critical buffer. Concretely, for $\alpha = 0.05$ and corresponding critical value $1.64$, this function is the expected value of the test statistic under $\bm{u}$ minus the observed test statistic, plus $1.64$ times the standard deviation of the test statistic under $\bm{u}$. The function is nonpositive exactly when the observed test statistic lies at least $1.64$ standard deviations above its null expectation, and positive otherwise. Therefore, the null hypothesis is rejected if and only if this function is nonpositive.
 
-@rosenbaum2018 draws the tangent line at the configuration of $\bm{u}$ chosen by the separable approximation. Because the original function is concave, this tangent line provides a global upper bound on the function for all candidate configurations of hidden confounding. Consequently, instead of searching for the largest value of a curved function, we can search for the largest value of a straight line.
+Crucially, this function is concave over $\mathcal{U}_{+}$, which means that a tangent line drawn at *any* $\bm{u} \in \mathcal{U}_+$ lies above the function *everywhere* on $\mathcal{U}_{+}$. @rosenbaum2018 draws the tangent line at the configuration of $\bm{u}$ chosen by the separable approximation. Because the original function is concave, this tangent line provides a global upper bound on the function for all candidate configurations of hidden confounding. Consequently, instead of searching for the largest value of a curved function, we can search for the largest value of a straight line.
 
 Straight lines are easy to work with because they decompose additively across strata. We can therefore determine, within each stratum separately, which hidden-bias pattern makes the tangent line as large as possible, and then add up these stratum-specific contributions. The resulting sum is the maximum value of the tangent line over all $\bm{u} \in \mathcal{U}_{+}$.
 
-If even this maximum value of the tangent line is at or below zero, then the original function must also be nonpositive for every $\bm{u} \in \mathcal{U}_{+}$, so we can safely reject the null hypothesis under the worst-case hidden confounding. This procedure is valid but conservative: The tangent line may remain above zero even when the original function would be below zero at its true worst case. By contrast, the separable approximation can be liberal, as it may reject even when the worst-case value of the function is positive.
+Because the original function is concave, if the maximum value of its tangent-line approximation over $\bm{u} \in \mathcal{U}_{+}$ is at or below zero, then the original function itself must be nonpositive for every $\bm{u} \in \mathcal{U}_{+}$. Therefore, we can safely base the decision to reject the null hypothesis or not on the Taylor approximation. Although valid, this procedure can be conservative: The tangent line may remain above zero even when the original function would be below zero at its true worst case. By contrast, the separable approximation can be liberal, as it may reject even when the worst-case value of the function is positive.
 
 #### Conducting Sensitivity Analysis under the Worst-Case Scenario
 
-Below we illustrate a sensitivity analysis across different values of $\Gamma$, reporting two sets of $p$-values: one based on the worst-case $\bm{u}$ from the separable approximation and another based on the worst-case $\bm{u}$ from the Taylor series approximation. The simplest recommendation is to use the latter, as it is the more conservative of the two.
+Below we report the upper one-sided $p$-value obtained under the separable approximation, along with an indication of whether the resulting decision to reject or not reject the null hypothesis agrees with the decision implied by the Taylor series approximation. Agreement or disagreement between the two methods is determined by the sign of the Taylor-series–based bound on the function described above that governs rejection of the null hypothesis. Disagreement can occur only when the separable approximation yields a $p$-value slightly below $\alpha$, indicating rejection, while the Taylor series approximation yields a positive value, leading to non-rejection.
+
 
 ```{r}
 
@@ -1496,36 +1497,52 @@ Gamma_vals <- seq(from = 1, to = 1.5, by = 0.0001)
 # Collect results for each Gamma
 sens_results <- lapply(
   X = Gamma_vals,
-  FUN = function(g){
+  FUN = function(g) {
     out <- senstrat(
-      sc = data_matched$ldur_tilde_hm_scaled, # Outcome variable
-      z = data_matched$UN,                    # Treatment indicator
-      st = data_matched$fm,                   # Matched set (block) identifiers
-      gamma = g,                              # Sensitivity parameter (Gamma)
-      alternative = "greater",                # One-sided (upper-tail) test
-      detail = TRUE                           # Output computation details
+      sc          = data_matched$ldur_tilde_hm_scaled, # outcome
+      z           = data_matched$UN,                   # treatment indicator
+      st          = data_matched$fm,                   # strata
+      gamma       = g,                                 # Gamma
+      alternative = "greater",
+      detail      = TRUE
     )
+    
+    # Separable p-value
+    p_sep <- as.numeric(out$Separable["P-value"])
+    
+    # Taylor-series margin (cvA)
+    cvA <- as.numeric(out$lambda["Linear Taylor bound"])
+    
+    # Decisions
+    sep_reject <- p_sep <= alpha          # separable rejects?
+    tay_reject <- cvA <= 0                # Taylor rejects?
+    
     data.frame(
-      Gamma = g,
-      p_sep = as.numeric(out$Separable["P-value"]),        # Separable approx
-      p_tay = as.numeric(out$LinearBoundResult["P-value"]) # Taylor approx
+      Gamma     = g,
+      p_sep     = p_sep,
+      cvA       = cvA,
+      agree_tay = (sep_reject == tay_reject)
     )
-  })
+  }
+)
 
-# Bind all rows into one data frame
-sens_df <- do.call(what = rbind, args = sens_results)
+# Bind into a single data frame
+sens_df <- do.call(rbind, sens_results)
 
 # Smallest Gamma where the separable p-value is >= alpha
 sens_value_sep <- min(sens_df$Gamma[sens_df$p_sep >= alpha])
 
-# Smallest Gamma where the Taylor p-value is >= alpha
-sens_value_tay <- min(sens_df$Gamma[sens_df$p_tay >= alpha])
+# Taylor-series sensitivity value:
+# smallest Gamma at which Taylor margin becomes positive (non-rejection)
+sens_value_tay <- min(sens_df$Gamma[sens_df$cvA > 0])
 
 ```
 
-For values of $\Gamma$ ranging from `r min(Gamma_vals)` to `r max(Gamma_vals)`, results from the separable and Taylor series approximations are shown as distinct colored lines on the same plot.
+For this matched dataset, the conclusions from the separable and Taylor series approximations agree for nearly all values of $\Gamma$, differing only over a narrow interval from `r min(sens_df$Gamma[which(sens_df$agree_tay == 0)])` to `r max(sens_df$Gamma[which(sens_df$agree_tay == 0)])`. We can reject the sharp null of no effect under as-if randomization (i.e., $\Gamma = 1$), but this conclusion is sensitive to departures from that assumption. At a $\Gamma$ of roughly `r round(x = sens_value_tay, digits = 2)`, we are no longer able to reject the sharp null of no effect against the alternative of a larger effect at an $\alpha$-level of $0.05$.
 
-```{r, tidy = FALSE, echo = FALSE, fig.pos = "H", fig.width = 6.5, fig.height = 3.5}
+The plot below illustrates this comparison and clarifies how the two approaches relate across values of $\Gamma$
+
+```{r, tidy = FALSE, echo = FALSE, fig.pos = "H", fig.width = 7, fig.height = 4, fig.cap =  "The top panel reports the upper one-sided p-value under the separable approximation, while the bottom panel reports the Taylor-series margin (with zero marking the rejection boundary). The shaded vertical band highlights values of $\\Gamma$ for which the separable approximation and the Taylor-series approximation lead to different rejection decisions."}
 
 # Install tidyr (only run if not already installed)
 # Install.packages("tidyr")
@@ -1533,81 +1550,160 @@ For values of $\Gamma$ ranging from `r min(Gamma_vals)` to `r max(Gamma_vals)`, 
 # Load tidyr for reshaping data
 library(tidyr)
 
-# Convert to long format and add readable facet labels
-sens_df_long <- pivot_longer(
-  data = sens_df,
-  cols = c(p_sep, p_tay), # Columns to pivot
-  names_to = "method",    # New column for method name
-  values_to = "p_value"   # New column for p-values
-) |>
+## Reshape results into long format for plotting ----
+## We want one column for the quantity being plotted
+## (separable p-value vs. Taylor-series margin) and one
+## column for the numeric value, so that we can facet easily.
+
+sens_df_long <- sens_df |>
+  select(Gamma, p_sep, cvA, agree_tay) |>
+  pivot_longer(
+    cols      = c(p_sep, cvA),   # quantities to plot
+    names_to  = "quantity",      # which quantity is being shown
+    values_to = "value"          # numeric value of that quantity
+  ) |>
   mutate(
-    method = factor(
-      x = method,                               # Variable to convert to factor
-      levels = c("p_sep", "p_tay"),             # Original category values
-      labels = c("Separable approximation",     # Factor label for p_sep
-                 "Taylor series approximation") # Factor label for p_tay
+    # Make quantity a factor with readable labels
+    quantity = factor(
+      quantity,
+      levels = c("p_sep",           "cvA"),
+      labels = c("Separable p-value",
+                 "Taylor-series margin")
     )
   )
 
-# Colorblind-friendly palette
-plot_cols <- c("Separable approximation" = "#0072B2",     # blue
-               "Taylor series approximation" = "#D55E00") # vermillion
+## Identify regions of disagreement across Gamma ----
+## Disagreement occurs when the separable decision
+## (p_sep <= alpha) differs from the Taylor decision (cvA <= 0).
 
-# Plot sensitivity results: Gammas vs. p-values for each method
-ggplot(data = sens_df_long,
-       mapping = aes(x = Gamma,
-                     y = p_value,
-                     color = method)) +        # Line color by method
-  geom_hline(yintercept = alpha,               # Y-intercept at alpha level
-             linetype = "solid",               # Solid horizontal line
-             color = "grey") +                 # Line color
-  geom_line(linewidth = 0.5) +                 # P-value curves
-  scale_color_manual(values = plot_cols,
-                     name = NULL) +            # Remove legend title
+disagree_df <- sens_df |>
+  filter(!agree_tay)
+
+## If there is any disagreement at all, we summarize it
+## by taking the minimum and maximum Gamma over which
+## disagreement occurs, and use this to define a shaded band.
+## (This keeps the visualization simple and interpretable.)
+
+if (nrow(disagree_df) > 0) {
+
+  gamma_min_disagree <- min(disagree_df$Gamma)
+  gamma_max_disagree <- max(disagree_df$Gamma)
+
+  # Create a data frame defining the shaded region.
+  # We repeat the band for each facet so it appears
+  # behind both panels.
+  band_df <- data.frame(
+    xmin     = gamma_min_disagree,
+    xmax     = gamma_max_disagree,
+    quantity = factor(
+      c("Separable p-value",
+        "Taylor-series margin"),
+      levels = levels(sens_df_long$quantity)
+    )
+  )
+
+} else {
+  # If there is no disagreement anywhere, do not draw a band
+  band_df <- NULL
+}
+
+
+## Use a colorblind-friendly palette and keep colors
+## consistent with previous figures in the guide.
+
+plot_cols <- c(
+  "Separable p-value"    = "#0072B2",  # blue
+  "Taylor-series margin" = "#D55E00"   # vermillion
+)
+
+## Plot sensitivity results ----
+ggplot(sens_df_long,
+       aes(x = Gamma, y = value, color = quantity)) +
+  
+  # Reference line for separable p-values: alpha
+  geom_hline(
+    data = subset(sens_df_long, quantity == "Separable p-value"),
+    aes(yintercept = alpha),
+    color = "grey50"
+  ) +
+  
+  # Reference line for Taylor-series margin: zero is rejection boundary
+  geom_hline(
+    data = subset(sens_df_long, quantity == "Taylor-series margin"),
+    aes(yintercept = 0),
+    color = "grey50"
+  ) +
+  
+  ## Shaded vertical band indicating Gamma values
+  ## where the separable and Taylor decisions disagree
+  (if (!is.null(band_df))
+    geom_rect(
+      data = band_df,
+      aes(xmin = xmin, xmax = xmax,
+          ymin = -Inf, ymax = Inf),
+      inherit.aes = FALSE,
+      fill = "grey80",
+      alpha = 0.4
+    )
+  ) +
+  
+  ## Plot curves for each quantity
+  geom_line(linewidth = 0.5) +
+  
+  ## Manual colors, no legend needed because facets label quantities
+  scale_color_manual(values = plot_cols, guide = "none") +
+  
+  ## Clean, publication-style theme
   theme_bw() +
-  scale_x_continuous(breaks = seq(from = 1,
-                                  to = 1.5,
-                                  by = 0.1)) + # X-axis ticks
-  scale_y_continuous(breaks = seq(from = 0,
-                                  to = 0.1,
-                                  by = 0.01),
-                     limits = c(0, 0.1)) +     # Y-axis ticks and limits
-  xlab(expression(Gamma)) +                    # X-axis label for Gamma
-  ylab("One-sided upper p-value") +            # Y-axis label for p-value
-  theme(legend.position = "right")             # Legend position
+  
+  ## Separate panels for p-values and margins
+  facet_wrap(~ quantity, ncol = 1, scales = "free_y") +
+  
+  ## Gamma axis formatting
+  scale_x_continuous(
+    breaks = seq(from = 1, to = 1.5, by = 0.1)
+  ) +
+  
+  ## Axis labels and theme tweaks
+  xlab(expression(Gamma)) +
+  ylab(NULL) +
+  theme(
+    strip.text      = element_text(face = "bold"),
+    legend.position = "none"
+  )
 
 ```
 
-For this matched dataset, the separable and Taylor-series approximations yield nearly identical $p$-values for all values of $\Gamma$ between $1$ and $1.5$, with the two curves effectively overlapping. We can reject the sharp null of no effect under as-if randomization (i.e., $\Gamma = 1$), but this conclusion is sensitive to departures from that assumption. Under either approach, at a $\Gamma$ of roughly `r unique(sens_value_sep, sens_value_tay)`, we are no longer able to reject the sharp null of no effect against the alternative of a larger effect at an $\alpha$-level of $0.05$.
-
-Although this is rarely feasible in practice, our running example is small enough that we can enumerate the full set of ca configurations, $\mathcal{U}_+$, and then compute the corresponding exact (or Normal-approximation-based) worst-case $p$-value for a fixed sensitivity parameter $\Gamma$.
-
-We begin by constructing the candidate set $\mathcal{U}_+$, consisting of all vectors $\bm{u}$ that respect the matched-set structure and assign higher confounding values to units with larger outcomes within each matched set.
+These sensitivity analyses rely on multiple approximations. For example, the separable approximation is used to approximate the worst-case configuration of hidden bias $\bm{u} \in \mathcal{U}_+$, and inference additionally relies on a Normal approximation to the null randomization distribution of the test statistic. If the exact randomization distribution were used instead, the resulting sensitivity conclusions could differ for certain values of $\Gamma$. In principle, one could assess sensitivity at a given $\Gamma$ using the exact randomization distribution by fixing a configuration of hidden bias $\bm{u}$ --- for example, the separable choice --- and deriving, from \eqref{eq: indiv sens prob}, the implied probability distribution on $\Omega$, which can then be combined with the previously defined exact_sharp_null_dist to compute the corresponding $p$-value.
 
 ```{r}
 
+# Load helper that constructs all block-respecting candidate u vectors
+source(paste0(base_url, "/R/construct_cand_u.R"))
+
+# U_plus: n x K matrix, each column a candidate u vector in original row order
 u_plus <- construct_cand_u(
-  set      = data_matched$fm,
-  y_scaled = data_matched$ldur_tilde_hm_scaled
+  set      = data_matched$fm,                  # matched-set IDs
+  y_scaled = data_matched$ldur_tilde_hm_scaled # scaled outcomes used for ordering
 )$U
 
 ```
 
-We now compute the exact worst-case upper-tail $p$-value for the specific value $\Gamma = `r Gamma`$ by explicitly evaluating the upper $p$-value for every $\bm{u} \in \mathcal{U}_+$. For each candidate $\bm{u}$, the probability of each assignment in $\Omega$ can be calculated from the distribution implied by \eqref{eq: indiv sens prob} [see @rosenbaum2002].
+We now compute the exact worst-case upper-tail $p$-value for the specific value $\Gamma = r Gamma$ by evaluating the upper $p$-value for every $\bm{u} \in \mathcal{U}_+$. For each candidate $\bm{u}$, the probability of each assignment in $\Omega$ is derived from the sensitivity model in \eqref{eq: indiv sens prob}.
 
 ```{r}
 
 Gamma <- 1.1161
 
-# Sensitivity parameter
+# Log-odds sensitivity parameter
 gamma <- log(Gamma)
 
 # Number of candidate u vectors
 K <- ncol(u_plus)
 
-# Initialize worst-case p-value and position
-worst_p      <- -Inf
-worst_pos_u  <- NA_integer_
+# Initialize worst-case p-value and the column index of the worst u
+worst_p     <- -Inf
+worst_pos_u <- NA_integer_
 
 # Loop over all block-respecting candidate u's
 for (k in seq_len(K)) {
@@ -1615,26 +1711,26 @@ for (k in seq_len(K)) {
   # Candidate u_k (length n, original row order)
   u_vec <- u_plus[, k]
   
-  # Compute z_j^T u_k for all assignments z_j
-  # exact_assigns is n x B
-  zu <- as.numeric(crossprod(u_vec, exact_assigns))  # length B
+  # For each assignment z_j in Omega (columns of exact_assigns),
+  # compute u^T z_j; result is a length-B vector
+  zu <- as.numeric(crossprod(u_vec, exact_assigns))
   
-  # Assignment probabilities:
-  # Pr(Z = z_j | u_k) proportional to exp(gamma * z_j^T u_k)
+  # Assignment probabilities under the sensitivity model:
+  # P(Z = z_j | u) proportional to exp{ gamma * (u^T z_j) }
   w <- exp(gamma * zu)
   w <- w / sum(w)
   
   # Exact upper-tail p-value for this u_k
   p_val_k <- sum(w[exact_sharp_null_dist >= obs_stat])
   
-  # Update worst-case p-value and location
+  # Keep track of the largest (worst-case) p-value and its u_k
   if (p_val_k > worst_p) {
     worst_p     <- p_val_k
     worst_pos_u <- k
   }
 }
 
-# Worst-case exact upper-tail p-value
+# Worst-case exact upper-tail p-value at this Gamma
 worst_p
 
 # Corresponding worst-case u vector (original row order)
@@ -1642,31 +1738,35 @@ exact_u_worst <- u_plus[, worst_pos_u]
 
 ```
 
-At this value of $\Gamma = `r Gamma`$, the worst-case upper-tail $p$-value already exceeds $\alpha = 0.05$. This implies that the changepoint values of `r sens_value_tay`, obtained from the Taylor series approximation, and `r sens_value_sep`, obtained from the separable approximation, are too large.
+At $\Gamma = `r Gamma`$, the worst-case exact upper-tail $p$-value already exceeds $\alpha = 0.05$, so the null hypothesis can no longer be rejected for this degree of departure from as-if randomization. Consequently, the previously reported changepoint --- the smallest value of $\Gamma$ at which the worst-case $p$-value reaches or exceeds $\alpha$ --- of approximately `r round(x = sens_value_tay, digits = 2)` is too large.
 
-To diagnose the source of this discrepancy, we repeat the same worst-case search over $\mathcal{U}_+$ using the Normal approximation to the null randomization distribution. In contrast to the exact calculation above, this approach replaces the exact randomization distribution with a Normal approximation whose mean and variance depend on $\bm{u}$ through block-level expectations and variances.
+To diagnose the source of this discrepancy, we next evaluate the Normal-approximation $p$-value at the true worst-case configuration $\bm{u} \in \mathcal{U}_+$. By holding fixed the reference distribution and varying only the choice of $\bm{u}$, this calculation isolates the role played by the search over hidden-bias configurations from the role played by the Normal approximation itself. Comparing the resulting $p$-value to the separable result therefore clarifies whether the discrepancy arises from approximation error in selecting $\bm{u}$ or from the Normal approximation to the randomization distribution.
 
 ```{r}
 
-# Initialize worst-case Normal-approximation p-value
+# Initialize worst-case Normal-approximation p-value over u in U+
 worst_p_norm <- -Inf
 
-# Loop over all block-respecting candidate u's
+# Loop over all candidate u's
 for (k in seq_len(K)) {
   
   # Candidate u_k (original row order)
   u_vec <- u_plus[, k]
   
-  # Initialize null mean and variance for this u
+  # Initialize total null mean and variance of the test statistic for this u
   null_mean <- 0
   null_var  <- 0
   
-  # Loop over matched sets
+  # Loop over matched sets to accumulate block-level moments
   for (s in levels(data_matched$fm)) {
     
+    # Indices for units in stratum s
     rows_s <- which(data_matched$fm == s)
-    m_s    <- sum(u_vec[rows_s])
     
+    # Number of ones in u within this stratum
+    m_s <- sum(u_vec[rows_s])
+    
+    # RK block-level expectation and variance for given m_s and Gamma
     moms <- ev(
       sc     = data_matched$ldur_tilde_hm_scaled[rows_s],
       z      = data_matched$UN[rows_s],
@@ -1675,32 +1775,38 @@ for (k in seq_len(K)) {
       method = "RK"
     )
     
-    # Accumulate block-level moments
+    # Add block-level contributions to overall mean and variance
     null_mean <- null_mean + moms$expect
     null_var  <- null_var  + moms$vari
   }
   
-  # Normal-approximation upper-tail p-value
+  # Standardized test statistic under this u (Normal approximation)
   z_stat <- (obs_stat - null_mean) / sqrt(null_var)
+  
+  # Upper-tail Normal p-value for this u
   p_val_norm <- as.numeric(pnorm(z_stat, lower.tail = FALSE))
   
-  # Update worst-case Normal p-value (force scalar)
+  # Track the largest (worst-case) Normal p-value across u
   if (p_val_norm > worst_p_norm) {
     worst_p_norm <- p_val_norm
   }
 }
 
-# Combine all three p-values for comparison
+# Match the row in sens_df closest to this Gamma (guards against
+# floating-point issues when comparing Gamma values)
+gamma_row <- which.min(abs(sens_df$Gamma - Gamma))
+
+# Compare Normal approximation at the true worst-case u to
+# the separable and Taylor-series Normal approximations
 data.frame(
-  Gamma       = Gamma,
-  p_worst_norm  = worst_p_norm,
-  p_sep       = sens_df[sens_df$Gamma == Gamma_target, ]$p_sep,
-  p_tay       = sens_df[sens_df$Gamma == Gamma_target, ]$p_tay
+  Gamma        = Gamma,
+  p_worst_norm = worst_p_norm,                # Normal p-value at true worst-case u
+  p_sep        = sens_df$p_sep[gamma_row]     # separable approximation p-value
 )
 
 ```
 
-Comparing the calculations, the discrepancy appears to stem from the Normal approximation itself rather than from the separable or Taylor-series approximations for the worst-case $\bm{u}$, since using the true worst-case $\bm{u}$ yields essentially the same Normal-approximation $p$-value.
+This comparison shows that, in this example, the Normal-approximation $p$-value evaluated at the true worst-case configuration $\bm{u}$ is essentially identical to the separable-approximation $p$-value. Thus, the difference between the exact and approximate sensitivity analyses is attributable to the Normal approximation to the randomization distribution, rather than to the separable approximation used to select $\bm{u}$.
 
 ### How Do My Inferences under the Weak Framework Change under these Departures?
 
