@@ -308,7 +308,7 @@ dist_mat_mah <- match_on(
 
 ```
 
-The standardization in the Mahalanobis distance is distinct from researchers' substantive choices about how to transform covariates. Substantive transformations --- such as logging certain covariates --- reflect subject-matter considerations and precede the matching procedure. The standardization implicit in the Mahalanobis distance is a statistical device that operates on the pre-specified covariates to compute distances comparably across covariates. The purpose of this device is to facilitate matches that are similar on the original covariate scales.
+The standardization in the Mahalanobis distance is distinct from researchers' substantive choices about how to transform covariates. Substantive transformations --- such as logging certain covariates --- reflect subject-matter considerations and precede the matching procedure. The standardization in the Mahalanobis distance is a statistical device that operates on the pre-specified covariates to compute distances comparably across covariates. The purpose of this device is to facilitate matches that are similar on the original covariate scales.
 
 #### Similarity on the Estimated Propensity Score
 
@@ -383,7 +383,7 @@ namibia_burundi_euc_dist <- sqrt(sum((namibia[,covs[covs != "region"]] - burundi
 
 ```
 
-To see how two observations that differ on many covariates can still have similar estimated propensity scores, consider post-conflict Namibia (treated) and Burundi (control). The two are similar on some covariates, such as logged military personnel (\texttt{milper}), but --- consistent with the "curse of dimensionality" --- very different on others, such as duration of the last war (\texttt{lwdurat}) and ethnic fractionalization (\texttt{ethfrac}). Yet the the estimated linear indices for Namibia and Burundi differ by only a minuscule amount. This small difference occurs because the covariates on which Namibia and Burundi differ greatly have small coefficients (e.g., \texttt{lwdurat} $\approx$ `r round(x = coef(psm)["lwdurat"], digits = 2)`, \texttt{ethfrac} $\approx$ `r round(x = coef(psm)["ethfrac"], digits = 2)`), while those on which the two observations are similar, such as \texttt{milper}, have large coefficients (approximately `r round(x = coef(psm)["milper"], digits = 2)`).
+To see how two observations that differ on many covariates can still have similar estimated propensity scores, consider post-conflict Namibia (treated) and Burundi (control). The two are similar on some covariates, such as logged military personnel (\texttt{milper}), but --- consistent with the "curse of dimensionality" --- very different on others, such as duration of the last war (\texttt{lwdurat}) and ethnic fractionalization (\texttt{ethfrac}). Yet the the estimated linear indices for Namibia and Burundi differ by only a minuscule amount. This small difference occurs because the covariates on which Namibia and Burundi differ greatly have small estimated coefficients in the propensity score model (e.g., approximately `r round(x = coef(psm)["lwdurat"], digits = 2)` for \texttt{lwdurat} and approximately `r round(x = coef(psm)["ethfrac"], digits = 2)` for \texttt{ethfrac}), while those on which the two observations are similar, such as \texttt{milper}, have large estimated coefficients (approximately `r round(x = coef(psm)["milper"], digits = 2)`).
 
 To illustrate these broader patterns, the boxplot below compares the distributions of the estimated linear covariate index for treated and control groups.
 
@@ -925,7 +925,7 @@ The harmonic-mean–weighted Difference-in-Means also has the practical advantag
 
 - First, the harmonic-mean–weighted Difference-in-Means equals the coefficient on the treatment indicator from a fixed-effects regression that includes matched set indicators [@hansenbowers2008, pp. 228-229], an approach commonly used in practice after matching.
 
-- Second, the harmonic-mean–weighted Difference-in-Means coincides with the overlap-weighted Difference-in-Means [@lietal2018]. Overlap weights place the greatest weight on units with intermediate values of these assignment probabilities and downweight units with extreme values. In particular, using the assignment probability under as-if randomization, control units are weighted by that probability, while treated units are weighted by $1$ minus that probability. Because these assignment probabilities are constant within each matched set, the resulting overlap weights are constant within treated units and within control units in a set, and they aggregate exactly to the harmonic-mean weights implied by the matched sets.
+- Second, the harmonic-mean–weighted Difference-in-Means coincides with the overlap-weighted Difference-in-Means [@lietal2018] when overlap weights are constructed using the treatment assignment probabilities implied by as-if randomization. Overlap weights place the greatest weight on units with intermediate values of these assignment probabilities and downweight units with extreme values. In particular, using the assignment probability under as-if randomization, control units are weighted by that probability, while treated units are weighted by $1$ minus that probability. Because these assignment probabilities are constant within each matched set, the resulting overlap weights are constant within treated units and within control units in a set, and they aggregate exactly to the harmonic-mean weights implied by the matched sets.
 
 To implement a sum statistic equivalent to the harmonic-mean–weighted Difference-in-Means for hypothesis testing, we first reconstruct the outcomes that treated units would have exhibited under the null hypothesis $\tau_h = 0$.
 
@@ -1137,7 +1137,7 @@ Now, to generate the null distribution of the sum statistic, we apply the statis
 ```{r, tidy = FALSE}
 
 # Randomization distribution under sharp null of no effect:
-# Apply sum statistic to each assignment column in 'assigns'
+# Apply sum statistic to each assignment column in 'sim_assigns'
 # Outcome has been transformed so that
 # Sum statistic = harmonic-mean weighted diff in means
 sim_sharp_null_dist <- apply(
@@ -1287,7 +1287,8 @@ An analogous procedure applies when constructing confidence sets without relying
 # Grid of constant-effect null values (sharp framework)
 tau_h_grid <- seq(from = -0.02, to = 1.5, by = 0.0001)
 
-# For each tau_h, compute upper- and lower-tail randomization p-values
+# For each tau_h value, repeat the same randomization test calculation below;
+# sapply() runs this repeatedly and stacks the resulting p-values together
 p_mat <- sapply(X = tau_h_grid, FUN = function(tau_h) {
 
   # Shift outcomes under null: ldur_i - tau_h * UN_i
@@ -1353,7 +1354,6 @@ Likewise, for a point estimate, one could follow @hodgeslehmann1963 and @rosenba
 ### How Do I Draw Inferences under the Weak Framework?
 
 When the target is the ATE, it can be written as $\tau = \sum_{s = 1}^S (n_s / n)\tau_s$, a weighted average of the set-level ATEs with weights equal to each set's share of the total study size. Thus, a straightforward way to estimate the ATE is to compute the Difference-in-Means within each matched set, and then combine these set-level estimates using the same weights. Formally, the overall Difference-in-Means is $\hat{\tau} = \sum_{s=1}^S (n_s / n) \hat{\tau}_s$, where $\hat{\tau}_s$ is the Difference-in-Means in set $s$.
-
 
 These weights are appealing because, under as-if randomization, the resulting Difference-in-Means is an unbiased estimator of the ATE. Formally, the expected value of the estimator --- i.e., the average of $\hat{\tau}$ taken over all treatment assignments consistent with the matched design and their associated probabilities --- equals the true ATE. Nevertheless, although correct in expectation, the Difference-in-Means can vary substantially across assignments. In any given assignment, the estimate may lie far from the target ATE.
 
@@ -1529,6 +1529,7 @@ sens_objective <- function(null_expect, null_variance, obs_stat, alpha = 0.05) {
 To build intuition, we next evaluate this function at $\Gamma = 1$.
 
 ```{r}
+
 # Evaluate under Gamma = 1 using null_ev, null_var, and obs_stat defined earlier
 sens_objective(
   null_expect   = null_ev, 
@@ -1557,7 +1558,8 @@ Below we report the upper one-sided $p$-value obtained under the separable appro
 # Grid of Gamma values
 Gamma_vals <- seq(from = 1, to = 1.5, by = 0.0001)
 
-# Collect results for each Gamma
+# Iterate over the Gamma_vals grid using lapply(): perform the sensitivity
+# analysis at each Gamma and return a list of per-Gamma result objects
 sens_results <- lapply(
   X = Gamma_vals,
   FUN = function(g) {
@@ -1717,7 +1719,6 @@ ggplot(sens_df_long,
   ## Manual colors, no legend needed because facets label quantities
   scale_color_manual(values = plot_cols, guide = "none") +
   
-  ## Clean, publication-style theme
   theme_bw() +
   
   ## Separate panels for p-values and margins
