@@ -1528,7 +1528,7 @@ sens_objective <- function(null_expect, null_variance, obs_stat, alpha = 0.05) {
 
 To build intuition, we next evaluate this function at $\Gamma = 1$.
 
-```{r}
+```{r, tidy = FALSE}
 
 # Evaluate under Gamma = 1 using null_ev, null_var, and obs_stat defined earlier
 sens_objective(
