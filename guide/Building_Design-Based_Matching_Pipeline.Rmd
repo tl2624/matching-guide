@@ -119,7 +119,7 @@ Building on these design-based foundations, we now outline a pipeline that start
 
 Below we present a flow diagram summarizing the overall pipeline. The diagram displays each step and decision point, the relevant \texttt{R} tools (whether existing packages or custom functions included herein), and core references. The diagram is partitioned into three sections that align with the manuscript's sections. All relevant code and replication materials are publicly available in the manuscript's companion \href{https://github.com/tl2624/matching-guide}{GitHub repository}.
 
-```{r diagram, echo = FALSE, fig.pos = "H", fig.cap = "Flow diagram of the design-based matching pipeline", out.width = "\\linewidth"}
+```{r diagram, echo = FALSE, fig.pos = "H", fig.cap = "Flow diagram of the design-based matching pipeline.", out.width = "\\linewidth"}
 
 library(knitr)  # For knitting R Markdown and including external figures or files
 
@@ -296,7 +296,7 @@ Another concern with Euclidean distance is that it ignores correlations among co
 
 The Mahalanobis distance [@mahalanobis1936] addresses both of these concerns. First, it standardizes covariates so that differences are placed on a comparable scale. Second, the Mahalanobis distance adjusts for correlations among covariates, ensuring that highly related variables are not effectively counted twice. We can construct a distance matrix based on Mahalanobis rather than Euclidean distances as follows.
 
-```{r, warning = FALSE,  tidy = FALSE}
+```{r, warning = FALSE, tidy = FALSE}
 
 # Compute Mahalanobis distance matrix between treated (UN = 1) and control (UN = 0)
 dist_mat_mah <- match_on(
@@ -320,7 +320,7 @@ Consider, for example, a logistic model for the estimated propensity score of an
 \begin{align} \label{eq: linear index}
 \hat{\lambda}(\bm{x}_i) & = \dfrac{1}{1 + \exp(-\bm{\hat{\beta}}^{\top}\bm{x}_i)},
 \end{align}
-where $\bm{x}_i$ is the covariate vector, $\bm{\hat{\beta}}$ is the vector of estimated coefficients, and the superscript $^{\top}$ denotes the transpose, turning the row vector $\bm{\hat{\beta}}$ into a column vector. The quantity $\bm{\hat{\beta}}^{\top}\bm{x}_i$ is the estimated linear index, and the inverse logistic function, $1 / (1 + \exp(-x))$, maps any real-valued input, $x$, onto the interval $(0, \, 1)$. The linear covariate index for unit $i$, $\bm{\hat{\beta}}^{\top}\bm{x}_i$, is simply the logit, i.e., log odds, transformation of $\hat{\lambda}(\bm{x}_i)$ in \eqref{eq: linear index}.
+where $\bm{x}_i$ is the covariate vector, $\bm{\hat{\beta}}$ is the vector of estimated coefficients, and the superscript $^{\top}$ denotes the transpose, turning the row vector $\bm{\hat{\beta}}$ into a column vector. The quantity $\bm{\hat{\beta}}^{\top}\bm{x}_i$ is the estimated linear index, and the inverse logistic function, $1 / (1 + \exp(-x))$, maps any real-valued input, $x$, onto the interval $(0, \, 1)$. The estimated linear covariate index for unit $i$, $\bm{\hat{\beta}}^{\top}\bm{x}_i$, is simply the logit, i.e., log odds, transformation of $\hat{\lambda}(\bm{x}_i)$ in \eqref{eq: linear index}.
 
 This quantity, $\hat{\lambda}(\bm{x}_i)$, is a simple transformation of a linear index of covariates that best "separates" treated from control units. The estimated coefficients ($\bm{\hat{\beta}}$) "separate" treated from control units on the linear index because the coefficients are chosen to maximize a likelihood that rewards large differences between the groups. When treated and control units have little or no covariate overlap, the estimated linear indices can diverge substantially, very positive for treated units and very negative for controls. With greater overlap, the estimated linear indices for treated and control units are similar, clustering near zero.
 
@@ -343,7 +343,7 @@ psm <- glm(
 
 ```
 
-Using this fitted propensity score model, we can extract each unit's linear covariate index, $\bm{\hat{\beta}}^{\top} \bm{x}_i$, as follows.
+Using this fitted propensity score model, we can extract each unit's estimated linear covariate index, $\bm{\hat{\beta}}^{\top} \bm{x}_i$, as follows.
 
 ```{r, results = "hide",  tidy = FALSE}
 
@@ -352,7 +352,7 @@ lin_cov_inds <- psm$linear.predictors  # Same as model.matrix(psm) %*% coef(psm)
 
 ```
 
-Below we can see that the linear covariate indices from the model `psm` correspond exactly to the logits (i.e., the log-odds transformations) of the model's predicted probabilities of treatment, which range between $0$ and $1$.
+Below we can see that the estimated linear covariate indices from the model `psm` correspond exactly to the logits (i.e., the log-odds transformations) of the model's predicted probabilities of treatment, which range between $0$ and $1$.
 
 ```{r, results = "hide"}
 
@@ -387,7 +387,7 @@ To see how two observations that differ on many covariates can still have simila
 
 To illustrate these broader patterns, the boxplot below compares the distributions of the estimated linear covariate index for treated and control groups.
 
-```{r, echo = FALSE, fig.pos = "H", fig.width = 7, fig.height = 4, fig.cap = "The empirical distributions of the linear covariate index for treated and control groups"}
+```{r, echo = FALSE, fig.pos = "H", fig.width = 7, fig.height = 4, fig.cap = "The empirical distributions of the linear covariate index for treated and control groups."}
 
 # Install "ggplot2" (only run if not already installed)
 # Install.packages("ggplot2")
@@ -395,19 +395,19 @@ To illustrate these broader patterns, the boxplot below compares the distributio
 # Load ggplot2 package for visualization
 library(ggplot2)
 
-# Boxplot of linear covariate index by treatment status
+# Boxplot of estimated linear covariate index by treatment status
 ggplot(data = data,  # Dataset
        mapping = aes(x = as.factor(UN),    # Treatment indicator (0/1 as factor)
                      y = lin_cov_inds)) +  # Linear covariate index (from logistic regression)
   geom_boxplot() +                         # Draw boxplots
   xlab(label = "UN intervention") +        # X-axis label for treatment
-  ylab(label = "Linear covariate index") + # Y-axis label for lin cov index
+  ylab(label = "Estimated linear covariate index") + # Y-axis label for lin cov index
   theme_bw() +                             # Apply black-and-white theme
   coord_flip()                             # Flip axes for readability
 
 ```
 
-As the figure above shows, there is some, but not a lot of, overlap between treated and control groups. In accordance with our earlier discussion of how the linear covariate index "separates" treated from control units, many control observations have very negative values (as low as `r round(x = min(lin_cov_inds[data$UN == 0]), digits = 2)`), far from the treated units' range of `r round(x = min(lin_cov_inds[data$UN == 1]), digits = 2)` to `r round(x = max(lin_cov_inds[data$UN == 1]), digits = 2)`. Nevertheless, a sufficient number of treated and control observations have linear covariate indices that cluster around $0$, indicating covariate overlap for at least a subset of treated and control observations.
+As the figure above shows, there is some, but not a lot of, overlap between treated and control groups. In accordance with our earlier discussion of how the estimated linear covariate index "separates" treated from control units, many control observations have very negative values (as low as `r round(x = min(lin_cov_inds[data$UN == 0]), digits = 2)`), far from the treated units' range of `r round(x = min(lin_cov_inds[data$UN == 1]), digits = 2)` to `r round(x = max(lin_cov_inds[data$UN == 1]), digits = 2)`. Nevertheless, a sufficient number of treated and control observations have estimated linear covariate indices that cluster around $0$, indicating covariate overlap for at least a subset of treated and control observations.
 
 ### How Can I Apply Rules for Matches to Ensure Comparability?
 
@@ -528,7 +528,7 @@ pop_sd_logit <- sqrt(mean((data$logit_p_score - mean(data$logit_p_score))^2))
 
 ```
 
-We impose a caliper equal to $0.5$ standard deviations of the logit of the estimated propensity score (the linear covariate index defined above). This choice is larger than one rule of thumb emanating from @cochranrubin1973, which recommends a caliper less than or equal to $0.20$ standard deviations. Given that the standard deviation of the logit index is approximately `r round(x = pop_sd_logit, digits = 2)`, our choice of $0.5$ permits treated and control units to differ by up to roughly `r round(x = 0.5 * pop_sd_logit, digits = 2)` on the logit scale, compared to about `r round(x = 0.2 * pop_sd_logit, digits = 2)` under the $0.20$ guideline.
+We impose a caliper equal to $0.5$ standard deviations of the logit of the estimated propensity score (the estimated linear covariate index defined above). This choice is larger than one rule of thumb emanating from @cochranrubin1973, which recommends a caliper less than or equal to $0.20$ standard deviations. Given that the standard deviation of the logit index is approximately `r round(x = pop_sd_logit, digits = 2)`, our choice of $0.5$ permits treated and control units to differ by up to roughly `r round(x = 0.5 * pop_sd_logit, digits = 2)` on the logit scale, compared to about `r round(x = 0.2 * pop_sd_logit, digits = 2)` under the $0.20$ guideline.
 
 ```{r,  tidy = FALSE}
 
@@ -772,26 +772,44 @@ cov_tab <- cov_tab |>
 # Print LaTeX table:
 # - grouped headers: Before matching / After matching
 # - printed column names omit "(Before)/(After)"
-kbl(
+# Build the LaTeX table *without* a caption
+tab_tex <- kbl(
   cov_tab,
   booktabs  = TRUE,
   align     = c("l","c","c","c","c","c","c"),
   col.names = c("Covariate", "Control mean", "Treated mean", "Std. diff",
                 "Control mean", "Treated mean", "Std. diff"),
-  label     = "tab: balance",
+  # no caption here!
   linesep   = ""
 ) |>
   add_header_above(
     c(" " = 1, "Before matching" = 3, "After matching" = 3),
     bold = TRUE
   ) |>
-  kable_styling(latex_options = c("hold_position", "scale_down"))
+  kable_styling(latex_options = c("hold_position", "scale_down"),
+                full_width    = FALSE) |>
+  as.character()
+
+# Insert caption + label *before* \end{table} so it appears below the tabular
+tab_tex <- sub(
+  "\\\\end\\{table\\}",
+  paste0(
+    "\\\\captionof{table}{Adjusted covariate means for treated and control groups ",
+    "and standardized treated--control differences, before and after matching. ",
+    "Asterisks denote two-tailed $p$-values less than or equal to 0.05.}\n",
+    "\\\\label{tab: balance}\n",
+    "\\\\end{table}"
+  ),
+  tab_tex
+)
+
+cat(tab_tex)
 
 ```
 
 \FloatBarrier
 
-In the table above, the adjusted means offer a direct description of balance. The standardized differences place all covariates on a common scale, enabling at-a-glance comparisons of imbalance across covariates. Stars indicate covariates for which the adjusted mean difference would be unusually extreme under a block-randomized experiment that assigns treatment completely at random within matched sets, holding fixed the observed number of treated units in each set. The stars are based on a Normal approximation to the randomization distribution of adjusted mean differences, and, because no adjustments are made for multiple comparisons, these stars are conservative. That is, for any given covariate, the corresponding adjusted mean difference is, if anything, more likely than the nominal rate to fall in the tails of its own randomization distribution under complete random assignment within matched sets. Alternative adjustments for testing multiple covariates are available, such as the Holm procedure [@holm1979], which is the default option in \texttt{RItools}’s `balanceTest()` function.
+In Table \ref{tab: balance} above, the adjusted means offer a direct description of balance. The standardized differences place all covariates on a common scale, enabling at-a-glance comparisons of imbalance across covariates. Stars indicate covariates for which the adjusted mean difference would be unusually extreme under a block-randomized experiment that assigns treatment completely at random within matched sets, holding fixed the observed number of treated units in each set. The stars are based on a Normal approximation to the randomization distribution of adjusted mean differences, and, because no adjustments are made for multiple comparisons, these stars are conservative. That is, for any given covariate, the corresponding adjusted mean difference is, if anything, more likely than the nominal rate to fall in the tails of its own randomization distribution under complete random assignment within matched sets. Alternative adjustments for testing multiple covariates are available, such as the Holm procedure [@holm1979], which is the default option in \texttt{RItools}’s `balanceTest()` function.
 
 One concern with balance tests is that high $p$-values may arise not from improved covariate balance but from the reduction in effective sample size that typically accompanies the matching process [@austin2008; @imaietal2008]. As @hansen2008b notes, however, this possibility is less troubling than it first appears. The same increase in standard errors that produces high $p$-values for covariate balance tests will also carry over to subsequent causal inferences, meaning that those high $p$-values remain informative: They suggest that we are, if anything, less likely to overstate our causal conclusions than if the $p$-values had been significant.
 
@@ -885,8 +903,8 @@ row_lines <- vapply(
 
 # ---- wrap table in center environment ----
 tex <- c(
-  "\\vspace{1em}",  # Space before table
-  "\\begin{center}",
+  "\\begin{table}[htbp]",
+  "\\centering",
   paste0("\\begin{tabular}{", preamble, "}"),
   "\\hline",
   header, " \\\\",
@@ -894,14 +912,17 @@ tex <- c(
   paste0(row_lines, " \\\\"),
   "\\hline",
   "\\end{tabular}",
-  "\\end{center}",
-  "\\vspace{1em}"  # Space after table
+  "\\caption{All possible treatment assignments within matched set \\texttt{ssafrica.3}, holding fixed the observed number of treated units in that set.}",
+  "\\label{tab: ssafrica.3 assignments}",
+  "\\end{table}"
 )
 
 # ---- print final LaTeX code ----
 cat(paste(tex, collapse = "\n"))
 
 ```
+
+\FloatBarrier
 
 The column labeled Assignment 3 shows the assignment that actually occurred. The other possible assignments --- Assignment 1, Assignment 2, and Assignment 4 --- represent cases in which Lesotho, Somalia, or Burundi is treated instead of Rwanda. The set excludes any assignments with more than $1$ treated unit.
 
@@ -1074,8 +1095,8 @@ Then, to generate the distribution to which we refer our observed sum statistic,
 ```{r, tidy = FALSE, results = "hide"}
 
 # For each matched set (fm), record:
-# N   = total units in the set
-# M = number treated (UN == 1)
+# n   = total units in the set
+# m = number treated (UN == 1)
 block_ns <- data_matched |>
   group_by(fm) |>    # Group results by key variables
   summarise(         # Aggregate to one row per group
@@ -1259,7 +1280,6 @@ To test not just a single null hypothesis but a grid of null hypotheses under th
 # Significance level
 alpha <- 0.05
 
-# ----------------------------
 # Upper-tail confidence set (values of tau_h not rejected by the upper-tail test)
 # The lower endpoint is the smallest null value tau_h for which the
 # upper-tail p-value is still >= alpha; any smaller tau_h would be rejected.
@@ -1852,7 +1872,7 @@ weak_sens_value <- min(weak_sens_df$Gamma[weak_sens_df$p_value >= alpha])
 
 Below, we plot the upper one-sided $p$-values corresponding to $\Gamma$ values from `r min(Gamma_vals)` to `r max(Gamma_vals)`.
 
-```{r, tidy = FALSE, echo = FALSE, fig.pos = "H", fig.width = 7, fig.height = 4, fig.cap = "One-sided upper $p$-values for the weak null hypothesis of zero average effect across values of the sensitivity parameter $\\Gamma$"}
+```{r, tidy = FALSE, echo = FALSE, fig.pos = "H", fig.width = 7, fig.height = 4, fig.cap = "One-sided upper $p$-values for the weak null hypothesis of zero average effect across values of the sensitivity parameter $\\Gamma$."}
 
 # Plot weak-null sensitivity results: Gammas vs. p-values
 ggplot(data = weak_sens_df,
