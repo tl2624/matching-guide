@@ -1538,13 +1538,13 @@ Thus far, we have conducted inference assuming $\Gamma = 1$, meaning that all un
 
 When we allow departures from as-if randomization, governed by the sensitivity parameter $\Gamma \geq 1$, we seek new $p$-values that remain valid in the same sense. The probability of a false rejection should not exceed $\alpha$, regardless of the hidden covariate $\mathbf{u}$ or the potential outcomes consistent with the null. The way we ensure this validity, however, differs between the sharp and weak frameworks, which we consider in turn.
 
-### How Do My Inferences under the Sharp Framework Change under these Departures?
+### How Do Inferences under the Sharp Framework Change under these Departures?
 
 For a sharp null, if the hidden $\bm{u}$ were known, we could calculate from \eqref{eq: indiv sens prob} the exact distribution of assignments consistent with the matched design for any given value of $\Gamma \geq 1$. This distribution would provide the correct reference for computing $p$-values under the null. In particular, the upper one-sided $p$-value could be obtained by summing the probabilities of all assignments whose test statistic under the null is at least as large as the observed statistic.
 
 In practice, however, $\bm{u}$ is unknown. Thus, to ensure validity of our tests, we compute $p$-values under the worst-case choice of $\bm{u}$ --- the one that makes the $p$-value as large as possible. Rejection under the worst-case choice of $\bm{u}$ guarantees rejection under the actual (but hidden) $\bm{u}$. Consequently, we will not reject the null more often than we would if the true assignment probabilities --- governed by the actual but unobserved $\bm{u}$ --- were known under the model in \eqref{eq: indiv sens prob}.
 
-#### Finding the Worst-Case Scenario of Hidden Confounding to Ensure Valid Inference
+#### Finding the Worst-Case Scenario of Hidden Confounding for Valid Inference
 
 Actually finding this worst-case $\bm{u}$ is difficult. As a first step, @rosenbaumkrieger1990 show that in the unmatched (i.e., two sample) case, the vector $\bm{u}$ that maximizes the $p$-value under any fixed $\Gamma \geq 1$ must belong to a restricted set of possibilities, denoted by $\mathcal{U}_{+}$. Once the subjects are ordered from the largest to the smallest outcome, all the candidate vectors in $\mathcal{U}_{+}$ look the same: a sequence of $1$s at the top followed by $0$s below. We do not know *how many* $1$s should precede the $0$s, and this number determines which configuration of $\bm{u}$ yields the worst-case $p$-value. In an unmatched study, it is straightforward to enumerate all $n - 1$ such candidate vectors in $\mathcal{U}_+$, and then identify which one yields the largest $p$-value for a fixed $\Gamma \geq 1$.
 
@@ -1801,7 +1801,7 @@ ggplot(sens_df_long,
 
 These sensitivity analyses rely on multiple approximations. For example, the separable approximation is used to approximate the worst-case configuration of hidden bias $\bm{u} \in \mathcal{U}_+$, and inference additionally relies on a Normal approximation to the null randomization distribution of the test statistic. If the exact randomization distribution were used instead, the resulting sensitivity conclusions could differ for certain values of $\Gamma$. In principle, one could also assess sensitivity at a given $\Gamma$ using the exact randomization distribution by fixing a configuration of hidden bias $\bm{u}$ --- for example, the separable choice --- and deriving, from \eqref{eq: indiv sens prob}, the implied probability distribution on $\Omega$, which can then be combined with the previously defined `exact_sharp_null_dist` to compute the corresponding $p$-value.
 
-### How Do My Inferences under the Weak Framework Change under these Departures?
+### How Do Inferences under the Weak Framework Change under these Departures?
 
 Compared to tests of the sharp null hypothesis of no effect, constructing valid tests of an analogous weak null hypothesis is more challenging. A sharp null hypothesis specifies all missing potential outcomes, so we need only consider $p$-values over configurations of $\bm{u} \in \mathcal{U}_{+}$, rather than also over multiple configurations of potential outcomes. By contrast, a weak null permits many possible configurations of potential outcomes, so identifying the worst-case $p$-value requires optimization over both $\bm{u}$ and the potential outcomes consistent with the null. This joint optimization is computationally tractable only in restricted settings, such as those with binary outcomes [@fogartyetal2017] or matched-pair designs [@fogarty2020].
 
