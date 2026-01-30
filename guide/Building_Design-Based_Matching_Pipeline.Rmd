@@ -72,7 +72,7 @@ opts_knit$set(width = 75)
 
 \begin{abstract}
 \singlespacing
-\noindent Matching, a canonical design for observational studies, takes many forms that rest on distinct --- yet often implicit --- statistical principles. We construct a matching pipeline for practitioners that makes these principles explicit by grounding each step in a coherent design-based framework. The pipeline begins from the conceptual ideal of a randomized experiment, traces how observational studies depart from it, and then employs matching to approximate that randomized ideal. The next stage is inference under the as-if randomization assumption of matched sets' being equivalent to a collection of miniature randomized experiments within blocks. Under this assumption, we consider inference on all individual effects in the "sharp" framework and on the average effect in the "weak" framework. The final stage is a sensitivity analysis to assess, under either framework, how inferences change under departures from as-if randomization. Each step includes extensively commented \texttt{R} code that equips practitioners to implement both established and newly developed procedures, including several not yet available in existing \texttt{R} packages. By integrating methodological stages that are often considered separately into a single pipeline, we aim to help practitioners understand why each step matters and how the pipeline can be tailored to their own data. We illustrate the full workflow through an application examining the effect of United Nations peacekeeping interventions on the duration of post-conflict peace.
+\noindent Matching, a canonical design for observational studies, takes many forms that rest on distinct --- yet often implicit --- statistical principles. We construct a matching pipeline for practitioners that makes these principles explicit by grounding each step in a coherent design-based framework. The pipeline begins from the conceptual ideal of a randomized experiment, traces how observational studies depart from it, and then employs matching to approximate that randomized ideal. The next stage is inference under the as-if randomization assumption that matched sets are equivalent to a collection of miniature randomized experiments within blocks, where each block has a fixed number of treated units equal to the number observed in that set. Under this assumption, we consider inference on all individual effects in the "sharp" framework and on the average effect in the "weak" framework. The final stage is a sensitivity analysis to assess, under either framework, how inferences change under departures from as-if randomization. Each step includes extensively commented \texttt{R} code that equips practitioners to implement both established and newly developed procedures, including several not yet available in existing \texttt{R} packages. By integrating methodological stages that are often considered separately into a single pipeline, we aim to help practitioners understand why each step matters and how the pipeline can be tailored to their own data. We illustrate the full workflow through an application examining the effect of United Nations peacekeeping interventions on the duration of post-conflict peace.
 \end{abstract}
 
 \newpage
@@ -119,7 +119,7 @@ Building on these design-based foundations, we now outline a pipeline that start
 
 Below we present a flow diagram summarizing the overall pipeline. The diagram displays each step and decision point, the relevant \texttt{R} tools (whether existing packages or custom functions included herein), and core references. The diagram is partitioned into three sections that align with the manuscript's sections. All relevant code and replication materials are publicly available in the manuscript's companion \href{https://github.com/tl2624/matching-guide}{GitHub repository}.
 
-```{r diagram, echo = FALSE, fig.pos = "H", fig.cap = "Flow diagram of the design-based matching pipeline.", out.width = "\\linewidth"}
+```{r diagram, echo = FALSE, fig.pos = "H", fig.cap = "Flow diagram of the design-based matching pipeline.\\label{fig: pipeline}", out.width = "\\linewidth"}
 
 library(knitr)  # For knitting R Markdown and including external figures or files
 
@@ -132,38 +132,43 @@ include_graphics(path = "fig/version_2/matching_pipeline_flowchart_V2.pdf")
 
 We provide a high-level overview of the ideas behind matching and include code that demonstrates how to implement those ideas with various \texttt{R} packages. We also work through some of these steps "by hand" to underscore the underlying conceptual issues. Doing so also gives practitioners more flexibility to adapt the matching pipeline to their own needs.
 
-We break the implementation into specific decision points that practitioners commonly face, and present the pipeline in three main parts (see Figure 1):
-\begin{enumerate}
-\item[] \textbf{Part 1: Making a Matched Dataset (toward Justifying As-If Randomization)}
-\begin{enumerate}
-\item How Do I Measure Similarity on My Chosen Covariates?
-\begin{itemize}
-\item Similarity on the Estimated Propensity Score
-\end{itemize}
-\item How Can I Apply Rules for Matches to Ensure Comparability?
-\item How Can I Apply Rules for Matches to Improve Effective Sample Size?
-\item How Do I Actually Form the Matches?
-\item How Do I Decide Whether to Move Ahead with My Matched Design?
-\end{enumerate}
-\item[] \textbf{Part 2: Causal Inference (under As-If Randomization)}
-\begin{enumerate}
-\item How Do I Draw Inferences under the Sharp Framework?
-\item How Do I Draw Inferences under the Weak Framework?
-\end{enumerate}
-\item[] \textbf{Part 3: Sensitivity Analysis (Departures from As-If Randomization)}
-\begin{enumerate}
-\item How Do My Inferences under the Sharp Framework Change under these Departures?
-\begin{itemize}
-\item Finding the Worst-Case Scenario of Hidden Confounding to Ensure Valid Inference
-\begin{itemize}
-\item Separable Approximation
-\item Taylor Series Approximation
-\end{itemize}
-\item Conducting Sensitivity Analysis under the Worst-Case Scenario
-\end{itemize}
-\item How Do My Inferences under the Weak Framework Change under these Departures?  
-\end{enumerate}
-\end{enumerate}
+We break the implementation into specific decision points that practitioners commonly face, and present the pipeline in three main parts (see \Cref{fig: pipeline}):
+
+**Part 1: Making a Matched Dataset (toward Justifying As-If Randomization)**
+
+(a) How Do I Measure Similarity on My Chosen Covariates?
+
+   - Similarity on the Estimated Propensity Score
+
+(b) How Can I Apply Rules for Matches to Ensure Comparability?
+
+(c) How Can I Apply Rules for Matches to Improve Effective Sample Size?
+
+(d) How Do I Actually Form the Matches?
+
+(e) How Do I Decide Whether to Move Ahead with My Matched Design?
+
+
+**Part 2: Causal Inference (under As-If Randomization)**
+
+(a) How Do I Draw Inferences under the Sharp Framework?
+
+(b) How Do I Draw Inferences under the Weak Framework?
+
+
+**Part 3: Sensitivity Analysis (Departures from As-If Randomization)**
+
+(a) How Do My Inferences under the Sharp Framework Change under these Departures?
+
+   - Finding the Worst-Case Scenario of Hidden Confounding to Ensure Valid Inference
+     
+     - Separable Approximation
+     - Taylor Series Approximation
+
+   - Conducting Sensitivity Analysis under the Worst-Case Scenario
+
+(b) How Do My Inferences under the Weak Framework Change under these Departures?
+
 Before turning to Part 1, we introduce a running example taken from @gilligansergenti2008, which we use throughout this manuscript.
 
 ## Running Example: United Nations Peacekeeping and Post-Conflict Peace
@@ -387,7 +392,7 @@ To see how two observations that differ on many covariates can still have simila
 
 To illustrate these broader patterns, the boxplot below compares the distributions of the estimated linear covariate index for treated and control groups.
 
-```{r, echo = FALSE, fig.pos = "H", fig.width = 7, fig.height = 4, fig.cap = "The empirical distributions of the linear covariate index for treated and control groups."}
+```{r, echo = FALSE, fig.pos = "H", fig.width = 6, fig.height = 4, fig.cap = "The empirical distributions of the linear covariate index for treated and control groups."}
 
 # Install "ggplot2" (only run if not already installed)
 # Install.packages("ggplot2")
@@ -990,6 +995,8 @@ obs_stat <- sum(data_matched$ldur_tilde_hm_scaled[data_matched$UN == 1])
 
 We can verify in \texttt{R} that this observed sum statistic coincides with the harmonic-mean-weighted Difference-in-Means, the coefficient on the treatment indicator from a fixed-effects regression that includes matched set indicators, and the overlap-weighted Difference-in-Means constructed from the assignment probabilities implied by as-if randomization.
 
+First, we show that the observed sum statistic equals the harmonic-mean–weighted average of the within–matched-set Differences-in-Means, where each matched set is weighted by its contribution to the effective sample size.
+
 ```{r}
 
 # Harmonic-mean–weighted difference in means (weights computed within sets)
@@ -1010,9 +1017,37 @@ dim_hm <- data_matched |>
   ) |>
   pull(dim_hm)  # Pull column out of data frame
 
+# Approaches coincides with the sum statistic
+all.equal(
+  dim_hm,
+  obs_stat
+)
+
+```
+
+Next, we verify that the same quantity is obtained as the coefficient on the treatment indicator from a fixed-effects regression that includes matched set indicators.
+
+```{r}
+
 # Fixed-effects (FE) regression coefficient on UN (matched set indicators as FE)
 fe_fit <- lm(formula = ldur_tilde ~ UN + fm,
              data = data_matched)
+
+# Drop name so comparison is purely numeric
+treat_coef_fe_fit <- unname(coef(fe_fit)["UN"])
+
+
+# Approaches coincides with the sum statistic
+all.equal(
+  treat_coef_fe_fit,
+  obs_stat
+)
+
+```
+
+Finally, we confirm that the observed sum statistic also coincides with the overlap-weighted Difference-in-Means. The overlap weights are constructed from the treatment assignment probabilities implied by as-if randomization within matched sets, with treated units weighted by one minus their treatment probability and control units weighted by their treatment probability.
+
+```{r}
 
 # Install "PSweight" package (only run if you don't already have it installed)
 # Install.packages("PSweight")
@@ -1055,11 +1090,9 @@ dim_ow <- data_matched |>
   ) |>
   pull(dim_ow)
 
-# All three approaches coincide with the sum statistic
+# Approaches coincides with the sum statistic
 all.equal(
-  dim_hm,
   dim_ow,
-  unname(coef(fe_fit)["UN"]),  # Drop name so comparison is purely numeric
   obs_stat
 )
 
@@ -1090,7 +1123,7 @@ total_assigns <- prod(choose(n = set_sum$n, k = set_sum$m))
 
 ```
 
-Then, to generate the distribution to which we refer our observed sum statistic, we can hold the reconstructed and rescaled outcomes fixed and then calculate the sum statistic over all possible assignments in $\Omega$. In our application, with `r n_sets` sets ranging in size from `r min_set_size` to `r max_set_size`, the total number of assignments is `r format(x = total_assigns, scientific = FALSE, big.mark = ",")`. 
+Now, to generate the distribution to which we refer our observed sum statistic, we can hold the reconstructed and rescaled outcomes fixed and then calculate the sum statistic over all possible assignments in $\Omega$. In our application, with `r n_sets` sets ranging in size from `r min_set_size` to `r max_set_size`, the total number of assignments is `r format(x = total_assigns, scientific = FALSE, big.mark = ",")`. 
 
 ```{r, tidy = FALSE, results = "hide"}
 
@@ -1628,7 +1661,7 @@ For this matched dataset, the conclusions from the separable and Taylor series a
 
 The plot below illustrates this comparison and clarifies how the two approaches relate across values of $\Gamma$.
 
-```{r, tidy = FALSE, echo = FALSE, fig.pos = "H", fig.width = 7, fig.height = 4, fig.cap =  "Sensitivity analysis for the sharp null of no individual treatment effect for all units. The top panel shows upper one-sided $p$-values under the separable approximation across values of $\\Gamma$; the bottom panel reports, across the same values of $\\Gamma$, the corresponding Taylor series margin, with the zero line marking the rejection boundary. The shaded vertical band highlights values of $\\Gamma$ for which the separable approximation and the Taylor series approximation lead to different rejection decisions."}
+```{r, tidy = FALSE, echo = FALSE, fig.pos = "H", fig.width = 6, fig.height = 4, fig.cap =  "Sensitivity analysis for the sharp null of no individual treatment effect for all units. The top panel shows upper one-sided $p$-values under the separable approximation across values of $\\Gamma$; the bottom panel reports, across the same values of $\\Gamma$, the corresponding Taylor series margin, with the zero line marking the rejection boundary. The shaded vertical band highlights values of $\\Gamma$ for which the separable approximation and the Taylor series approximation lead to different rejection decisions."}
 
 # Install tidyr (only run if not already installed)
 # Install.packages("tidyr")
@@ -1872,7 +1905,7 @@ weak_sens_value <- min(weak_sens_df$Gamma[weak_sens_df$p_value >= alpha])
 
 Below, we plot the upper one-sided $p$-values corresponding to $\Gamma$ values from `r min(Gamma_vals)` to `r max(Gamma_vals)`.
 
-```{r, tidy = FALSE, echo = FALSE, fig.pos = "H", fig.width = 7, fig.height = 4, fig.cap = "One-sided upper $p$-values for the weak null hypothesis of zero average effect across values of the sensitivity parameter $\\Gamma$."}
+```{r, tidy = FALSE, echo = FALSE, fig.pos = "H", fig.width = 6, fig.height = 4, fig.cap = "One-sided upper $p$-values for the weak null hypothesis of zero average effect across values of the sensitivity parameter $\\Gamma$."}
 
 # Plot weak-null sensitivity results: Gammas vs. p-values
 ggplot(data = weak_sens_df,

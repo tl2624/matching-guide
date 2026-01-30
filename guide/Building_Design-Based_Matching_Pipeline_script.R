@@ -490,10 +490,28 @@ dim_hm <- data_matched |>
   ) |>
   pull(dim_hm)  # Pull column out of data frame
 
+# Approaches coincides with the sum statistic
+all.equal(
+  dim_hm,
+  obs_stat
+)
+
+# ---- chunk ----
 # Fixed-effects (FE) regression coefficient on UN (matched set indicators as FE)
 fe_fit <- lm(formula = ldur_tilde ~ UN + fm,
              data = data_matched)
 
+# Drop name so comparison is purely numeric
+treat_coef_fe_fit <- unname(coef(fe_fit)["UN"])
+
+
+# Approaches coincides with the sum statistic
+all.equal(
+  treat_coef_fe_fit,
+  obs_stat
+)
+
+# ---- chunk ----
 # Install "PSweight" package (only run if you don't already have it installed)
 # Install.packages("PSweight")
 library(PSweight) # For overlap weights from Li et al (2018)
@@ -535,11 +553,9 @@ dim_ow <- data_matched |>
   ) |>
   pull(dim_ow)
 
-# All three approaches coincide with the sum statistic
+# Approaches coincides with the sum statistic
 all.equal(
-  dim_hm,
   dim_ow,
-  unname(coef(fe_fit)["UN"]),  # Drop name so comparison is purely numeric
   obs_stat
 )
 
