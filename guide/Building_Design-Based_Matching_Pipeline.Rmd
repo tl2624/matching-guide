@@ -72,7 +72,7 @@ opts_knit$set(width = 75)
 
 \begin{abstract}
 \singlespacing
-\noindent Matching, a canonical design for observational studies, takes many forms that rest on distinct --- yet often implicit --- statistical principles. We construct a matching pipeline for practitioners that makes these principles explicit by grounding each step in a coherent design-based framework. The pipeline begins from the conceptual ideal of a randomized experiment, traces how observational studies depart from it, and then employs matching to approximate that randomized ideal. The next stage is inference under the as-if randomization assumption that matched sets are equivalent to a collection of miniature randomized experiments within blocks, where each block has a fixed number of treated units equal to the number observed in that set. Under this assumption, we consider inference on all individual effects in the "sharp" framework and on the average effect in the "weak" framework. The final stage is a sensitivity analysis to assess, under either framework, how inferences change under departures from as-if randomization. Each step includes extensively commented \texttt{R} code that equips practitioners to implement both established and newly developed procedures, including several not yet available in existing \texttt{R} packages. By integrating methodological stages that are often considered separately into a single pipeline, we aim to help practitioners understand why each step matters and how the pipeline can be tailored to their own data. We illustrate the full workflow through an application examining the effect of United Nations peacekeeping interventions on the duration of post-conflict peace.
+\noindent Matching, a canonical design for observational studies, takes many forms that rest on distinct --- yet often implicit --- statistical principles. We construct a matching pipeline for practitioners that makes these principles explicit by integrating stages often treated separately within a coherent design-based framework. The pipeline begins from the conceptual ideal of a randomized experiment, traces how observational studies depart from it, and then employs matching to approximate that ideal. The next stage is inference under the as-if randomization assumption that matched sets are equivalent to a collection of miniature randomized experiments within blocks, where each block has a fixed number of treated units equal to the number observed in that set. Under this assumption, we consider inference on all individual effects in the "sharp" framework and on the average effect in the "weak" framework. The final stage is a sensitivity analysis to assess, under either framework, how inferences change under departures from as-if randomization. Each step includes extensively commented \texttt{R} code that equips practitioners to implement both established and newly developed procedures, including several not yet available in existing \texttt{R} packages. We illustrate the full workflow through an application examining the effect of United Nations peacekeeping interventions on the duration of post-conflict peace.
 \end{abstract}
 
 \newpage
@@ -117,7 +117,12 @@ Building on these design-based foundations, we now outline a pipeline that start
 
   - **Assess sensitivity**. Finally, we turn to sensitivity analyses under both inferential frameworks. We review established methods for conducting sensitivity analysis for tests of sharp nulls under possible violations of as-if randomization [@rosenbaumkrieger1990; @gastwirthetal2000; @rosenbaum2018]. We then describe and implement new methods that extend sensitivity analysis to tests of weak null hypotheses [@fogarty2023].
 
-Below we present a flow diagram summarizing the overall pipeline. The diagram displays each step and decision point, the relevant \texttt{R} tools (whether existing packages or custom functions included herein), and core references. The diagram is partitioned into three sections that align with the manuscript's sections. All relevant code and replication materials are publicly available in the manuscript's companion \href{https://github.com/tl2624/matching-guide}{GitHub repository}.
+Below we present a flow diagram summarizing the overall pipeline, partitioned into three sections aligned with the manuscript's sections. The
+diagram displays each step and decision point, the relevant \texttt{R}
+tools (whether existing packages or custom functions included herein),
+and core references. All relevant code and replication
+materials are publicly available in the manuscript's companion
+\href{https://github.com/tl2624/matching-guide}{GitHub repository}
 
 ```{r diagram, echo = FALSE, fig.pos = "H", fig.cap = "Flow diagram of the design-based matching pipeline.\\label{fig: pipeline}", out.width = "\\linewidth"}
 
@@ -158,16 +163,16 @@ We break the implementation into specific decision points that practitioners com
 
 **Part 3: Sensitivity Analysis (Departures from As-If Randomization)**
 
-(a) How Do My Inferences under the Sharp Framework Change under these Departures?
+(a) How Do Inferences under the Sharp Framework Change under these Departures?
 
-   - Finding the Worst-Case Scenario of Hidden Confounding to Ensure Valid Inference
+   - Finding the Worst-Case Scenario of Hidden Confounding for Valid Inference
      
      - Separable Approximation
      - Taylor Series Approximation
 
    - Conducting Sensitivity Analysis under the Worst-Case Scenario
 
-(b) How Do My Inferences under the Weak Framework Change under these Departures?
+(b) How Do Inferences under the Weak Framework Change under these Departures?
 
 Before turning to Part 1, we introduce a running example taken from @gilligansergenti2008, which we use throughout this manuscript.
 
