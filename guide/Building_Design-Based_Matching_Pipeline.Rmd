@@ -1862,7 +1862,7 @@ weak_sens_df <- data.frame(
 for (g in Gamma_vals) { # Loop over Gamma values
   
   # Worst-case IPW estimate within each matched set at Gamma = g
-  strat_stats <- data_matched |>
+  set_stats <- data_matched |>
     group_by(fm) |>
     summarise(
       n      = n(),                        # Set size n_s
@@ -1878,12 +1878,12 @@ for (g in Gamma_vals) { # Loop over Gamma values
     )
   
   # Overall worst-case IPW statistic (weighted average across sets)
-  wc_ipw_stat <- sum(strat_stats$weight * strat_stats$est)
+  wc_ipw_stat <- sum(set_stats$weight * set_stats$est)
   
   # Variance estimate for the worst-case IPW statistic
   var_hat <- fine_strat_var_est(
-    strat_ns   = strat_stats$n,
-    strat_ests = strat_stats$est
+    strat_ns   = set_stats$n,
+    strat_ests = set_stats$est
   )
   
   # Standardized worst-case IPW statistic, centered at the null
