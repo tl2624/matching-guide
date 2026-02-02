@@ -72,7 +72,7 @@ opts_knit$set(width = 75)
 
 \begin{abstract}
 \singlespacing
-\noindent Matching, a canonical design for observational studies, takes many forms that rest on distinct --- yet often implicit --- statistical principles. We construct a matching pipeline for practitioners that makes these principles explicit by integrating stages often treated separately within a coherent design-based framework. The pipeline begins from the conceptual ideal of a randomized experiment, traces how observational studies depart from it, and then employs matching to approximate that ideal. The next stage is inference under the as-if randomization assumption that matched sets are equivalent to a collection of randomized experiments within blocks, where each block has a fixed number of treated units equal to the number observed in that set. Under this assumption, we consider inference on all individual effects in the "sharp" framework and on the average effect in the "weak" framework. The final stage is a sensitivity analysis to assess, under either framework, how inferences change under departures from as-if randomization. Each step includes extensively commented \texttt{R} code that equips practitioners to implement both established and newly developed procedures, including several not yet available in existing \texttt{R} packages. We illustrate the full workflow through an application examining the effect of United Nations peacekeeping interventions on the duration of post-conflict peace.
+\noindent Matching, a canonical design for observational studies, takes many forms that rest on distinct --- yet often implicit --- statistical principles. We construct a matching pipeline for practitioners that makes these principles explicit an integrates stages often treated separately within a coherent design-based framework. The pipeline begins from the conceptual ideal of a randomized experiment, traces how observational studies depart from it, and then employs matching to approximate that ideal. The next stage is inference under the as-if randomization assumption that matched sets are equivalent to a collection of randomized experiments within blocks, where each block has a fixed number of treated units equal to the number observed in that set. Under this assumption, we consider inference on all individual effects in the "sharp" framework and on the average effect in the "weak" framework. The final stage is a sensitivity analysis to assess, under either framework, how inferences change under departures from as-if randomization. Each step includes extensively commented \texttt{R} code that equips practitioners to implement both established and newly developed procedures, including several not yet available in existing \texttt{R} packages. We illustrate the full workflow through an application examining the effect of United Nations peacekeeping interventions on the duration of post-conflict peace.
 \end{abstract}
 
 \newpage
@@ -180,7 +180,7 @@ Before turning to Part 1, we introduce a running example taken from @gilliganser
 
 We introduce matching through an example that examines the causal effect of United Nations (UN) peacekeeping missions on the durability of post-conflict peace, a question of central importance for both academic research and policy. Our example draws on data from @gilligansergenti2008, whose title includes the phrase "Matching to Improve Causal Inference," underscoring the value of applying matching to study the UN's causal impact on post-conflict peace. These data are publicly available in the supplementary information of the article's webpage in the *Quarterly Journal of Political Science* (DOI: [10.1561/100.00007051](https://doi.org/10.1561/100.00007051)).
 
-The dataset we use from @gilligansergenti2008 includes 87 observations, each corresponding to a country's peace-period episode following a civil war, with episodes beginning as early as January 1989 and data extending through December 2003. In some episodes, UN peacekeepers intervened (e.g., Sierra Leone, Jan 2001 - Dec 2003), while in others they did not (e.g., Macedonia, Sep 2001 - Dec 2003). The treatment variable is UN intervention (\texttt{UN}), coded as $1$ if a UN mission was present during the peace period and $0$ otherwise. The outcome variable is the duration of the peace spell, which @gilligansergenti2008 measure as the log of the number of days from the start of peace until either the outbreak of a new conflict or right-censoring at December 2003. This log-transformed outcome (\texttt{ldur}) captures the total length of the peace period rather than the time elapsed after a potential UN intervention. In practice, however, UN interventions almost always began immediately after the onset of peace: "Of the 19 post-conflict UN interventions, the United Nations was present within the first month for 16 of them" [@gilligansergenti2008, p. 118]. Going forward, we set aside these measurement details.
+The dataset we use from @gilligansergenti2008 includes 87 observations, each corresponding to a country's peace period episode following a civil war, with episodes beginning as early as January 1989 and data extending through December 2003. In some episodes, UN peacekeepers intervened (e.g., Sierra Leone, Jan 2001 - Dec 2003), while in others they did not (e.g., Macedonia, Sep 2001 - Dec 2003). The treatment variable is UN intervention (\texttt{UN}), coded as $1$ if a UN mission was present during the peace period and $0$ otherwise. The outcome variable is the duration of the peace spell, which @gilligansergenti2008 measure as the log of the number of days from the start of peace until either the outbreak of a new conflict or right-censoring at December 2003. This log-transformed outcome (\texttt{ldur}) captures the total length of the peace period rather than the time elapsed after a potential UN intervention. In practice, however, UN interventions almost always began immediately after the onset of peace: "Of the 19 post-conflict UN interventions, the United Nations was present within the first month for 16 of them" [@gilligansergenti2008, p. 118]. In what follows, we set aside these measurement details.
 
 As @gilligansergenti2008 state, "UN missions are not randomly assigned" (p. 89). Whether peacekeepers are present during a given post-conflict peace period presumably depends on baseline covariates measured by @gilligansergenti2008, including the logged number of deaths (\texttt{lwdeaths}), the logged duration of the previous war (\texttt{lwdurat}), ethnic fractionalization (\texttt{ethfrac}, a 0-100 index for which dividing by 100 is intended to represent the probability that two randomly chosen individuals belong to different ethnic groups), logged population size (\texttt{pop}) and others. We implement matching using these same covariates, but emphasize that our exercise is expository and not intended as a replication of the original findings.
 
@@ -229,7 +229,7 @@ There are many ways to measure the distance between a treated and a control unit
 ```{r, tidy = FALSE}
 
 # Install "dplyr" package (only run if you don't already have it installed)
-# Install.packages("dplyr")
+# install.packages("dplyr")
 
 # Load dplyr package for data manipulation (mutate, group_by, summarize, etc.)
 library(dplyr)
@@ -277,7 +277,7 @@ cov_fmla <- reformulate(termlabels = covs,
                         response = "UN")
 
 # Install optmatch if not already installed
-# Install.packages("optmatch")
+# install.packages("optmatch")
 
 # Load optmatch, which provides the match_on() function
 library(optmatch)
@@ -298,7 +298,7 @@ round(x = dist_mat_euc[11:15, 27:30],
 
 ```
 
-In this little subset of the full distance matrix, the first entry is the Euclidean distance of Sierra Leone (treated) from Niger (control). The last listed entry is the distance between Namibia (treated) and the Central African Republic (control). 
+In this subset of the full distance matrix, the first entry is the Euclidean distance of Sierra Leone (treated) from Niger (control). The last listed entry is the distance between Namibia (treated) and the Central African Republic (control). 
 
 One concern with Euclidean distance is that it depends on the scale of the covariates. For example, the difference between a country in Sub-Saharan Africa (\texttt{ssafrica} = 1) and a country in Latin America (\texttt{ssafrica} = 0) would contribute the same to the Euclidean distance as the difference between two countries with GDP per capita values of \$3000 and \$3001. Intuitively, we would not want such a tiny difference in economic size to be treated as equally important as belonging to different regions of the world. More generally, we want differences across variables to be placed on a comparable scale, so that a meaningful difference in one variable counts about the same as a difference of similar importance in another.
 
@@ -372,7 +372,7 @@ p_scores <- psm$fitted.values
 # Check that lin_cov_inds equals log odds (propensity scores on logit scale)
 all.equal(lin_cov_inds, log(p_scores / (1 - p_scores)))
 
-# ALso check that p_scores equals logistic(lin_cov_inds)
+# Also check that p_scores equals logistic(lin_cov_inds)
 all.equal(p_scores, 1 / (1 + exp(-lin_cov_inds)))
 
 ```
@@ -393,14 +393,14 @@ namibia_burundi_euc_dist <- sqrt(sum((namibia[,covs[covs != "region"]] - burundi
 
 ```
 
-To see how two observations that differ on many covariates can still have similar estimated propensity scores, consider post-conflict Namibia (treated) and Burundi (control). The two are similar on some covariates, such as logged military personnel (\texttt{milper}), but --- consistent with the "curse of dimensionality" --- very different on others, such as duration of the last war (\texttt{lwdurat}) and ethnic fractionalization (\texttt{ethfrac}). Yet the the estimated linear indices for Namibia and Burundi differ by only a minuscule amount. This small difference occurs because the covariates on which Namibia and Burundi differ greatly have small estimated coefficients in the propensity score model (e.g., approximately `r round(x = coef(psm)["lwdurat"], digits = 2)` for \texttt{lwdurat} and approximately `r round(x = coef(psm)["ethfrac"], digits = 2)` for \texttt{ethfrac}), while those on which the two observations are similar, such as \texttt{milper}, have large estimated coefficients (approximately `r round(x = coef(psm)["milper"], digits = 2)`).
+To see how two observations that differ on many covariates can still have similar estimated propensity scores, consider post-conflict Namibia (treated) and Burundi (control). The two are similar on some covariates, such as logged military personnel (\texttt{milper}), but --- consistent with the "curse of dimensionality" --- very different on others, such as duration of the last war (\texttt{lwdurat}) and ethnic fractionalization (\texttt{ethfrac}). Yet the estimated linear indices for Namibia and Burundi differ by only a minuscule amount. This small difference occurs because the covariates on which Namibia and Burundi differ greatly have small estimated coefficients in the propensity score model (e.g., approximately `r round(x = coef(psm)["lwdurat"], digits = 2)` for \texttt{lwdurat} and approximately `r round(x = coef(psm)["ethfrac"], digits = 2)` for \texttt{ethfrac}), while those on which the two observations are similar, such as \texttt{milper}, have large estimated coefficients (approximately `r round(x = coef(psm)["milper"], digits = 2)`).
 
 To illustrate these broader patterns, the boxplot below compares the distributions of the estimated linear covariate index for treated and control groups.
 
 ```{r, echo = FALSE, fig.pos = "H", fig.width = 6, fig.height = 4, fig.cap = "The empirical distributions of the linear covariate index for treated and control groups."}
 
 # Install "ggplot2" (only run if not already installed)
-# Install.packages("ggplot2")
+# install.packages("ggplot2")
 
 # Load ggplot2 package for visualization
 library(ggplot2)
@@ -672,7 +672,7 @@ Below we calculate adjusted covariate means for the treated and control groups b
 ```{r,  tidy = FALSE}
 
 # Install "RItools" package (only run if you don't already have it installed)
-# Install.packages("RItools")
+# install.packages("RItools")
 
 # Load RItools package for balance diagnostics (balanceTest)
 library(RItools)
@@ -888,7 +888,7 @@ m <- sum(sdat$UN)  # Number of units treated
 
 # ---- enumerate all possible assignments ----
 # Install "randomizr" (only run if not already installed)
-# Install.packages("randomizr")
+# install.packages("randomizr")
 # Load randomizr for generating random assignments
 library(randomizr)
 Z <- obtain_permutation_matrix(declaration = declare_ra(N = n, m = m))
@@ -1055,7 +1055,7 @@ Finally, we confirm that the observed sum statistic also coincides with the over
 ```{r}
 
 # Install "PSweight" package (only run if you don't already have it installed)
-# Install.packages("PSweight")
+# install.packages("PSweight")
 library(PSweight) # For overlap weights from Li et al (2018)
 
 # Encode the treatment assignment probabilities implied by as-if randomization
@@ -1154,7 +1154,7 @@ Because our matched study is relatively small, we can enumerate all possible tre
 ```{r}
 
 # Install "randomizr" (only run if not already installed)
-# Install.packages("randomizr")
+# install.packages("randomizr")
 
 # Load randomizr for generating random assignments
 library(randomizr)
@@ -1268,7 +1268,7 @@ As an alternative to randomly sampling assignments and computing the test statis
 ```{r, tidy = FALSE}
 
 # Install "senstrat" package (only run if you don't already have it installed)
-# Install.packages("senstrat")
+# install.packages("senstrat")
 
 # Load senstrat for computing stratum-level null expectations/variances
 # (Rosenbaum & Krieger 1990) and later sensitivity analysis
@@ -1415,7 +1415,7 @@ When the target is the ATE, it can be written as $\tau = \sum_{s = 1}^S (n_s / n
 
 These weights are appealing because, under as-if randomization, the resulting Difference-in-Means is an unbiased estimator of the ATE. Formally, the expected value of the estimator --- i.e., the average of $\hat{\tau}$ taken over all treatment assignments consistent with the matched design and their associated probabilities --- equals the true ATE. Nevertheless, although correct in expectation, the Difference-in-Means can vary substantially across assignments. In any given assignment, the estimate may lie far from the target ATE.
 
-Because the estimator can fluctuate across different treatment assignments, it is important to quantify the typical squared distance between an estimate and the true ATE. To this end, @neyman1923 introduced a canonical variance estimator. Under as-if randomization, this estimator is exactly unbiased when individual treatment effects are homogeneous; otherwise, it is conservative, meaning its expected value is greater than or equal to the true variance of the Difference-in-Means, although subsequent refinements reduce this conservativeness while maintaining validity (see @robins1988; @aronowetal2014; @harshawetal2024). In principle, we could apply this approach by estimating the variance of the Difference-in-Means within each matched set and then taking a weighted sum of these estimates [see, e.g., @miratrixetal2013].
+Because the estimator can fluctuate across different treatment assignments, it is important to quantify the typical squared distance between an estimate and the true ATE. To this end, @neyman1923 introduced a canonical variance estimator. Under as-if randomization, this estimator is exactly unbiased when individual treatment effects are homogeneous; otherwise, it is conservative, meaning its expected value is greater than or equal to the true variance of the Difference-in-Means, although subsequent refinements reduce this conservativeness while maintaining validity [see @robins1988; @aronowetal2014; @harshawetal2024]. In principle, we could apply this approach by estimating the variance of the Difference-in-Means within each matched set and then taking a weighted sum of these estimates [see, e.g., @miratrixetal2013].
 
 In our setting, however, this approach is infeasible because each matched set contains only $1$ treated or $1$ control unit. The usual Neyman formula relies on computing sample variances separately within the treated and control groups of each set. The sample variance requires at least two observations because `var()` divides by the number of observations minus $1$. As a result, we cannot compute the sample variance when there is only a single treated or control unit.
 
@@ -1426,7 +1426,7 @@ The first approach in @pashleymiratrix2021, `hybrid_m`, requires at least two ma
 ```{r, tidy = FALSE}
 
 # Install blkvar (only run if not already installed)
-# Install.packages("remotes")
+# install.packages("remotes")
 # Remotes::install_github("lmiratrix/blkvar")
 
 # Load blkvar for block randomization variance estimators
@@ -1558,7 +1558,7 @@ To address this challenge, @gastwirthetal2000 propose a practical shortcut calle
 
 The separable approximation is a useful shortcut, but it can fail in designs with relatively few matched sets or with highly unbalanced set sizes. In such cases, the $\bm{u}$ selected by the separable approximation may yield $p$-values that are smaller than the true worst-case $p$-value. @rosenbaum2018 therefore introduces a refinement that guarantees valid inference.
 
-The key idea is to reframe hypothesis testing in terms of a function that, for each configuration of hidden confounding $\bm{u} \in \mathcal{U}_{+}$, combines the gap between the null expectation and the observed test statistic with a corresponding Normal critical buffer. Concretely, for $\alpha = 0.05$ and corresponding critical value $1.64$, this function is the expected value of the test statistic under $(\bm{u}, \, \Gamma)$ minus the observed test statistic, plus $1.64$ times the standard deviation of the test statistic under $(\bm{u}\, \Gamma)$. The function is nonpositive exactly when the observed test statistic lies at least $1.64$ standard deviations above its null expectation, and positive otherwise. Therefore, the null hypothesis is rejected if and only if this function is nonpositive.
+The key idea is to reframe hypothesis testing in terms of a function that, for each configuration of hidden confounding $\bm{u} \in \mathcal{U}_{+}$, combines the gap between the null expectation and the observed test statistic with a corresponding Normal critical buffer. Concretely, for $\alpha = 0.05$ and corresponding critical value $1.64$, this function is the expected value of the test statistic under $(\bm{u}, \, \Gamma)$ minus the observed test statistic, plus $1.64$ times the standard deviation of the test statistic under $(\bm{u}, \, \Gamma)$. The function is nonpositive exactly when the observed test statistic lies at least $1.64$ standard deviations above its null expectation, and positive otherwise. Therefore, the null hypothesis is rejected if and only if this function is nonpositive.
 
 We can code this function in \texttt{R} as follows.
 
@@ -1669,7 +1669,7 @@ The plot below illustrates this comparison and clarifies how the two approaches 
 ```{r, tidy = FALSE, echo = FALSE, fig.pos = "H", fig.width = 6, fig.height = 4, fig.cap =  "Sensitivity analysis for the sharp null of no individual treatment effect for all units. The top panel shows upper one-sided $p$-values under the separable approximation across values of $\\Gamma$; the bottom panel reports, across the same values of $\\Gamma$, the corresponding Taylor series margin, with the zero line marking the rejection boundary. The shaded vertical band highlights values of $\\Gamma$ for which the separable approximation and the Taylor series approximation lead to different rejection decisions."}
 
 # Install tidyr (only run if not already installed)
-# Install.packages("tidyr")
+# install.packages("tidyr")
 
 # Load tidyr for reshaping data
 library(tidyr)
