@@ -137,7 +137,7 @@ include_graphics(path = "fig/version_2/matching_pipeline_flowchart_V2.pdf")
 
 We provide a high-level overview of the ideas behind matching and include code that demonstrates how to implement those ideas with various \texttt{R} packages. We also work through some of these steps "by hand" to underscore the underlying conceptual issues. Doing so also gives practitioners more flexibility to adapt the matching pipeline to their own needs.
 
-We break the implementation into specific decision points that practitioners commonly face, and present the pipeline in three main parts (see \Cref{fig: pipeline}):
+We break the implementation into specific decision points that practitioners commonly face, and present the pipeline in three main stages (see \Cref{fig: pipeline}):
 
 **Part 1: Making a Matched Dataset (toward Justifying As-If Randomization)**
 
@@ -419,9 +419,15 @@ burundi <- data[which(data$cname == "Burundi" & data$UN == 0),
                 c("cname", "UN", covs[covs != "region"])]
 
 # Add linear predictor (logit index) and propensity score
-namibia$lin_cov_index   <- lin_cov_inds[which(data$cname == "Namibia" & data$UN == 1)]
+namibia$lin_cov_index <-
+  lin_cov_inds[
+    which(data$cname == "Namibia" & data$UN == 1)
+  ]
 
-burundi$lin_cov_index <- lin_cov_inds[which(data$cname == "Burundi" & data$UN == 0)]
+burundi$lin_cov_index <-
+  lin_cov_inds[
+    which(data$cname == "Burundi" & data$UN == 0)
+  ]
 
 namibia_burundi_euc_dist <- sqrt(
   sum(
@@ -501,7 +507,7 @@ euc_dist_polity_cal_2 <- match_on(
 
 Note that we used Euclidean distance here because, after exactly matching on geographic region, matching proceeds on only $1$ covariate (Polity score), so we do not have to worry about covariates' relative scales.
 
-Finally, we combine the two constraints into distance matrices defined within each region. We construct these region-specific matrices by "adding" the `em_region` and `euc_dist_polity_cal_2` objects, as shown below.
+Finally, we combine the two constraints into distance matrices defined within each region by ``adding'' the objects `em_region` and `euc_dist_polity_cal_2`, as shown below.
 
 ```{r, tidy = FALSE, results = "hide"}
 
@@ -944,7 +950,7 @@ We consider inference under the sharp and weak frameworks, targeting $\bm{\tau}$
 
 Regardless of the framework, inference is based on the treatment assignment process. Let $z_{si}$ denote an indicator for whether unit $i$ in matched set $s$ is treated ($z_{si} = 1$) or not ($z_{si} = 0$). We collect these indicators for all units in set $s$ into the vector $\bm{z}_s = (z_{s1}, \ldots, z_{sn_s})^{\top}$. Stacking these vectors across all sets gives the full assignment vector $\bm{z} = (z_{11}, \ldots, z_{Sn_S})^{\top}$, again indexed first by matched set and then by unit within set. For inference, we condition on the number of treated units within each set, $m_s$, even if the actual assignment mechanism were to consist of $n_s$ independent assignments. For further discussion of this form of "conditional as-if analysis," see @pashleyetal2021 and @rosenbaum2017[pp. 289–290, fn. 15].
 
-We denote by $\Omega_s$ the set of all possible treatment assignments in set $s$, holding fixed the observed number of treated units in that set. Formally, $\Omega_s$ includes every possible way the $n_s$ units in set $s$ could be assigned to treatment and control such that exactly $m_s$ units are treated. The number of possible assignments in $\Omega_s$ is denoted by $\abs{\Omega_s}$, where the notation $\abs{\cdot}$ indicates the number of elements in a set. This quantity equals $\abs{\Omega_s} = \binom{n_s}{m_s} = \frac{n_s!}{m_s! (n_s - m_s)!}$, where "!" denotes the factorial operator (e.g., $4! = 4 \times 3 \times 2 \times 1$).
+We denote by $\Omega_s$ the set of all possible treatment assignments in set $s$, holding fixed the observed number of treated units in that set. Formally, $\Omega_s$ includes every possible way the $n_s$ units in set $s$ could be assigned to treatment and control such that exactly $m_s$ units are treated. The number of possible assignments in $\Omega_s$ is denoted by $\abs{\Omega_s}$, where the notation $\abs{\cdot}$ indicates the number of elements in a set. This quantity equals $\abs{\Omega_s} = \binom{n_s}{m_s} = n_s! / [m_s! (n_s - m_s)!]$, where "!" denotes the factorial operator (e.g., $4! = 4 \times 3 \times 2 \times 1$).
 
 In the `ssafrica.3` set, for example, there are $4$ observations --- $1$ treated and $3$ control --- so $\abs{\Omega_s}$ for the `ssafrica.3` set is $\binom{4}{1} = 4$. The corresponding set of possible assignments with this treated count is shown in the table below.
 
