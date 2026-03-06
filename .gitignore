@@ -10,7 +10,6 @@
 *.aux
 *.out
 *.toc
-*.tex
 *.bbl
 *.blg
 *.synctex.gz
