@@ -1,7 +1,3 @@
-# R Markdown cache and output
-*_cache/
-*_files/
-
 # Ignore all knitting and build artifacts
 .Rproj.user/
 .Rhistory
@@ -18,6 +14,10 @@
 *.bbl
 *.blg
 *.synctex.gz
+*.xdv
+*.dvi
+*.fls
+*fdb_latexmk
 
 # R Markdown intermediates
 *.knit.md
