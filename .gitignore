@@ -15,9 +15,11 @@
 *.blg
 *.synctex.gz
 *.xdv
+*.xml
 *.dvi
 *.fls
 *fdb_latexmk
+*.bcf
 
 # R Markdown intermediates
 *.knit.md
