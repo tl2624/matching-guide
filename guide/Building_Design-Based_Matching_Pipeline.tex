@@ -569,7 +569,7 @@ object named \texttt{data}.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Define base URL for the Matching Guide GitHub repository}
+\CommentTok{\# Define base URL for the Matching Guide GitHub repo}
 \NormalTok{base\_url }\OtherTok{\textless{}{-}} \StringTok{"https://raw.githubusercontent.com/tl2624/matching{-}guide/main"}
 
 \CommentTok{\# Load the cleaned dataset}
@@ -641,8 +641,8 @@ named in the object \texttt{covs}.
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{\# Define character vector of the 9 covariate names in the dataset}
-\NormalTok{covs }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"lwdeaths"}\NormalTok{, }\StringTok{"lwdurat"}\NormalTok{, }\StringTok{"ethfrac"}\NormalTok{, }\StringTok{"pop"}\NormalTok{, }\StringTok{"lmtnest"}\NormalTok{, }\StringTok{"milper"}\NormalTok{, }\StringTok{"bwgdp"}\NormalTok{,}
-          \StringTok{"bwplty2"}\NormalTok{, }\StringTok{"region"}\NormalTok{)}
+\NormalTok{covs }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"lwdeaths"}\NormalTok{, }\StringTok{"lwdurat"}\NormalTok{, }\StringTok{"ethfrac"}\NormalTok{, }\StringTok{"pop"}\NormalTok{, }\StringTok{"lmtnest"}\NormalTok{, }\StringTok{"milper"}\NormalTok{,}
+          \StringTok{"bwgdp"}\NormalTok{, }\StringTok{"bwplty2"}\NormalTok{, }\StringTok{"region"}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
 
@@ -684,17 +684,17 @@ categorical labels.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Install "dplyr" package (only run if you don\textquotesingle{}t already have it installed)}
+\CommentTok{\# Install "dplyr" package (only run if not already installed)}
 \CommentTok{\# install.packages("dplyr")}
 
-\CommentTok{\# Load dplyr package for data manipulation (mutate, group\_by, summarize, etc.)}
+\CommentTok{\# Load package for data manipulation (mutate, group\_by, summarize, etc.)}
 \FunctionTok{library}\NormalTok{(dplyr)}
 
 \CommentTok{\# Convert categorical variable "region" into 0/1 dummy indicators}
-\NormalTok{data }\OtherTok{\textless{}{-}}\NormalTok{ data }\SpecialCharTok{|\textgreater{}}  \CommentTok{\# Pipe (|\textgreater{}) to pass left{-}hand result into next function call}
+\NormalTok{data }\OtherTok{\textless{}{-}}\NormalTok{ data }\SpecialCharTok{|\textgreater{}} \CommentTok{\# Pipe (|\textgreater{}) to pass left{-}hand result into next function call}
   \FunctionTok{mutate}\NormalTok{(}
     \CommentTok{\# Use mutate() to create new variables by transforming existing columns}
-    \CommentTok{\# ifelse() returns one value if the condition is TRUE and another if FALSE}
+    \CommentTok{\# ifelse() returns one value if condition is TRUE and another if FALSE}
     \AttributeTok{eeurop   =} \FunctionTok{ifelse}\NormalTok{(}\AttributeTok{test =}\NormalTok{ region }\SpecialCharTok{==} \StringTok{"eeurop"}\NormalTok{,   }\AttributeTok{yes =} \DecValTok{1}\NormalTok{, }\AttributeTok{no =} \DecValTok{0}\NormalTok{),}
     \AttributeTok{lamerica =} \FunctionTok{ifelse}\NormalTok{(}\AttributeTok{test =}\NormalTok{ region }\SpecialCharTok{==} \StringTok{"lamerica"}\NormalTok{, }\AttributeTok{yes =} \DecValTok{1}\NormalTok{, }\AttributeTok{no =} \DecValTok{0}\NormalTok{),}
     \AttributeTok{asia     =} \FunctionTok{ifelse}\NormalTok{(}\AttributeTok{test =}\NormalTok{ region }\SpecialCharTok{==} \StringTok{"asia"}\NormalTok{,     }\AttributeTok{yes =} \DecValTok{1}\NormalTok{, }\AttributeTok{no =} \DecValTok{0}\NormalTok{),}
@@ -702,13 +702,13 @@ categorical labels.
     \AttributeTok{nafrme   =} \FunctionTok{ifelse}\NormalTok{(}\AttributeTok{test =}\NormalTok{ region }\SpecialCharTok{==} \StringTok{"nafrme"}\NormalTok{,   }\AttributeTok{yes =} \DecValTok{1}\NormalTok{, }\AttributeTok{no =} \DecValTok{0}\NormalTok{)}
 \NormalTok{  )}
 
-\CommentTok{\# New character vector of covariate names with "region" replcaed by dummy indicators }
+\CommentTok{\# Covariate names with "region" replaced by dummy indicators}
 \NormalTok{expanded\_covs }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}
   \CommentTok{\# setdiff() returns elements in \textquotesingle{}x\textquotesingle{} that are not in \textquotesingle{}y\textquotesingle{}}
   \FunctionTok{setdiff}\NormalTok{(}
     \AttributeTok{x =}\NormalTok{ covs,}
     \AttributeTok{y =} \StringTok{"region"} \CommentTok{\# Drops "region" from the covariate list}
-\NormalTok{  ),  }
+\NormalTok{  ),}
   \StringTok{"eeurop"}\NormalTok{, }\StringTok{"lamerica"}\NormalTok{, }\StringTok{"asia"}\NormalTok{, }\StringTok{"ssafrica"}\NormalTok{, }\StringTok{"nafrme"}
 \NormalTok{)}
 \end{Highlighting}
@@ -724,7 +724,7 @@ where the UN did not.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Extract covariate values for Liberia and Guinea{-}Bissau (cname = country name)}
+\CommentTok{\# Extract covariates for Liberia and Guinea{-}Bissau (cname = country name)}
 \NormalTok{liberia }\OtherTok{\textless{}{-}}\NormalTok{ data[data}\SpecialCharTok{$}\NormalTok{cname }\SpecialCharTok{==} \StringTok{"Liberia"}\NormalTok{, expanded\_covs]}
 
 \NormalTok{guinea\_bissau }\OtherTok{\textless{}{-}}\NormalTok{ data[data}\SpecialCharTok{$}\NormalTok{cname }\SpecialCharTok{==} \StringTok{"Guinea{-}Bissau"}\NormalTok{, expanded\_covs]}
@@ -766,7 +766,7 @@ to manually recode factor variables into dummy indicators because
 \CommentTok{\# Load optmatch, which provides the match\_on() function}
 \FunctionTok{library}\NormalTok{(optmatch)}
 
-\CommentTok{\# Compute Euclidean distance matrix between treated (UN = 1) and control (UN = 0)}
+\CommentTok{\# Euclidean distance matrix: treated (UN = 1) vs control (UN = 0)}
 \NormalTok{dist\_mat\_euc }\OtherTok{\textless{}{-}} \FunctionTok{match\_on}\NormalTok{(}
   \AttributeTok{x =}\NormalTok{ cov\_fmla,                 }\CommentTok{\# Formula for covariates}
   \AttributeTok{data =}\NormalTok{ data,                  }\CommentTok{\# Dataset used}
@@ -780,8 +780,8 @@ to manually recode factor variables into dummy indicators because
 \NormalTok{)}
 
 \CommentTok{\# Display submatrix of distances:}
-\FunctionTok{round}\NormalTok{(}
-  \CommentTok{\# treated units in rows 11–15 vs. control units in columns 27–30}
+\FunctionTok{round}\NormalTok{(        }\CommentTok{\# Round distances for display}
+  \CommentTok{\# treated units in rows 11{-}15 vs. control units in columns 27{-}30}
   \AttributeTok{x =}\NormalTok{ dist\_mat\_euc[}\DecValTok{11}\SpecialCharTok{:}\DecValTok{15}\NormalTok{, }\DecValTok{27}\SpecialCharTok{:}\DecValTok{30}\NormalTok{],}
   \AttributeTok{digits =} \DecValTok{2}  \CommentTok{\# Number of decimal places to round}
 \NormalTok{)}
@@ -837,7 +837,7 @@ matrix based on Mahalanobis rather than Euclidean distances as follows.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Compute Mahalanobis distance matrix between treated (UN = 1) and control (UN = 0)}
+\CommentTok{\# Mahalanobis distance matrix: treated (UN = 1) vs control (UN = 0)}
 \NormalTok{dist\_mat\_mah }\OtherTok{\textless{}{-}} \FunctionTok{match\_on}\NormalTok{(}
   \AttributeTok{x =}\NormalTok{ cov\_fmla,}
   \AttributeTok{data =}\NormalTok{ data,}
@@ -937,7 +937,7 @@ predict treatment assignment, leading to (near-)complete separation
 \NormalTok{psm }\OtherTok{\textless{}{-}} \FunctionTok{glm}\NormalTok{(}
   \AttributeTok{formula =}\NormalTok{ psm\_cov\_fmla,            }\CommentTok{\# Treatment \textasciitilde{} covariates}
   \AttributeTok{family =} \FunctionTok{binomial}\NormalTok{(}\AttributeTok{link =} \StringTok{"logit"}\NormalTok{), }\CommentTok{\# Logistic regression (logit link)}
-  \AttributeTok{data =}\NormalTok{ data                        }
+  \AttributeTok{data =}\NormalTok{ data}
 \NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
@@ -953,7 +953,7 @@ as follows.
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{\# Extract logit propensity scores (linear predictors from fitted model)}
-\NormalTok{lin\_cov\_inds }\OtherTok{\textless{}{-}}\NormalTok{ psm}\SpecialCharTok{$}\NormalTok{linear.predictors  }\CommentTok{\# Same as model.matrix(psm) \%*\% coef(psm)}
+\NormalTok{lin\_cov\_inds }\OtherTok{\textless{}{-}}\NormalTok{ psm}\SpecialCharTok{$}\NormalTok{linear.predictors  }\CommentTok{\# = model.matrix(psm) \%*\% coef(psm)}
 \end{Highlighting}
 \end{Shaded}
 
@@ -1071,7 +1071,7 @@ and control units belong to the same region.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Create distance structure: 0 if units are in the same region, Inf otherwise}
+\CommentTok{\# Create distance structure: 0 if units are in same region, Inf otherwise}
 \NormalTok{em\_region }\OtherTok{\textless{}{-}} \FunctionTok{exactMatch}\NormalTok{(}
   \AttributeTok{x =}\NormalTok{ UN }\SpecialCharTok{\textasciitilde{}}\NormalTok{ region,}
   \AttributeTok{data =}\NormalTok{ data}
@@ -1098,7 +1098,7 @@ from being matched.
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{\# Euclidean distance on Polity score (bwplty2) with caliper = 2}
-\CommentTok{\# Pairs differing by \textgreater{}2 are set to Inf}
+\CommentTok{\# Pairs differing by \textgreater{} 2 are set to Inf}
 \NormalTok{euc\_dist\_polity\_cal\_2 }\OtherTok{\textless{}{-}} \FunctionTok{match\_on}\NormalTok{(}
   \AttributeTok{x =}\NormalTok{ UN }\SpecialCharTok{\textasciitilde{}}\NormalTok{ bwplty2,}
   \AttributeTok{caliper =} \DecValTok{2}\NormalTok{,  }\CommentTok{\# Set caliper}
@@ -1125,7 +1125,7 @@ as shown below.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Create overall distance matrix by element{-}wise addition of two distance matrices}
+\CommentTok{\# Overall distance matrix by element{-}wise addition of two distance matrices}
 \NormalTok{overall\_dist\_mat }\OtherTok{\textless{}{-}}\NormalTok{ em\_region }\SpecialCharTok{+}\NormalTok{ euc\_dist\_polity\_cal\_2}
 \end{Highlighting}
 \end{Shaded}
@@ -1260,7 +1260,7 @@ with \(2\) controls.
   \AttributeTok{max.controls =} \DecValTok{2}\NormalTok{,     }\CommentTok{\# At most 2 controls per treated unit}
   \AttributeTok{omit.fraction =} \ConstantTok{NULL}\NormalTok{, }\CommentTok{\# Governs fraction of units discarded}
   \AttributeTok{mean.controls =} \ConstantTok{NULL}\NormalTok{, }\CommentTok{\# Governs average controls per treated unit}
-                        \CommentTok{\# Only one of omit.fraction or mean.controls may be non{-}NULL}
+  \CommentTok{\# Only one of omit.fraction or mean.controls can be non{-}NULL}
   \AttributeTok{data =}\NormalTok{ data}
 \NormalTok{)}
 \end{Highlighting}
@@ -1322,7 +1322,7 @@ scale, compared to about 0.39 under the \(0.20\) guideline.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Add linear predictors from logistic regression (psm$linear.predictors) to dataset}
+\CommentTok{\# Add logistic regression linear predictors to dataset}
 \NormalTok{data}\SpecialCharTok{$}\NormalTok{logit\_p\_score }\OtherTok{\textless{}{-}}\NormalTok{ lin\_cov\_inds}
 
 \CommentTok{\# Population standard deviation of logit\_p\_score (divides by n, not n {-} 1)}
@@ -1332,7 +1332,7 @@ scale, compared to about 0.39 under the \(0.20\) guideline.
 \NormalTok{  )}
 \NormalTok{)}
 
-\CommentTok{\# Distance matrix for propensity score (logit of estimated treatment probability)}
+\CommentTok{\# Distance matrix for logit of estimated propensity scores}
 \NormalTok{ps\_mat }\OtherTok{\textless{}{-}} \FunctionTok{match\_on}\NormalTok{(}
   \AttributeTok{x =}\NormalTok{ UN }\SpecialCharTok{\textasciitilde{}}\NormalTok{ logit\_p\_score,}
   \AttributeTok{caliper =} \FloatTok{0.5} \SpecialCharTok{*}\NormalTok{ pop\_sd\_logit,}
@@ -1353,7 +1353,7 @@ distance.
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{\# Rank{-}based Mahalanobis distance on covariates}
-\CommentTok{\# Covs was defined earlier as the set of covariate names; here we drop "region"}
+\CommentTok{\# Covs defined earlier as covariate names; here, drop "region"}
 \NormalTok{rank\_mah\_mat }\OtherTok{\textless{}{-}} \FunctionTok{match\_on}\NormalTok{(}
   \AttributeTok{x      =} \FunctionTok{reformulate}\NormalTok{(}
     \AttributeTok{termlabels =} \FunctionTok{setdiff}\NormalTok{(}
@@ -1419,16 +1419,14 @@ matched to any treated unit.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Full matching on PS + rank{-}based Mahalanobis + separate Euclidean distances}
-\CommentTok{\# (ethfrac, bwgdp) + region exact match}
+\CommentTok{\# Full matching: }
+\CommentTok{\# PS + rank Mahalanobis + Euclidean (ethfrac, bwgdp) + region exact}
 \NormalTok{fm }\OtherTok{\textless{}{-}} \FunctionTok{fullmatch}\NormalTok{(}
-  \CommentTok{\# x specifies the distance structure for matching: it can be}
-  \CommentTok{\# (i) a distance{-}specification formula passed to match\_on(),}
-  \CommentTok{\# (ii) a precomputed distance matrix, or}
-  \CommentTok{\# (iii) as here, a sum of distance specifications constructed via match\_on()}
+\CommentTok{\# x specifies the distance structure:}
+\CommentTok{\# match\_on() formula, distance matrix, or sum of match\_on() distances}
   \AttributeTok{x            =}\NormalTok{ ps\_mat }\SpecialCharTok{+}\NormalTok{ rank\_mah\_mat }\SpecialCharTok{+}\NormalTok{ eth\_mat }\SpecialCharTok{+}\NormalTok{ bwgdp\_mat }\SpecialCharTok{+}\NormalTok{ em\_region,}
   \AttributeTok{data         =}\NormalTok{ data,}
-  \AttributeTok{max.controls =} \DecValTok{4}  \CommentTok{\# Up to 4 controls per treated; min.controls = 0 by default}
+  \AttributeTok{max.controls =} \DecValTok{4} \CommentTok{\# \textless{}= 4 controls per treated (min.controls = 0 by default)}
 \NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
@@ -1465,7 +1463,7 @@ set contains more than \(4\) controls for any \(1\) treated observation.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Summarize matched sets (set sizes, structure) and report effective sample size}
+\CommentTok{\# Summarize matched sets and report effective sample size}
 \FunctionTok{summary}\NormalTok{(}
 \NormalTok{  fm}
 \NormalTok{)}
@@ -1514,7 +1512,7 @@ object to the dataframe and then tabulate. For example, to view the
 \NormalTok{data }\SpecialCharTok{|\textgreater{}}
   \FunctionTok{filter}\NormalTok{(}
 \NormalTok{    fm }\SpecialCharTok{==} \StringTok{"ssafrica.3"} \CommentTok{\# Keep only units in set "ssafrica.3"}
-\NormalTok{  ) }\SpecialCharTok{|\textgreater{}}  
+\NormalTok{  ) }\SpecialCharTok{|\textgreater{}}
   \CommentTok{\# Display selected variables}
   \FunctionTok{select}\NormalTok{(}
 \NormalTok{    cname, UN, region, logit\_p\_score, ethfrac, bwgdp, bwplty2}
@@ -1579,7 +1577,7 @@ overall data (including both matched and unmatched units).
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Install "RItools" package (only run if you don\textquotesingle{}t already have it installed)}
+\CommentTok{\# Install "RItools" package (only run if not already installed)}
 \CommentTok{\# install.packages("RItools")}
 
 \CommentTok{\# Load RItools package for balance diagnostics (balanceTest)}
@@ -1683,7 +1681,7 @@ linear combinations simultaneously. We conduct this test below.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Extract overall chi{-}square balance test results, stratified by matched set (fm)}
+\CommentTok{\# Extract overall chi{-}square balance test by matched set (fm)}
 \NormalTok{cov\_bal}\SpecialCharTok{$}\NormalTok{overall[}\StringTok{"fm"}\NormalTok{, ]}
 \end{Highlighting}
 \end{Shaded}
@@ -2013,21 +2011,18 @@ statistic.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Load the hm\_stat\_rescale() function from the GitHub repo}
-\CommentTok{\# Base\_url (defined earlier as}
-\CommentTok{\# "https://raw.githubusercontent.com/tl2624/matching{-}guide/main")}
-\CommentTok{\# Points to the main GitHub repo URL}
+\CommentTok{\# Load hm\_stat\_rescale() from GitHub repo}
+\CommentTok{\# base\_url (defined earlier) points to repo URL}
 \FunctionTok{source}\NormalTok{(}
   \FunctionTok{paste0}\NormalTok{(}
 \NormalTok{    base\_url, }\StringTok{"/R/hm\_stat\_rescale.R"}
 \NormalTok{  )}
 \NormalTok{)}
 
-\CommentTok{\# Apply the rescaling function: adds a new column (.hm\_scaled)}
-\CommentTok{\# And returns the full matched dataset with this rescaled outcome}
+\CommentTok{\# Apply rescaling: adds .hm\_scaled and returns matched dataset}
 \NormalTok{data\_matched }\OtherTok{\textless{}{-}} \FunctionTok{hm\_stat\_rescale}\NormalTok{(}
-  \AttributeTok{data =}\NormalTok{ data\_matched,  }
-  \AttributeTok{outcome =}\NormalTok{ ldur\_tilde, }\CommentTok{\# Set outcome variable to be rescaled within matched sets}
+  \AttributeTok{data =}\NormalTok{ data\_matched,}
+  \AttributeTok{outcome =}\NormalTok{ ldur\_tilde, }\CommentTok{\# Set outcome to be rescaled within matched sets}
   \AttributeTok{treat =}\NormalTok{ UN,           }\CommentTok{\# Set name of treatment indicator variable}
   \AttributeTok{strata =}\NormalTok{ fm           }\CommentTok{\# Set name of matched strata (block) variable}
 \NormalTok{)}
@@ -2057,7 +2052,7 @@ contribution to the effective sample size.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Harmonic{-}mean–weighted difference in means (weights computed within sets)}
+\CommentTok{\# Harmonic{-}mean{-}weighted difference in means (weights computed within sets)}
 \NormalTok{dim\_hm }\OtherTok{\textless{}{-}}\NormalTok{ data\_matched }\SpecialCharTok{|\textgreater{}}
   \FunctionTok{group\_by}\NormalTok{(}
 \NormalTok{    fm}
@@ -2072,13 +2067,13 @@ contribution to the effective sample size.
     \AttributeTok{.groups   =} \StringTok{"drop"} \CommentTok{\# Drop grouping after summarise}
 \NormalTok{  ) }\SpecialCharTok{|\textgreater{}}
   \FunctionTok{summarize}\NormalTok{(}
-    \CommentTok{\# Harmonic{-}mean–weighted average of within{-}set Differences{-}in{-}Means}
+    \CommentTok{\# Harmonic{-}mean{-}weighted average of within{-}set Differences{-}in{-}Means}
     \AttributeTok{dim\_hm =} \FunctionTok{sum}\NormalTok{(}
 \NormalTok{      w\_hm }\SpecialCharTok{*}\NormalTok{ dim\_set) }\SpecialCharTok{/} \FunctionTok{sum}\NormalTok{(w\_hm)}
 \NormalTok{  ) }\SpecialCharTok{|\textgreater{}}
   \FunctionTok{pull}\NormalTok{( }\CommentTok{\# Pull column out of data frame}
 \NormalTok{    dim\_hm}
-\NormalTok{  )  }
+\NormalTok{  )}
 
 \CommentTok{\# Approaches coincides with the sum statistic}
 \FunctionTok{all.equal}\NormalTok{(}
@@ -2101,7 +2096,7 @@ matched set indicators.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Fixed{-}effects (FE) regression coefficient on UN (matched set indicators as FE)}
+\CommentTok{\# FE coefficient on UN (matched{-}set FE)}
 \NormalTok{fe\_fit }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(}
   \AttributeTok{formula =}\NormalTok{ ldur\_tilde }\SpecialCharTok{\textasciitilde{}}\NormalTok{ UN }\SpecialCharTok{+}\NormalTok{ fm,}
   \AttributeTok{data =}\NormalTok{ data\_matched}
@@ -2136,25 +2131,23 @@ treatment probability.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Install "PSweight" package (only run if you don\textquotesingle{}t already have it installed)}
+\CommentTok{\# Install "PSweight" package (only run if not already installed)}
 \CommentTok{\# install.packages("PSweight")}
 \FunctionTok{library}\NormalTok{(PSweight) }\CommentTok{\# For overlap weights from Li et al (2018)}
 
-\CommentTok{\# Encode the treatment assignment probabilities implied by as{-}if randomization}
-\CommentTok{\# within matched sets: n\_treated / n in each set}
+\CommentTok{\# Treatment probabilities within matched sets: n\_treated / n}
 \NormalTok{ps\_fit }\OtherTok{\textless{}{-}} \FunctionTok{PSmethod}\NormalTok{(}
   \AttributeTok{ps.formula =}\NormalTok{ UN }\SpecialCharTok{\textasciitilde{}} \FunctionTok{factor}\NormalTok{(fm), }\CommentTok{\# Reproduces n\_treated / n in each set}
   \AttributeTok{method     =} \StringTok{"glm"}\NormalTok{,           }\CommentTok{\# Estimate using generalized linear model}
-  \CommentTok{\# Use as.data.frame() to drop tibble class for compatibility with PSmethod()}
-  \AttributeTok{data       =} \FunctionTok{as.data.frame}\NormalTok{(data\_matched), }
+  \CommentTok{\# Use as.data.frame() for PSmethod() compatibility}
+  \AttributeTok{data       =} \FunctionTok{as.data.frame}\NormalTok{(data\_matched),}
   \AttributeTok{ncate      =} \DecValTok{2}                \CommentTok{\# Binary treatment (treated vs. control)}
 \NormalTok{)}
 
-\NormalTok{assign\_prob }\OtherTok{\textless{}{-}}\NormalTok{ ps\_fit}\SpecialCharTok{$}\NormalTok{e.h[, }\StringTok{"1"}\NormalTok{]  }\CommentTok{\# Column corresponding to treatment level "1"}
+\NormalTok{assign\_prob }\OtherTok{\textless{}{-}}\NormalTok{ ps\_fit}\SpecialCharTok{$}\NormalTok{e.h[, }\StringTok{"1"}\NormalTok{]  }\CommentTok{\# Column for treatment level "1"}
 
-\CommentTok{\# Unit{-}level overlap weights implied by these treatment assignment probabilities}
-\CommentTok{\# Control units get weight equal to their treatment assignment probability}
-\CommentTok{\# Treated units get weight equal to one minus their treatment assignment probability}
+\CommentTok{\# Overlap weights from treatment probabilities}
+\CommentTok{\# Controls: treatment probability ; Treated: 1 {-} treatment probability}
 \NormalTok{w\_ow }\OtherTok{\textless{}{-}} \FunctionTok{ifelse}\NormalTok{(}
   \AttributeTok{test =}\NormalTok{ data\_matched}\SpecialCharTok{$}\NormalTok{UN }\SpecialCharTok{==} \DecValTok{1}\NormalTok{,}
   \AttributeTok{yes  =} \DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ assign\_prob,}
@@ -2167,11 +2160,11 @@ treatment probability.
     \CommentTok{\# Overlap{-}weighted mean outcome for treated units}
     \AttributeTok{treated\_weighted\_mean =}
       \FunctionTok{sum}\NormalTok{(w\_ow[UN }\SpecialCharTok{==} \DecValTok{1}\NormalTok{] }\SpecialCharTok{*}\NormalTok{ ldur\_tilde[UN }\SpecialCharTok{==} \DecValTok{1}\NormalTok{]) }\SpecialCharTok{/} \FunctionTok{sum}\NormalTok{(w\_ow[UN }\SpecialCharTok{==} \DecValTok{1}\NormalTok{]),}
-    
+
     \CommentTok{\# Overlap{-}weighted mean outcome for control units}
     \AttributeTok{control\_weighted\_mean =}
       \FunctionTok{sum}\NormalTok{(w\_ow[UN }\SpecialCharTok{==} \DecValTok{0}\NormalTok{] }\SpecialCharTok{*}\NormalTok{ ldur\_tilde[UN }\SpecialCharTok{==} \DecValTok{0}\NormalTok{]) }\SpecialCharTok{/} \FunctionTok{sum}\NormalTok{(w\_ow[UN }\SpecialCharTok{==} \DecValTok{0}\NormalTok{]),}
-    
+
     \CommentTok{\# Difference between overlap{-}weighted treated and control means}
     \AttributeTok{dim\_ow =}\NormalTok{ treated\_weighted\_mean }\SpecialCharTok{{-}}\NormalTok{ control\_weighted\_mean}
 \NormalTok{  ) }\SpecialCharTok{|\textgreater{}}
@@ -2203,12 +2196,12 @@ then calculate the sum statistic over all possible assignments in
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{\# For each matched set (fm), record:}
-\CommentTok{\# n   = total units in the set}
+\CommentTok{\# n = total units in the set}
 \CommentTok{\# m = number treated (UN == 1)}
 \NormalTok{block\_ns }\OtherTok{\textless{}{-}}\NormalTok{ data\_matched }\SpecialCharTok{|\textgreater{}}
   \FunctionTok{group\_by}\NormalTok{(          }\CommentTok{\# Group results by key variables}
-\NormalTok{    fm }
-\NormalTok{  ) }\SpecialCharTok{|\textgreater{}}    
+\NormalTok{    fm}
+\NormalTok{  ) }\SpecialCharTok{|\textgreater{}}
   \FunctionTok{summarise}\NormalTok{(         }\CommentTok{\# Aggregate to one row per group}
     \AttributeTok{n =} \FunctionTok{n}\NormalTok{(),         }\CommentTok{\# Row count per group}
     \AttributeTok{m =} \FunctionTok{sum}\NormalTok{(UN),}
@@ -2290,10 +2283,9 @@ the reconstructed and rescaled outcomes fixed under the null.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Randomization distribution under sharp null of no effect:}
-\CommentTok{\# Apply sum statistic to each assignment column in \textquotesingle{}sim\_assigns\textquotesingle{}}
-\CommentTok{\# Outcome has been transformed so that}
-\CommentTok{\# Sum statistic = harmonic{-}mean weighted diff in means}
+\CommentTok{\# Randomization distribution under sharp null}
+\CommentTok{\# Apply sum statistic to each assignment in sim\_assigns}
+\CommentTok{\# Outcome transformed so sum = harmonic{-}mean weighted diff in means}
 \NormalTok{sim\_sharp\_null\_dist }\OtherTok{\textless{}{-}} \FunctionTok{apply}\NormalTok{(}
   \AttributeTok{X =}\NormalTok{ sim\_assigns,    }\CommentTok{\# Matrix of treatment assignments}
   \AttributeTok{MARGIN =} \DecValTok{2}\NormalTok{,         }\CommentTok{\# Iterate over columns (assignments)}
@@ -2321,7 +2313,8 @@ statistics greater than or equal to the observed test statistic.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# One{-}sided, upper p{-}value: proportion of simulated randomization stats \textgreater{}= observed}
+\CommentTok{\# One{-}sided, upper p{-}value:}
+\CommentTok{\# Propprtion of simulated randomization stats \textgreater{}= observed}
 \FunctionTok{round}\NormalTok{(}
   \AttributeTok{x =} \FunctionTok{mean}\NormalTok{(}
 \NormalTok{    sim\_sharp\_null\_dist }\SpecialCharTok{\textgreater{}=}\NormalTok{ obs\_stat}
@@ -2365,7 +2358,7 @@ of the simulation-based \(p\)-value approximation.
 \CommentTok{\#  \}}
 \CommentTok{\#)}
 
-\CommentTok{\# Exact one{-}sided, upper p{-}value: proportion of randomization stats \textgreater{}= observed}
+\CommentTok{\# Exact one{-}sided, upper p{-}value}
 \FunctionTok{round}\NormalTok{(}
   \AttributeTok{x =} \FunctionTok{mean}\NormalTok{(}
 \NormalTok{    exact\_sharp\_null\_dist }\SpecialCharTok{\textgreater{}=}\NormalTok{ obs\_stat}
@@ -2404,11 +2397,11 @@ randomization.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Install "senstrat" package (only run if you don\textquotesingle{}t already have it installed)}
+\CommentTok{\# Install "senstrat" package (only run if not already installed)}
 \CommentTok{\# install.packages("senstrat")}
 
-\CommentTok{\# Load senstrat for computing stratum{-}level null expectations/variances}
-\CommentTok{\# (Rosenbaum \& Krieger 1990) and later sensitivity analysis}
+\CommentTok{\# Load senstrat for stratum{-}level null moments and sensitivity analysis}
+\CommentTok{\# (Rosenbaum \& Krieger 1990)}
 \FunctionTok{library}\NormalTok{(senstrat)}
 
 \CommentTok{\# Compute per{-}block null expectations and variances}
@@ -2420,18 +2413,18 @@ randomization.
     \AttributeTok{expect   =} \FunctionTok{ev}\NormalTok{(}
       \AttributeTok{sc =}\NormalTok{ ldur\_tilde\_hm\_scaled, }\CommentTok{\# Transformed outcomes for the stratum}
       \AttributeTok{z =}\NormalTok{ UN,                    }\CommentTok{\# Treatment indicator}
-      \AttributeTok{m =} \DecValTok{1}\NormalTok{,                     }\CommentTok{\# Number of "1"s in vector of hidden confounder}
-      \CommentTok{\# Irrelevant here since Gamma = 1}
+      \AttributeTok{m =} \DecValTok{1}\NormalTok{,                     }\CommentTok{\# Count of 1s in hidden confounder}
+                                 \CommentTok{\# Irrelevant here since Gamma = 1}
       \AttributeTok{g =} \DecValTok{1}\NormalTok{,                     }\CommentTok{\# Sensitivity parameter Gamma}
-      \AttributeTok{method =} \StringTok{"RK"}              \CommentTok{\# Use formula from Rosenbaum and Krieger (1990)}
-\NormalTok{    )}\SpecialCharTok{$}\NormalTok{expect,                    }\CommentTok{\# Null expectation of sum statistic in matched set}
+      \AttributeTok{method =} \StringTok{"RK"}              \CommentTok{\# Use Rosenbaum and Krieger (1990) formula }
+\NormalTok{    )}\SpecialCharTok{$}\NormalTok{expect,                    }\CommentTok{\# Null expectation of sum statistic by set}
     \AttributeTok{variance =} \FunctionTok{ev}\NormalTok{(}
       \AttributeTok{sc     =}\NormalTok{ ldur\_tilde\_hm\_scaled,}
       \AttributeTok{z      =}\NormalTok{ UN,}
       \AttributeTok{m =} \DecValTok{1}\NormalTok{,}
       \AttributeTok{g      =} \DecValTok{1}\NormalTok{,}
       \AttributeTok{method =} \StringTok{"RK"}
-\NormalTok{    )}\SpecialCharTok{$}\NormalTok{vari,                      }\CommentTok{\# Null variance of sum statistic in matched set}
+\NormalTok{    )}\SpecialCharTok{$}\NormalTok{vari,                      }\CommentTok{\# Null variance of sum statistic by set}
     \AttributeTok{.groups  =} \StringTok{"drop"}
 \NormalTok{  )}
 
@@ -2448,7 +2441,7 @@ randomization.
 \CommentTok{\# Standardized test statistic and one{-}sided Normal p{-}value (upper tail)}
 \NormalTok{norm\_upper\_p\_value }\OtherTok{\textless{}{-}} \FunctionTok{pnorm}\NormalTok{(}
   \AttributeTok{q =}\NormalTok{ (obs\_stat }\SpecialCharTok{{-}}\NormalTok{ null\_ev) }\SpecialCharTok{/} \FunctionTok{sqrt}\NormalTok{(null\_var), }\CommentTok{\# Standardized statistic}
-  \AttributeTok{lower.tail =} \ConstantTok{FALSE}                         \CommentTok{\# Compute upper{-}tail probability}
+  \AttributeTok{lower.tail =} \ConstantTok{FALSE}                         \CommentTok{\# Compute upper{-}tail prob}
 \NormalTok{)}
 \CommentTok{\# By default in pnorm(): mean = 0 and sd = 1 (standard normal distribution)}
 \end{Highlighting}
@@ -2483,24 +2476,23 @@ rejection regions.
 \CommentTok{\# Significance level}
 \NormalTok{alpha }\OtherTok{\textless{}{-}} \FloatTok{0.05}
 
-\CommentTok{\# Upper{-}tail confidence set}
-\CommentTok{\# (values of tau\_h not rejected by the upper{-}tail test)}
-\CommentTok{\# The lower endpoint is the smallest null value tau\_h for which the}
-\CommentTok{\# upper{-}tail p{-}value is still \textgreater{}= alpha; any smaller tau\_h would be rejected}
+\CommentTok{\# Upper{-}tail confidence set (tau\_h values not rejected by upper{-}tail test)}
+\CommentTok{\# Lower endpoint: smallest tau\_h with upper{-}tail p{-}value \textgreater{}= alpha}
+\CommentTok{\# (any smaller tau\_h would be rejected)}
 \NormalTok{cs\_sharp\_lower\_one\_sided }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}
   \AttributeTok{lower =}\NormalTok{ obs\_stat }\SpecialCharTok{{-}} \FunctionTok{qnorm}\NormalTok{(}\AttributeTok{p =} \DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ alpha) }\SpecialCharTok{*} \FunctionTok{sqrt}\NormalTok{(null\_var),}
   \AttributeTok{upper =} \ConstantTok{Inf}
 \NormalTok{)}
-\CommentTok{\# qnorm(p = 1 {-} alpha): standard Normal critical value for upper one{-}sided test}
+\CommentTok{\# qnorm(1 {-} alpha): upper one{-}sided Normal critical value}
 
 \NormalTok{cs\_sharp\_two\_sided }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}
   \AttributeTok{lower =}\NormalTok{ obs\_stat }\SpecialCharTok{{-}} \FunctionTok{qnorm}\NormalTok{(}\AttributeTok{p =} \DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ alpha }\SpecialCharTok{/} \DecValTok{2}\NormalTok{) }\SpecialCharTok{*} \FunctionTok{sqrt}\NormalTok{(null\_var),}
   \AttributeTok{upper =}\NormalTok{ obs\_stat }\SpecialCharTok{+} \FunctionTok{qnorm}\NormalTok{(}\AttributeTok{p =} \DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ alpha }\SpecialCharTok{/} \DecValTok{2}\NormalTok{) }\SpecialCharTok{*} \FunctionTok{sqrt}\NormalTok{(null\_var)}
 \NormalTok{)}
-\CommentTok{\# At the lower endpoint, the upper{-}tail one{-}sided p{-}value equals alpha/2;}
-\CommentTok{\# any smaller null value would be rejected by the two{-}sided test}
-\CommentTok{\# At the upper endpoint, the lower{-}tail one{-}sided p{-}value equals alpha/2;}
-\CommentTok{\# any larger null value would be rejected by the two{-}sided test}
+\CommentTok{\# At lower endpoint, upper{-}tail one{-}sided p{-}value equals alpha/2;}
+\CommentTok{\# any smaller null value would be rejected by two{-}sided test}
+\CommentTok{\# At upper endpoint, lower{-}tail one{-}sided p{-}value equals alpha/2;}
+\CommentTok{\# any larger null value would be rejected by two{-}sided test}
 \end{Highlighting}
 \end{Shaded}
 
@@ -2521,15 +2513,14 @@ approximation to the null randomization distribution.
   \AttributeTok{by =} \FloatTok{0.0001}
 \NormalTok{)}
 
-\CommentTok{\# For each tau\_h value, repeat the same randomization test calculation below;}
-\CommentTok{\# sapply() runs this repeatedly and stacks the resulting p{-}values together}
+\CommentTok{\# Repeat the randomization test for each tau\_h}
+\CommentTok{\# sapply() computes and stacks the resulting p{-}values}
 \NormalTok{p\_mat }\OtherTok{\textless{}{-}} \FunctionTok{sapply}\NormalTok{(}\AttributeTok{X =}\NormalTok{ tau\_h\_grid,}
                 \AttributeTok{FUN =} \ControlFlowTok{function}\NormalTok{(tau\_h) \{}
-                  
+
                   \CommentTok{\# Shift outcomes under null: ldur\_i {-} tau\_h * UN\_i}
 \NormalTok{                  dat\_tau\_h }\OtherTok{\textless{}{-}} \FunctionTok{hm\_stat\_rescale}\NormalTok{(}
-                    \CommentTok{\# transform(): create copy of data\_matched with}
-                    \CommentTok{\# shifted{-}outcome column}
+                  \CommentTok{\# transform(): copy data\_matched adding shifted outcome}
                     \AttributeTok{data    =} \FunctionTok{transform}\NormalTok{(}
 \NormalTok{                      data\_matched,}
                       \AttributeTok{ldur\_tilde\_shift =}\NormalTok{ ldur }\SpecialCharTok{{-}}\NormalTok{ tau\_h }\SpecialCharTok{*}\NormalTok{ UN),}
@@ -2537,47 +2528,45 @@ approximation to the null randomization distribution.
                     \AttributeTok{treat   =}\NormalTok{ UN,}
                     \AttributeTok{strata  =}\NormalTok{ fm}
 \NormalTok{                  )}
-                  
+
                   \CommentTok{\# Transformed outcomes under sharp null tau\_h}
 \NormalTok{                  q\_tau\_h }\OtherTok{\textless{}{-}}\NormalTok{ dat\_tau\_h}\SpecialCharTok{$}\NormalTok{ldur\_tilde\_shift\_hm\_scaled}
-                  
+
                   \CommentTok{\# Observed statistic under null tau\_h}
 \NormalTok{                  obs\_stat\_tau\_h }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(}
 \NormalTok{                    dat\_tau\_h}\SpecialCharTok{$}\NormalTok{UN }\SpecialCharTok{*}\NormalTok{ q\_tau\_h}
 \NormalTok{                  )}
-                  
-                  \CommentTok{\# Randomization dis via simulated assignments (defined above)}
-                  \CommentTok{\# Compute simulated null dist via matrix multiplication,}
-                  \CommentTok{\# which is faster than looping over assignments via apply()}
+
+                  \CommentTok{\# Randomization distribution via simulated assignments}
+                  \CommentTok{\# Matrix multiplication used for speed (vs apply())}
 \NormalTok{                  sim\_null\_dist\_tau\_h }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(}
                     \FunctionTok{t}\NormalTok{(q\_tau\_h) }\SpecialCharTok{\%*\%}\NormalTok{ sim\_assigns}
 \NormalTok{                  )}
-                  
-                  
+
                   \CommentTok{\# Upper{-}tail and lower{-}tail randomization p{-}values}
 \NormalTok{                  p\_upper\_tau\_h }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(}
 \NormalTok{                    sim\_null\_dist\_tau\_h }\SpecialCharTok{\textgreater{}=}\NormalTok{ obs\_stat\_tau\_h}
 \NormalTok{                  )}
-                  
+
 \NormalTok{                  p\_lower\_tau\_h }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(}
 \NormalTok{                    sim\_null\_dist\_tau\_h }\SpecialCharTok{\textless{}=}\NormalTok{ obs\_stat\_tau\_h}
 \NormalTok{                  )}
-                  
+
                   \FunctionTok{c}\NormalTok{(}
                     \AttributeTok{upper\_tail =}\NormalTok{ p\_upper\_tau\_h,}
                     \AttributeTok{lower\_tail =}\NormalTok{ p\_lower\_tau\_h}
 \NormalTok{                  )}
 \NormalTok{                \})}
 
-\CommentTok{\# Extract vectors of p{-}values}
+\CommentTok{\# Extract vector of upper{-}tail p{-}values}
 \NormalTok{p\_upper }\OtherTok{\textless{}{-}}\NormalTok{ p\_mat[}\StringTok{"upper\_tail"}\NormalTok{, ]}
 
+\CommentTok{\# Extract vector of lower{-}tail p{-}values}
 \NormalTok{p\_lower }\OtherTok{\textless{}{-}}\NormalTok{ p\_mat[}\StringTok{"lower\_tail"}\NormalTok{, ]}
 
 \CommentTok{\# Simulation{-}based confidence sets}
 
-\CommentTok{\# Upper{-}tail confidence set}
-\CommentTok{\# retain all tau\_h with upper{-}tail p \textgreater{}= alpha}
+\CommentTok{\# Upper{-}tail confidence set: retain all tau\_h with upper{-}tail p \textgreater{}= alpha}
 \NormalTok{cs\_sharp\_upper\_tail\_sim }\OtherTok{\textless{}{-}}\NormalTok{ tau\_h\_grid[p\_upper }\SpecialCharTok{\textgreater{}=}\NormalTok{ alpha]}
 
 \CommentTok{\# Lower bound of the upper{-}tail confidence set}
@@ -2742,12 +2731,12 @@ as inputs to \texttt{fine\_strat\_var\_est()}.
 \NormalTok{  ) }\SpecialCharTok{|\textgreater{}}
   \FunctionTok{summarize}\NormalTok{(}
     \AttributeTok{n =} \FunctionTok{n}\NormalTok{(),                              }\CommentTok{\# Matched set size}
-    \AttributeTok{diff\_in\_means =} \FunctionTok{mean}\NormalTok{(                 }\CommentTok{\# Treated mean }
+    \AttributeTok{diff\_in\_means =} \FunctionTok{mean}\NormalTok{(                 }\CommentTok{\# Treated mean}
 \NormalTok{      ldur[UN }\SpecialCharTok{==} \DecValTok{1}\DataTypeTok{L}\NormalTok{]}
 \NormalTok{    ) }\SpecialCharTok{{-}}                                   \CommentTok{\# minus}
       \FunctionTok{mean}\NormalTok{(                               }\CommentTok{\# control mean}
 \NormalTok{        ldur[UN }\SpecialCharTok{==} \DecValTok{0}\DataTypeTok{L}\NormalTok{]}
-\NormalTok{      ),                }
+\NormalTok{      ),}
     \AttributeTok{.groups =} \StringTok{"drop"}
 \NormalTok{  )}
 
@@ -3017,8 +3006,8 @@ We can code this function in \texttt{R} as follows.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Rosenbaum (2018) objective: expectation minus observed plus kappa times SD}
-\CommentTok{\# Nonpositive values imply rejection at level alpha}
+\CommentTok{\# Rosenbaum (2018) objective: expectation {-} observed + kappa * SD Nonpositive}
+\CommentTok{\# values imply rejection at level alpha}
 \NormalTok{sens\_objective }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(null\_expect, null\_variance, obs\_stat, }\AttributeTok{alpha =} \FloatTok{0.05}\NormalTok{) \{}
     \CommentTok{\# null\_expect : overall null expectation of the test statistic}
     \CommentTok{\# null\_variance : overall null variance of the test statistic obs\_stat :}
@@ -3032,7 +3021,7 @@ We can code this function in \texttt{R} as follows.
 \NormalTok{    null\_sd }\OtherTok{\textless{}{-}} \FunctionTok{sqrt}\NormalTok{(null\_variance)}
 
     \CommentTok{\# Gap between null expectation and observed statistic (null\_expect {-}}
-    \CommentTok{\# obs\_stat), plus Normal buffer (kappa * null\_sd)}
+    \CommentTok{\# obs\_stat), + Normal buffer (kappa * null\_sd)}
 \NormalTok{    obj\_val }\OtherTok{\textless{}{-}}\NormalTok{ (null\_expect }\SpecialCharTok{{-}}\NormalTok{ obs\_stat) }\SpecialCharTok{+}\NormalTok{ kappa }\SpecialCharTok{*}\NormalTok{ null\_sd}
 
     \FunctionTok{return}\NormalTok{(obj\_val)}
@@ -3048,9 +3037,9 @@ To build intuition, we next evaluate this function at \(\Gamma = 1\).
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Evaluate under Gamma = 1 using null\_ev, null\_var, and obs\_stat defined earlier}
+\CommentTok{\# Evaluate under Gamma = 1 using null\_ev, null\_var, and obs\_stat}
 \FunctionTok{sens\_objective}\NormalTok{(}
-  \AttributeTok{null\_expect   =}\NormalTok{ null\_ev, }
+  \AttributeTok{null\_expect   =}\NormalTok{ null\_ev,}
   \AttributeTok{null\_variance =}\NormalTok{ null\_var,}
   \AttributeTok{obs\_stat      =}\NormalTok{ obs\_stat,}
   \AttributeTok{alpha         =} \FloatTok{0.05}
@@ -3125,8 +3114,7 @@ positive value, leading to non-rejection.
   \AttributeTok{by =} \FloatTok{0.0001}
 \NormalTok{)}
 
-\CommentTok{\# Iterate over the Gamma\_vals grid using lapply(): perform the sensitivity}
-\CommentTok{\# analysis at each Gamma and return a list of per{-}Gamma result objects}
+\CommentTok{\# lapply() runs sensitivity analysis at each Gamma, returns list of results}
 \NormalTok{sens\_results }\OtherTok{\textless{}{-}} \FunctionTok{lapply}\NormalTok{(}
   \AttributeTok{X =}\NormalTok{ Gamma\_vals,}
   \AttributeTok{FUN =} \ControlFlowTok{function}\NormalTok{(g) \{}
@@ -3135,24 +3123,24 @@ positive value, leading to non-rejection.
       \AttributeTok{z           =}\NormalTok{ data\_matched}\SpecialCharTok{$}\NormalTok{UN,                   }\CommentTok{\# treatment indicator}
       \AttributeTok{st          =}\NormalTok{ data\_matched}\SpecialCharTok{$}\NormalTok{fm,                   }\CommentTok{\# matched set}
       \AttributeTok{gamma       =}\NormalTok{ g,                                 }\CommentTok{\# Gamma}
-      \AttributeTok{alternative =} \StringTok{"greater"}\NormalTok{,                         }\CommentTok{\# upper one{-}sided test}
-      \AttributeTok{detail      =} \ConstantTok{TRUE} \CommentTok{\# return intermediate quantities used in the computations}
+      \AttributeTok{alternative =} \StringTok{"greater"}\NormalTok{,                         }\CommentTok{\# upper{-}tail test}
+      \AttributeTok{detail      =} \ConstantTok{TRUE} \CommentTok{\# return intermediate quantities}
 \NormalTok{    )}
-    
+
     \CommentTok{\# Separable p{-}value}
 \NormalTok{    p\_sep }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(}
 \NormalTok{      out}\SpecialCharTok{$}\NormalTok{Separable[}\StringTok{"P{-}value"}\NormalTok{]}
 \NormalTok{    )}
-    
+
     \CommentTok{\# Taylor series margin (cvA)}
 \NormalTok{    cvA }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(}
 \NormalTok{      out}\SpecialCharTok{$}\NormalTok{lambda[}\StringTok{"Linear Taylor bound"}\NormalTok{]}
 \NormalTok{    )}
-    
+
     \CommentTok{\# Decisions}
 \NormalTok{    sep\_reject }\OtherTok{\textless{}{-}}\NormalTok{ p\_sep }\SpecialCharTok{\textless{}=}\NormalTok{ alpha          }\CommentTok{\# separable rejects?}
 \NormalTok{    tay\_reject }\OtherTok{\textless{}{-}}\NormalTok{ cvA }\SpecialCharTok{\textless{}=} \DecValTok{0}                \CommentTok{\# Taylor rejects?}
-    
+
     \CommentTok{\# Store results for this value of Gamma}
     \FunctionTok{data.frame}\NormalTok{(}
       \AttributeTok{Gamma     =}\NormalTok{ g,        }\CommentTok{\# sensitivity parameter}
@@ -3358,7 +3346,7 @@ single matched set.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Load the worst\_case\_IPW() function from the GitHub repo}
+\CommentTok{\# Load the worst\_case\_IPW() function from GitHub repo}
 \FunctionTok{source}\NormalTok{(}
   \FunctionTok{paste0}\NormalTok{(}
 \NormalTok{    base\_url, }\StringTok{"/R/worst\_case\_IPW.R"}
@@ -3396,7 +3384,7 @@ statistic to the standard Normal distribution to obtain \(p\)-values.
 \NormalTok{)}
 
 \ControlFlowTok{for}\NormalTok{ (g }\ControlFlowTok{in}\NormalTok{ Gamma\_vals) \{ }\CommentTok{\# Loop over Gamma values}
-  
+
   \CommentTok{\# Worst{-}case IPW estimate within each matched set at Gamma = g}
 \NormalTok{  set\_stats }\OtherTok{\textless{}{-}}\NormalTok{ data\_matched }\SpecialCharTok{|\textgreater{}}
     \FunctionTok{group\_by}\NormalTok{(}
@@ -3414,25 +3402,25 @@ statistic to the standard Normal distribution to obtain \(p\)-values.
 \NormalTok{      ),}
       \AttributeTok{.groups =} \StringTok{"drop"}
 \NormalTok{    )}
-  
+
   \CommentTok{\# Overall worst{-}case IPW statistic (weighted average across sets)}
 \NormalTok{  wc\_ipw\_stat }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(}
 \NormalTok{    set\_stats}\SpecialCharTok{$}\NormalTok{weight }\SpecialCharTok{*}\NormalTok{ set\_stats}\SpecialCharTok{$}\NormalTok{est}
 \NormalTok{  )}
-  
+
   \CommentTok{\# Variance estimate for the worst{-}case IPW statistic}
 \NormalTok{  var\_hat }\OtherTok{\textless{}{-}} \FunctionTok{fine\_strat\_var\_est}\NormalTok{(}
     \AttributeTok{strat\_ns   =}\NormalTok{ set\_stats}\SpecialCharTok{$}\NormalTok{n,}
     \AttributeTok{strat\_ests =}\NormalTok{ set\_stats}\SpecialCharTok{$}\NormalTok{est}
 \NormalTok{  )}
-  
+
   \CommentTok{\# Standardized worst{-}case IPW statistic, centered at the null}
 \NormalTok{  se\_hat   }\OtherTok{\textless{}{-}} \FunctionTok{sqrt}\NormalTok{(}
 \NormalTok{    var\_hat}
 \NormalTok{  )}
-  
+
 \NormalTok{  std\_stat }\OtherTok{\textless{}{-}}\NormalTok{ (wc\_ipw\_stat }\SpecialCharTok{{-}}\NormalTok{ null\_ATE) }\SpecialCharTok{/}\NormalTok{ se\_hat}
-  
+
   \CommentTok{\# One{-}sided p{-}value, determined by the alternative}
   \ControlFlowTok{if}\NormalTok{ (alternative }\SpecialCharTok{==} \StringTok{"greater"}\NormalTok{) \{}
     \CommentTok{\# Upper{-}tail test: ATE \textgreater{} 0}
@@ -3443,12 +3431,12 @@ statistic to the standard Normal distribution to obtain \(p\)-values.
 \NormalTok{  \} }\ControlFlowTok{else}\NormalTok{ \{}
     \FunctionTok{stop}\NormalTok{(}\StringTok{"Only one{-}sided alternatives (\textquotesingle{}greater\textquotesingle{} or \textquotesingle{}less\textquotesingle{}) are handled here."}\NormalTok{)}
 \NormalTok{  \}}
-  
+
   \CommentTok{\# Store result for this Gamma}
 \NormalTok{  weak\_sens\_df}\SpecialCharTok{$}\NormalTok{p\_value[weak\_sens\_df}\SpecialCharTok{$}\NormalTok{Gamma }\SpecialCharTok{==}\NormalTok{ g] }\OtherTok{\textless{}{-}}\NormalTok{ p\_val}
 \NormalTok{\}}
 
-\CommentTok{\# Sensitivity value: smallest Gamma at which the one{-}sided test no longer rejects}
+\CommentTok{\# Sensitivity value: smallest Gamma where one{-}sided test no longer rejects}
 \NormalTok{weak\_sens\_value }\OtherTok{\textless{}{-}} \FunctionTok{min}\NormalTok{(}
 \NormalTok{  weak\_sens\_df}\SpecialCharTok{$}\NormalTok{Gamma[weak\_sens\_df}\SpecialCharTok{$}\NormalTok{p\_value }\SpecialCharTok{\textgreater{}=}\NormalTok{ alpha]}
 \NormalTok{)}

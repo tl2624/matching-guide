@@ -1,32 +1,33 @@
 # ---- chunk ----
-library(knitr)  # For knitting R Markdown and including external figures or files
-
-# Insert the matching pipeline flowchart (PDF) from the project’s fig/ directory
-include_graphics(path = "fig/version_2/matching_pipeline_flowchart_V2.pdf")
-
-# ---- chunk ----
-# Define base URL for the Matching Guide GitHub repository
+# Define base URL for the Matching Guide GitHub repo
 base_url <- "https://raw.githubusercontent.com/tl2624/matching-guide/main"
 
 # Load the cleaned dataset
-data <- readRDS(url(paste0(base_url, "/data/peace_pre_match.rds")))
+data <- readRDS(
+  url(
+    paste0(
+      base_url, "/data/peace_pre_match.rds"
+    )
+  )
+)
 
 # ---- chunk ----
 # Define character vector of the 9 covariate names in the dataset
-covs <- c("lwdeaths", "lwdurat", "ethfrac", "pop", "lmtnest", "milper", "bwgdp",
-          "bwplty2", "region")
+covs <- c("lwdeaths", "lwdurat", "ethfrac", "pop", "lmtnest", "milper",
+          "bwgdp", "bwplty2", "region")
 
 # ---- chunk ----
-# Install "dplyr" package (only run if you don't already have it installed)
-# Install.packages("dplyr")
+# Install "dplyr" package (only run if not already installed)
+# install.packages("dplyr")
 
-# Load dplyr package for data manipulation (mutate, group_by, summarize, etc.)
+# Load package for data manipulation (mutate, group_by, summarize, etc.)
 library(dplyr)
 
 # Convert categorical variable "region" into 0/1 dummy indicators
-data <- data |>  # Pipe (|>) to pass left-hand result into next function call
-  mutate( # Use mutate() to create new variables by transforming existing columns
-    # ifelse() returns one value if the condition is TRUE and another if FALSE
+data <- data |> # Pipe (|>) to pass left-hand result into next function call
+  mutate(
+    # Use mutate() to create new variables by transforming existing columns
+    # ifelse() returns one value if condition is TRUE and another if FALSE
     eeurop   = ifelse(test = region == "eeurop",   yes = 1, no = 0),
     lamerica = ifelse(test = region == "lamerica", yes = 1, no = 0),
     asia     = ifelse(test = region == "asia",     yes = 1, no = 0),
@@ -34,49 +35,65 @@ data <- data |>  # Pipe (|>) to pass left-hand result into next function call
     nafrme   = ifelse(test = region == "nafrme",   yes = 1, no = 0)
   )
 
-# New character vector of covariate names with "region" replcaed by dummy indicators 
+# Covariate names with "region" replaced by dummy indicators
 expanded_covs <- c(
-  # Setdiff() returns elements in 'x' that are not in 'y'
-  setdiff(x = covs, y = "region"),  # Drops "region" from the covariate list
+  # setdiff() returns elements in 'x' that are not in 'y'
+  setdiff(
+    x = covs,
+    y = "region" # Drops "region" from the covariate list
+  ),
   "eeurop", "lamerica", "asia", "ssafrica", "nafrme"
 )
 
 # ---- chunk ----
-# Extract covariate values for Liberia and Guinea-Bissau (cname = country name)
+# Extract covariates for Liberia and Guinea-Bissau (cname = country name)
 liberia <- data[data$cname == "Liberia", expanded_covs]
+
 guinea_bissau <- data[data$cname == "Guinea-Bissau", expanded_covs]
 
 # Compute Euclidean distance between the two countries on these covariates
-sqrt(sum((liberia - guinea_bissau)^2))  # Display the Euclidean distance
+sqrt(
+  sum(
+    (liberia - guinea_bissau)^2
+  )
+)  # Display the Euclidean distance
 
 # ---- chunk ----
 # Create a formula: UN (treatment indicator) ~ covariates
 # Note: we keep "region" in covs as a factor
-cov_fmla <- reformulate(termlabels = covs,
-                        response = "UN")
+cov_fmla <- reformulate(
+  termlabels = covs,
+  response = "UN"
+)
 
 # Install optmatch if not already installed
-# Install.packages("optmatch")
+# install.packages("optmatch")
 
 # Load optmatch, which provides the match_on() function
 library(optmatch)
 
-# Compute Euclidean distance matrix between treated (UN = 1) and control (UN = 0)
-dist_mat_euc <- match_on(x = cov_fmla,                 # Formula for covariates
-                         data = data,                  # Dataset used
-                         standardization.scale = NULL, # No rescaling of covariates
-                         method = "euclidean")         # Use Euclidean distance
+# Euclidean distance matrix: treated (UN = 1) vs control (UN = 0)
+dist_mat_euc <- match_on(
+  x = cov_fmla,                 # Formula for covariates
+  data = data,                  # Dataset used
+  standardization.scale = NULL, # No rescaling of covariates
+  method = "euclidean"          # Use Euclidean distance
+)
 
 # Add country names (cname) as row/column labels for clarity
-dimnames(dist_mat_euc) <- list(data$cname[data$UN == 1], data$cname[data$UN == 0])
+dimnames(dist_mat_euc) <- list(
+  data$cname[data$UN == 1], data$cname[data$UN == 0]
+)
 
 # Display submatrix of distances:
-# treated units in rows 11–15 vs. control units in columns 27–30
-round(x = dist_mat_euc[11:15, 27:30],
-      digits = 2)  # Number of decimal places to round
+round(        # Round distances for display
+  # treated units in rows 11-15 vs. control units in columns 27-30
+  x = dist_mat_euc[11:15, 27:30],
+  digits = 2  # Number of decimal places to round
+)
 
 # ---- chunk ----
-# Compute Mahalanobis distance matrix between treated (UN = 1) and control (UN = 0)
+# Mahalanobis distance matrix: treated (UN = 1) vs control (UN = 0)
 dist_mat_mah <- match_on(
   x = cov_fmla,
   data = data,
@@ -86,29 +103,38 @@ dist_mat_mah <- match_on(
 
 # ---- chunk ----
 # Formula for UN ~ covariates (excluding "region")
-psm_cov_fmla <- reformulate(termlabels = setdiff(x = covs, y = "region"),
-                            response = "UN")
+psm_cov_fmla <- reformulate(
+  termlabels = setdiff(
+    x = covs,
+    y = "region"
+  ),
+  response = "UN"
+)
 
 # Fit logistic regression for propensity score model
 psm <- glm(
   formula = psm_cov_fmla,            # Treatment ~ covariates
   family = binomial(link = "logit"), # Logistic regression (logit link)
-  data = data                        
+  data = data
 )
 
 # ---- chunk ----
 # Extract logit propensity scores (linear predictors from fitted model)
-lin_cov_inds <- psm$linear.predictors  # Same as model.matrix(psm) %*% coef(psm)
+lin_cov_inds <- psm$linear.predictors  # = model.matrix(psm) %*% coef(psm)
 
 # ---- chunk ----
 # Extract estimated propensity scores (predicted probabilities of UN = 1)
 p_scores <- psm$fitted.values
 
 # Check that lin_cov_inds equals log odds (propensity scores on logit scale)
-all.equal(lin_cov_inds, log(p_scores / (1 - p_scores)))
+all.equal(
+  lin_cov_inds, log(p_scores / (1 - p_scores))
+)
 
-# ALso check that p_scores equals logistic(lin_cov_inds)
-all.equal(p_scores, 1 / (1 + exp(-lin_cov_inds)))
+# Also check that p_scores equals logistic(lin_cov_inds)
+all.equal(
+  p_scores, 1 / (1 + exp(-lin_cov_inds))
+)
 
 # ---- chunk ----
 # Install "ggplot2" (only run if not already installed)
@@ -128,30 +154,36 @@ ggplot(data = data,  # Dataset
   coord_flip()                             # Flip axes for readability
 
 # ---- chunk ----
-# Create distance structure: 0 if units are in the same region, Inf otherwise
-em_region <- exactMatch(x = UN ~ region,
-                        data = data)
+# Create distance structure: 0 if units are in same region, Inf otherwise
+em_region <- exactMatch(
+  x = UN ~ region,
+  data = data
+)
 
 # ---- chunk ----
 # Euclidean distance on Polity score (bwplty2) with caliper = 2
-# Pairs differing by >2 are set to Inf
-euc_dist_polity_cal_2 <- match_on(x = UN ~ bwplty2,
-                                  caliper = 2,  # Set caliper
-                                  data = data,
-                                  standardization.scale = NULL,
-                                  method = "euclidean")
+# Pairs differing by > 2 are set to Inf
+euc_dist_polity_cal_2 <- match_on(
+  x = UN ~ bwplty2,
+  caliper = 2,  # Set caliper
+  data = data,
+  standardization.scale = NULL,
+  method = "euclidean"
+)
 
 # ---- chunk ----
-# Create overall distance matrix by element-wise addition of two distance matrices
+# Overall distance matrix by element-wise addition of two distance matrices
 overall_dist_mat <- em_region + euc_dist_polity_cal_2
 
 # ---- chunk ----
 # Apply a caliper of width 3 to the polity Euclidean distance matrix
-euc_dist_polity_cal_3 <- match_on(x = UN ~ bwplty2,
-                                  caliper = 3,
-                                  data = data,
-                                  standardization.scale = NULL,
-                                  method = "euclidean")
+euc_dist_polity_cal_3 <- match_on(
+  x = UN ~ bwplty2,
+  caliper = 3,
+  data = data,
+  standardization.scale = NULL,
+  method = "euclidean"
+)
 
 # Combine regional exact match distance with polity distance
 em_region + euc_dist_polity_cal_3
@@ -165,30 +197,39 @@ fullmatch(
   max.controls = 2,     # At most 2 controls per treated unit
   omit.fraction = NULL, # Governs fraction of units discarded
   mean.controls = NULL, # Governs average controls per treated unit
-  # Only one of omit.fraction or mean.controls may be non-NULL
+  # Only one of omit.fraction or mean.controls can be non-NULL
   data = data
 )
 
 # ---- chunk ----
-# Add linear predictors from logistic regression (psm$linear.predictors) to dataset
+# Add logistic regression linear predictors to dataset
 data$logit_p_score <- lin_cov_inds
 
 # Population standard deviation of logit_p_score (divides by n, not n - 1)
-pop_sd_logit <- sqrt(mean((data$logit_p_score - mean(data$logit_p_score))^2))
+pop_sd_logit <- sqrt(
+  mean(
+    (data$logit_p_score - mean(data$logit_p_score))^2
+  )
+)
 
-# Distance matrix for propensity score (logit of estimated treatment probability)
-ps_mat <- match_on(x = UN ~ logit_p_score,
-                   caliper = 0.5 * pop_sd_logit,
-                   data = data,
-                   standardization.scale = NULL,
-                   method = "euclidean")
+# Distance matrix for logit of estimated propensity scores
+ps_mat <- match_on(
+  x = UN ~ logit_p_score,
+  caliper = 0.5 * pop_sd_logit,
+  data = data,
+  standardization.scale = NULL,
+  method = "euclidean"
+)
 
 # ---- chunk ----
 # Rank-based Mahalanobis distance on covariates
-# Covs was defined earlier as the set of covariate names; here we drop "region"
+# Covs defined earlier as covariate names; here, drop "region"
 rank_mah_mat <- match_on(
-  x      = reformulate(termlabels = setdiff(x = covs, y = "region"),
-                       response   = "UN"),
+  x      = reformulate(
+    termlabels = setdiff(
+      x = covs,
+      y = "region"),
+    response   = "UN"),
   data   = data,
   standardization.scale = NULL,
   method = "rank_mahalanobis" # Use rank-based Mahalanobis distance
@@ -214,25 +255,27 @@ bwgdp_mat <- match_on(
 )
 
 # ---- chunk ----
-# Full matching on PS + rank-based Mahalanobis + separate Euclidean distances
-# (ethfrac, bwgdp) + region exact match
+# Full matching: 
+# PS + rank Mahalanobis + Euclidean (ethfrac, bwgdp) + region exact
 fm <- fullmatch(
-  # x specifies the distance structure for matching: it can be
-  # (i) a distance-specification formula passed to match_on(),
-  # (ii) a precomputed distance matrix, or
-  # (iii) as here, a sum of distance specifications constructed via match_on()
+  # x specifies the distance structure:
+  # match_on() formula, distance matrix, or sum of match_on() distances
   x            = ps_mat + rank_mah_mat + eth_mat + bwgdp_mat + em_region,
   data         = data,
-  max.controls = 4  # Up to 4 controls per treated; min.controls = 0 by default
+  max.controls = 4 # <= 4 controls per treated (min.controls = 0 by default)
 )
 
 # ---- chunk ----
 # Effective sample size of matched sets
-effectiveSampleSize(fm)
+effectiveSampleSize(
+  fm
+)
 
 # ---- chunk ----
-# Summarize matched sets (set sizes, structure) and report effective sample size
-summary(fm)
+# Summarize matched sets and report effective sample size
+summary(
+  fm
+)
 
 # ---- chunk ----
 # Add matched set ID to data for each unit
@@ -240,13 +283,17 @@ data$fm <- fm
 
 # Look at one matched set ("ssafrica.3") for illustration
 data |>
-  filter(fm == "ssafrica.3") |>  # Keep only units in set "ssafrica.3"
+  filter(
+    fm == "ssafrica.3" # Keep only units in set "ssafrica.3"
+  ) |>
   # Display selected variables
-  select(cname, UN, region, logit_p_score, ethfrac, bwgdp, bwplty2)
+  select(
+    cname, UN, region, logit_p_score, ethfrac, bwgdp, bwplty2
+  )
 
 # ---- chunk ----
-# Install "RItools" package (only run if you don't already have it installed)
-# Install.packages("RItools")
+# Install "RItools" package (only run if not already installed)
+# install.packages("RItools")
 
 # Load RItools package for balance diagnostics (balanceTest)
 library(RItools)
@@ -255,7 +302,9 @@ cov_bal <- balanceTest(
   # Formula: treatment ~ covariates
   # update(): keep the original formula (. ~ .)
   # and add stratification by matched set, + strata(fm)
-  fmla = update(cov_fmla, . ~ . + strata(fm)),
+  fmla = update(
+    cov_fmla, . ~ . + strata(fm)
+  ),
   data = data,
   p.adjust.method = "none" # Method of p-value adjustment (none here)
 )
@@ -387,7 +436,7 @@ tab_tex <- sub(
 cat(tab_tex)
 
 # ---- chunk ----
-# Extract overall chi-square balance test results, stratified by matched set (fm)
+# Extract overall chi-square balance test by matched set (fm)
 cov_bal$overall["fm", ]
 
 # ---- chunk ----
@@ -443,38 +492,47 @@ cat(paste(tex, collapse = "\n"))
 
 # ---- chunk ----
 # Keep only rows assigned to a matched set (drop NA in fm)
-data_matched <- filter(.data = data, !is.na(fm))
+data_matched <- filter(
+  .data = data, !is.na(fm)
+)
 
 # Null hypothesis value
 tau_h <- 0
 
 # Reconstruct outcomes under sharp null (tau_h = 0)
 data_matched <- data_matched |>
-  mutate(ldur_tilde = ldur - tau_h * UN)
+  mutate(
+    ldur_tilde = ldur - tau_h * UN
+  )
 
 # ---- chunk ----
-# Load the hm_stat_rescale() function from the GitHub repo
-# Base_url (defined earlier as
-# "https://raw.githubusercontent.com/tl2624/matching-guide/main")
-# Points to the main GitHub repo URL
-source(paste0(base_url, "/R/hm_stat_rescale.R"))
+# Load hm_stat_rescale() from GitHub repo
+# base_url (defined earlier) points to repo URL
+source(
+  paste0(
+    base_url, "/R/hm_stat_rescale.R"
+  )
+)
 
-# Apply the rescaling function: adds a new column (.hm_scaled)
-# And returns the full matched dataset with this rescaled outcome
+# Apply rescaling: adds .hm_scaled and returns matched dataset
 data_matched <- hm_stat_rescale(
-  data = data_matched,  
-  outcome = ldur_tilde, # Set outcome variable to be rescaled within matched sets
+  data = data_matched,
+  outcome = ldur_tilde, # Set outcome to be rescaled within matched sets
   treat = UN,           # Set name of treatment indicator variable
   strata = fm           # Set name of matched strata (block) variable
 )
 
 # Observed HM-weighted diff-in-means statistic
-obs_stat <- sum(data_matched$ldur_tilde_hm_scaled[data_matched$UN == 1])
+obs_stat <- sum(
+  data_matched$ldur_tilde_hm_scaled[data_matched$UN == 1]
+)
 
 # ---- chunk ----
-# Harmonic-mean–weighted difference in means (weights computed within sets)
+# Harmonic-mean-weighted difference in means (weights computed within sets)
 dim_hm <- data_matched |>
-  group_by(fm) |>
+  group_by(
+    fm
+  ) |>
   summarize(
     n_treated = sum(UN == 1),
     n_control = sum(UN == 0),
@@ -485,52 +543,54 @@ dim_hm <- data_matched |>
     .groups   = "drop" # Drop grouping after summarise
   ) |>
   summarize(
-    # Harmonic-mean–weighted average of within-set Differences-in-Means
-    dim_hm = sum(w_hm * dim_set) / sum(w_hm)
+    # Harmonic-mean-weighted average of within-set Differences-in-Means
+    dim_hm = sum(
+      w_hm * dim_set) / sum(w_hm)
   ) |>
-  pull(dim_hm)  # Pull column out of data frame
+  pull( # Pull column out of data frame
+    dim_hm
+  )
 
 # Approaches coincides with the sum statistic
 all.equal(
-  dim_hm,
-  obs_stat
+  dim_hm, obs_stat
 )
 
 # ---- chunk ----
-# Fixed-effects (FE) regression coefficient on UN (matched set indicators as FE)
-fe_fit <- lm(formula = ldur_tilde ~ UN + fm,
-             data = data_matched)
+# FE coefficient on UN (matched-set FE)
+fe_fit <- lm(
+  formula = ldur_tilde ~ UN + fm,
+  data = data_matched
+)
 
 # Drop name so comparison is purely numeric
-treat_coef_fe_fit <- unname(coef(fe_fit)["UN"])
-
+treat_coef_fe_fit <- unname(
+  coef(fe_fit)["UN"]
+)
 
 # Approaches coincides with the sum statistic
 all.equal(
-  treat_coef_fe_fit,
-  obs_stat
+  treat_coef_fe_fit, obs_stat
 )
 
 # ---- chunk ----
-# Install "PSweight" package (only run if you don't already have it installed)
-# Install.packages("PSweight")
+# Install "PSweight" package (only run if not already installed)
+# install.packages("PSweight")
 library(PSweight) # For overlap weights from Li et al (2018)
 
-# Encode the treatment assignment probabilities implied by as-if randomization
-# within matched sets: n_treated / n in each set
+# Treatment probabilities within matched sets: n_treated / n
 ps_fit <- PSmethod(
   ps.formula = UN ~ factor(fm), # Reproduces n_treated / n in each set
   method     = "glm",           # Estimate using generalized linear model
-  # Use as.data.frame() to drop tibble class for compatibility with PSmethod()
-  data       = as.data.frame(data_matched), 
+  # Use as.data.frame() for PSmethod() compatibility
+  data       = as.data.frame(data_matched),
   ncate      = 2                # Binary treatment (treated vs. control)
 )
 
-assign_prob <- ps_fit$e.h[, "1"]  # Column corresponding to treatment level "1"
+assign_prob <- ps_fit$e.h[, "1"]  # Column for treatment level "1"
 
-# Unit-level overlap weights implied by these treatment assignment probabilities
-# Control units get weight equal to their treatment assignment probability
-# Treated units get weight equal to one minus their treatment assignment probability
+# Overlap weights from treatment probabilities
+# Controls: treatment probability ; Treated: 1 - treatment probability
 w_ow <- ifelse(
   test = data_matched$UN == 1,
   yes  = 1 - assign_prob,
@@ -551,20 +611,23 @@ dim_ow <- data_matched |>
     # Difference between overlap-weighted treated and control means
     dim_ow = treated_weighted_mean - control_weighted_mean
   ) |>
-  pull(dim_ow)
+  pull(
+    dim_ow
+  )
 
 # Approaches coincides with the sum statistic
 all.equal(
-  dim_ow,
-  obs_stat
+  dim_ow, obs_stat
 )
 
 # ---- chunk ----
 # For each matched set (fm), record:
-# N   = total units in the set
-# M = number treated (UN == 1)
+# n = total units in the set
+# m = number treated (UN == 1)
 block_ns <- data_matched |>
-  group_by(fm) |>    # Group results by key variables
+  group_by(          # Group results by key variables
+    fm
+  ) |>
   summarise(         # Aggregate to one row per group
     n = n(),         # Row count per group
     m = sum(UN),
@@ -573,11 +636,16 @@ block_ns <- data_matched |>
 
 # Total possible treatment assignments = product of binomial coefficients
 # (choose n_s units for treatment in each set and multiply across sets)
-exact_n_assigns <- prod(choose(n = block_ns$n, k = block_ns$m))
+exact_n_assigns <- prod(
+  choose(
+    n = block_ns$n,
+    k = block_ns$m
+  )
+)
 
 # ---- chunk ----
 # Install "randomizr" (only run if not already installed)
-# Install.packages("randomizr")
+# install.packages("randomizr")
 
 # Load randomizr for generating random assignments
 library(randomizr)
@@ -608,31 +676,42 @@ sim_assigns <- obtain_permutation_matrix(
 )
 
 # ---- chunk ----
-# Randomization distribution under sharp null of no effect:
-# Apply sum statistic to each assignment column in 'sim_assigns'
-# Outcome has been transformed so that
-# Sum statistic = harmonic-mean weighted diff in means
+# Randomization distribution under sharp null
+# Apply sum statistic to each assignment in sim_assigns
+# Outcome transformed so sum = harmonic-mean weighted diff in means
 sim_sharp_null_dist <- apply(
   X = sim_assigns,    # Matrix of treatment assignments
   MARGIN = 2,         # Iterate over columns (assignments)
   FUN = function(x) {
     # Sum transformed outcomes among treated
-    sum(data_matched$ldur_tilde_hm_scaled[x == 1])
+    sum(
+      data_matched$ldur_tilde_hm_scaled[x == 1]
+    )
   }
 )
 # Faster equivalent computation via matrix multiplication
-# as.numeric(t(data_matched$ldur_tilde_hm_scaled) %*% sim_assigns)
+# as.numeric(
+#   t(data_matched$ldur_tilde_hm_scaled) %*% sim_assigns
+# )
 
 # ---- chunk ----
-# One-sided, upper p-value: proportion of simulated randomization stats >= observed
-round(x = mean(sim_sharp_null_dist >= obs_stat), digits = 4)
+# One-sided, upper p-value:
+# Propprtion of simulated randomization stats >= observed
+round(
+  x = mean(
+    sim_sharp_null_dist >= obs_stat
+  ),
+  digits = 4
+)
 
 # ---- chunk ----
 # Transformed outcomes under sharp null (tau_h = 0)
 q_tau_h_0 <- data_matched$ldur_tilde_hm_scaled
 
 # Fast computation of exact null distribution using matrix multiplication
-exact_sharp_null_dist <- as.numeric(t(q_tau_h_0) %*% exact_assigns)
+exact_sharp_null_dist <- as.numeric(
+  t(q_tau_h_0) %*% exact_assigns
+)
 
 # Slower apply()-based computation (for reference)
 # apply(
@@ -643,47 +722,60 @@ exact_sharp_null_dist <- as.numeric(t(q_tau_h_0) %*% exact_assigns)
 #  }
 #)
 
-# Exact one-sided, upper p-value: proportion of randomization stats >= observed
-round(x = mean(exact_sharp_null_dist >= obs_stat), digits = 4)
+# Exact one-sided, upper p-value
+round(
+  x = mean(
+    exact_sharp_null_dist >= obs_stat
+  ),
+  digits = 4
+)
 
 # ---- chunk ----
-# Install "senstrat" package (only run if you don't already have it installed)
-# Install.packages("senstrat")
+# Install "senstrat" package (only run if not already installed)
+# install.packages("senstrat")
 
-# Load senstrat for computing stratum-level null expectations/variances
-# (Rosenbaum & Krieger 1990) and later sensitivity analysis
+# Load senstrat for stratum-level null moments and sensitivity analysis
+# (Rosenbaum & Krieger 1990)
 library(senstrat)
 
 # Compute per-block null expectations and variances
 per_block_moms <- data_matched |>
-  group_by(fm) |>
+  group_by(
+    fm
+  ) |>
   summarize(
     expect   = ev(
       sc = ldur_tilde_hm_scaled, # Transformed outcomes for the stratum
       z = UN,                    # Treatment indicator
-      m = 1,                     # Number of "1"s in vector of hidden confounder
+      m = 1,                     # Count of 1s in hidden confounder
       # Irrelevant here since Gamma = 1
       g = 1,                     # Sensitivity parameter Gamma
-      method = "RK"              # Use formula from Rosenbaum and Krieger (1990)
-    )$expect,                    # Null expectation of sum statistic in matched set
+      method = "RK"              # Use Rosenbaum and Krieger (1990) formula 
+    )$expect,                    # Null expectation of sum statistic by set
     variance = ev(
       sc     = ldur_tilde_hm_scaled,
       z      = UN,
       m = 1,
       g      = 1,
       method = "RK"
-    )$vari,                      # Null variance of sum statistic in matched set
+    )$vari,                      # Null variance of sum statistic by set
     .groups  = "drop"
   )
 
-# Sum across blocks to get overall null expectation and variance
-null_ev  <- sum(per_block_moms$expect)
-null_var <- sum(per_block_moms$variance)
+# Sum across blocks to get overall null expectation
+null_ev  <- sum(
+  per_block_moms$expect
+)
+
+# Sum across blocks to get overall null variance
+null_var <- sum(
+  per_block_moms$variance
+)
 
 # Standardized test statistic and one-sided Normal p-value (upper tail)
 norm_upper_p_value <- pnorm(
   q = (obs_stat - null_ev) / sqrt(null_var), # Standardized statistic
-  lower.tail = FALSE                         # Compute upper-tail probability
+  lower.tail = FALSE                         # Compute upper-tail prob
 )
 # By default in pnorm(): mean = 0 and sd = 1 (standard normal distribution)
 
@@ -691,91 +783,113 @@ norm_upper_p_value <- pnorm(
 # Significance level
 alpha <- 0.05
 
-# Upper-tail confidence set (values of tau_h not rejected by the upper-tail test)
-# The lower endpoint is the smallest null value tau_h for which the
-# upper-tail p-value is still >= alpha; any smaller tau_h would be rejected.
+# Upper-tail confidence set (tau_h values not rejected by upper-tail test)
+# Lower endpoint: smallest tau_h with upper-tail p-value >= alpha
+# (any smaller tau_h would be rejected)
 cs_sharp_lower_one_sided <- c(
-  lower = obs_stat - qnorm(1 - alpha) * sqrt(null_var),
+  lower = obs_stat - qnorm(p = 1 - alpha) * sqrt(null_var),
   upper = Inf
 )
-# qnorm(1 - alpha): standard Normal critical value for upper one-sided test
+# qnorm(1 - alpha): upper one-sided Normal critical value
 
 cs_sharp_two_sided <- c(
-  lower = obs_stat - qnorm(1 - alpha / 2) * sqrt(null_var),
-  upper = obs_stat + qnorm(1 - alpha / 2) * sqrt(null_var)
+  lower = obs_stat - qnorm(p = 1 - alpha / 2) * sqrt(null_var),
+  upper = obs_stat + qnorm(p = 1 - alpha / 2) * sqrt(null_var)
 )
-# At the lower endpoint, the upper-tail one-sided p-value equals alpha/2;
-# any smaller null value would be rejected by the two-sided test
-# At the upper endpoint, the lower-tail one-sided p-value equals alpha/2;
-# any larger null value would be rejected by the two-sided test
+# At lower endpoint, upper-tail one-sided p-value equals alpha/2;
+# any smaller null value would be rejected by two-sided test
+# At upper endpoint, lower-tail one-sided p-value equals alpha/2;
+# any larger null value would be rejected by two-sided test
 
 # ---- chunk ----
 # Grid of constant-effect null values (sharp framework)
-tau_h_grid <- seq(from = -0.02, to = 1.5, by = 0.0001)
+tau_h_grid <- seq(
+  from = -0.02,
+  to = 1.5,
+  by = 0.0001
+)
 
-# For each tau_h value, repeat the same randomization test calculation below;
-# sapply() runs this repeatedly and stacks the resulting p-values together
-p_mat <- sapply(X = tau_h_grid, FUN = function(tau_h) {
-  
-  # Shift outcomes under null: ldur_i - tau_h * UN_i
-  dat_tau_h <- hm_stat_rescale(
-    # transform(): create copy of data_matched with shifted-outcome column
-    data    = transform(data_matched,
-                        ldur_tilde_shift = ldur - tau_h * UN),
-    outcome = ldur_tilde_shift,
-    treat   = UN,
-    strata  = fm
-  )
-  
-  # Transformed outcomes under sharp null tau_h
-  q_tau_h <- dat_tau_h$ldur_tilde_shift_hm_scaled
-  
-  # Observed statistic under null tau_h
-  obs_stat_tau_h <- sum(dat_tau_h$UN * q_tau_h)
-  
-  # Randomization distribution via simulated assignments (defined above)
-  # Compute simulated null distribution via matrix multiplication,
-  # which is faster than looping over assignments (e.g., via apply())
-  sim_null_dist_tau_h <- as.numeric(t(q_tau_h) %*% sim_assigns)
-  
-  
-  # Upper-tail and lower-tail randomization p-values
-  p_upper_tau_h <- mean(sim_null_dist_tau_h >= obs_stat_tau_h)
-  p_lower_tau_h <- mean(sim_null_dist_tau_h <= obs_stat_tau_h)
-  
-  c(upper_tail = p_upper_tau_h,
-    lower_tail = p_lower_tau_h)
-})
+# Repeat the randomization test for each tau_h
+# sapply() computes and stacks the resulting p-values
+p_mat <- sapply(X = tau_h_grid,
+                FUN = function(tau_h) {
+                  
+                  # Shift outcomes under null: ldur_i - tau_h * UN_i
+                  dat_tau_h <- hm_stat_rescale(
+                    # transform(): copy data_matched adding shifted outcome
+                    data    = transform(
+                      data_matched,
+                      ldur_tilde_shift = ldur - tau_h * UN),
+                    outcome = ldur_tilde_shift,
+                    treat   = UN,
+                    strata  = fm
+                  )
+                  
+                  # Transformed outcomes under sharp null tau_h
+                  q_tau_h <- dat_tau_h$ldur_tilde_shift_hm_scaled
+                  
+                  # Observed statistic under null tau_h
+                  obs_stat_tau_h <- sum(
+                    dat_tau_h$UN * q_tau_h
+                  )
+                  
+                  # Randomization distribution via simulated assignments
+                  # Matrix multiplication used for speed (vs apply())
+                  sim_null_dist_tau_h <- as.numeric(
+                    t(q_tau_h) %*% sim_assigns
+                  )
+                  
+                  
+                  # Upper-tail and lower-tail randomization p-values
+                  p_upper_tau_h <- mean(
+                    sim_null_dist_tau_h >= obs_stat_tau_h
+                  )
+                  
+                  p_lower_tau_h <- mean(
+                    sim_null_dist_tau_h <= obs_stat_tau_h
+                  )
+                  
+                  c(
+                    upper_tail = p_upper_tau_h,
+                    lower_tail = p_lower_tau_h
+                  )
+                })
 
-# Extract vectors of p-values
+# Extract vector of upper-tail p-values
 p_upper <- p_mat["upper_tail", ]
+
+# Extract vector of lower-tail p-values
 p_lower <- p_mat["lower_tail", ]
 
 # Simulation-based confidence sets
 
-# Upper-tail confidence set
-# retain all tau_h with upper-tail p >= alpha
+# Upper-tail confidence set: retain all tau_h with upper-tail p >= alpha
 cs_sharp_upper_tail_sim <- tau_h_grid[p_upper >= alpha]
 
 # Lower bound of the upper-tail confidence set
-cs_sharp_upper_tail_sim_bound <- min(cs_sharp_upper_tail_sim)
+cs_sharp_upper_tail_sim_bound <- min(
+  cs_sharp_upper_tail_sim
+)
 
 # Two-sided confidence set (inversion using alpha/2 in each tail):
 # retain tau_h only if neither one-sided test rejects at level alpha/2
 cs_sharp_two_sided_sim <- tau_h_grid[
-  p_upper >= alpha / 2 &
-    p_lower >= alpha / 2
+  p_upper >= alpha / 2 & p_lower >= alpha / 2
 ]
 
 # Two-sided confidence set summarized by its bounds
 cs_sharp_two_sided_sim_bounds <- c(
-  lower = min(cs_sharp_two_sided_sim),
-  upper = max(cs_sharp_two_sided_sim)
+  lower = min(
+    cs_sharp_two_sided_sim
+  ),
+  upper = max(
+    cs_sharp_two_sided_sim
+  )
 )
 
 # ---- chunk ----
 # Install blkvar (only run if not already installed)
-# Install.packages("remotes")
+# install.packages("remotes")
 # Remotes::install_github("lmiratrix/blkvar")
 
 # Load blkvar for block randomization variance estimators
@@ -795,16 +909,26 @@ res$var_est
 
 # ---- chunk ----
 # Load the fine_strat_var_est() function from the GitHub repo
-source(paste0(base_url, "/R/fine_strat_var_est.R"))
+source(
+  paste0(
+    base_url, "/R/fine_strat_var_est.R"
+  )
+)
 
 # ---- chunk ----
 # Compute matched set sizes and matched-set-specific differences in means
 set_stats <- data_matched |>
-  group_by(fm) |>
+  group_by(
+    fm
+  ) |>
   summarize(
-    n = n(),                               # Matched set size
-    diff_in_means = mean(ldur[UN == 1L]) - # Treated mean minus
-      mean(ldur[UN == 0L]),                # control mean
+    n = n(),                              # Matched set size
+    diff_in_means = mean(                 # Treated mean
+      ldur[UN == 1L]
+    ) -                                   # minus
+      mean(                               # control mean
+        ldur[UN == 0L]
+      ),
     .groups = "drop"
   )
 
@@ -823,18 +947,18 @@ pnorm(
 # ---- chunk ----
 # One-sided (upper-tail) confidence set
 cs_weak_upper_tail <- c(
-  lower = res$ATE_hat - qnorm(1 - alpha) * sqrt(res$var_est),
+  lower = res$ATE_hat - qnorm(p = 1 - alpha) * sqrt(res$var_est),
   upper = Inf
 )
 
 # Two-sided confidence set
 cs_weak_two_sided <- c(
-  lower = res$ATE_hat - qnorm(1 - alpha / 2) * sqrt(res$var_est),
-  upper = res$ATE_hat + qnorm(1 - alpha / 2) * sqrt(res$var_est)
+  lower = res$ATE_hat - qnorm(p = 1 - alpha / 2) * sqrt(res$var_est),
+  upper = res$ATE_hat + qnorm(p = 1 - alpha / 2) * sqrt(res$var_est)
 )
 
 # ---- chunk ----
-# Rosenbaum (2018) objective: expectation minus observed plus kappa times SD
+# Rosenbaum (2018) objective: expectation - observed + kappa * SD
 # Nonpositive values imply rejection at level alpha
 sens_objective <- function(null_expect, null_variance, obs_stat, alpha = 0.05) {
   # null_expect   : overall null expectation of the test statistic
@@ -842,20 +966,27 @@ sens_objective <- function(null_expect, null_variance, obs_stat, alpha = 0.05) {
   # obs_stat      : observed value of the test statistic
   # alpha         : test size (e.g., 0.05 gives kappa about 1.64)
   
-  kappa  <- qnorm(1 - alpha)          # Normal critical value
-  null_sd <- sqrt(null_variance)       # Null standard deviation
+  # Normal critical value
+  kappa  <- qnorm(
+    p = 1 - alpha
+  )
   
-  # Gap between null expectation and observed statistic (null_expect - obs_stat),
-  # plus Normal buffer (kappa * null_sd)
+  # Null standard deviation
+  null_sd <- sqrt(
+    null_variance
+  )
+  
+  # Gap between null expectation and observed statistic
+  # (null_expect - obs_stat), + Normal buffer (kappa * null_sd)
   obj_val <- (null_expect - obs_stat) + kappa * null_sd
   
   return(obj_val)
 }
 
 # ---- chunk ----
-# Evaluate under Gamma = 1 using null_ev, null_var, and obs_stat defined earlier
+# Evaluate under Gamma = 1 using null_ev, null_var, and obs_stat
 sens_objective(
-  null_expect   = null_ev, 
+  null_expect   = null_ev,
   null_variance = null_var,
   obs_stat      = obs_stat,
   alpha         = 0.05
@@ -863,10 +994,13 @@ sens_objective(
 
 # ---- chunk ----
 # Grid of Gamma values
-Gamma_vals <- seq(from = 1, to = 1.5, by = 0.0001)
+Gamma_vals <- seq(
+  from = 1,
+  to = 1.5,
+  by = 0.0001
+)
 
-# Iterate over the Gamma_vals grid using lapply(): perform the sensitivity
-# analysis at each Gamma and return a list of per-Gamma result objects
+# lapply() runs sensitivity analysis at each Gamma, returns list of results
 sens_results <- lapply(
   X = Gamma_vals,
   FUN = function(g) {
@@ -875,15 +1009,19 @@ sens_results <- lapply(
       z           = data_matched$UN,                   # treatment indicator
       st          = data_matched$fm,                   # matched set
       gamma       = g,                                 # Gamma
-      alternative = "greater",                         # upper one-sided test
-      detail      = TRUE # return intermediate quantities used in the computations
+      alternative = "greater",                         # upper-tail test
+      detail      = TRUE # return intermediate quantities
     )
     
     # Separable p-value
-    p_sep <- as.numeric(out$Separable["P-value"])
+    p_sep <- as.numeric(
+      out$Separable["P-value"]
+    )
     
     # Taylor series margin (cvA)
-    cvA <- as.numeric(out$lambda["Linear Taylor bound"])
+    cvA <- as.numeric(
+      out$lambda["Linear Taylor bound"]
+    )
     
     # Decisions
     sep_reject <- p_sep <= alpha          # separable rejects?
@@ -900,14 +1038,21 @@ sens_results <- lapply(
 )
 
 # Bind into a single data frame
-sens_df <- do.call(rbind, sens_results)
+sens_df <- do.call(
+  what = rbind,
+  args = sens_results
+)
 
 # Smallest Gamma where the separable p-value is >= alpha
-sens_value_sep <- min(sens_df$Gamma[sens_df$p_sep >= alpha])
+sens_value_sep <- min(
+  sens_df$Gamma[sens_df$p_sep >= alpha]
+)
 
 # Taylor series sensitivity value:
 # smallest Gamma at which Taylor margin becomes positive (non-rejection)
-sens_value_tay <- min(sens_df$Gamma[sens_df$cvA > 0])
+sens_value_tay <- min(
+  sens_df$Gamma[sens_df$cvA > 0]
+)
 
 # ---- chunk ----
 # Install tidyr (only run if not already installed)
@@ -1040,14 +1185,19 @@ ggplot(sens_df_long,
   )
 
 # ---- chunk ----
-# Load the worst_case_IPW() function from the GitHub repo
-source(paste0(base_url, "/R/worst_case_IPW.R"))
+# Load the worst_case_IPW() function from GitHub repo
+source(
+  paste0(
+    base_url, "/R/worst_case_IPW.R"
+  )
+)
 
 # ---- chunk ----
 # One-sided sensitivity analysis for the weak null (ATE = 0)
 
 # Null and alternative for the weak-null test
 null_ATE    <- 0                  # Null: ATE = 0
+
 alternative <- "greater"          # Alt: ATE > 0 (upper-tail test)
 
 # Data frame to store results for each Gamma
@@ -1059,8 +1209,10 @@ weak_sens_df <- data.frame(
 for (g in Gamma_vals) { # Loop over Gamma values
   
   # Worst-case IPW estimate within each matched set at Gamma = g
-  strat_stats <- data_matched |>
-    group_by(fm) |>
+  set_stats <- data_matched |>
+    group_by(
+      fm
+    ) |>
     summarise(
       n      = n(),                        # Set size n_s
       weight = n / nrow(data_matched),     # Weight n_s / n
@@ -1075,16 +1227,21 @@ for (g in Gamma_vals) { # Loop over Gamma values
     )
   
   # Overall worst-case IPW statistic (weighted average across sets)
-  wc_ipw_stat <- sum(strat_stats$weight * strat_stats$est)
+  wc_ipw_stat <- sum(
+    set_stats$weight * set_stats$est
+  )
   
   # Variance estimate for the worst-case IPW statistic
   var_hat <- fine_strat_var_est(
-    strat_ns   = strat_stats$n,
-    strat_ests = strat_stats$est
+    strat_ns   = set_stats$n,
+    strat_ests = set_stats$est
   )
   
   # Standardized worst-case IPW statistic, centered at the null
-  se_hat   <- sqrt(var_hat)
+  se_hat   <- sqrt(
+    var_hat
+  )
+  
   std_stat <- (wc_ipw_stat - null_ATE) / se_hat
   
   # One-sided p-value, determined by the alternative
@@ -1102,8 +1259,10 @@ for (g in Gamma_vals) { # Loop over Gamma values
   weak_sens_df$p_value[weak_sens_df$Gamma == g] <- p_val
 }
 
-# Sensitivity value: smallest Gamma at which the one-sided test no longer rejects
-weak_sens_value <- min(weak_sens_df$Gamma[weak_sens_df$p_value >= alpha])
+# Sensitivity value: smallest Gamma where one-sided test no longer rejects
+weak_sens_value <- min(
+  weak_sens_df$Gamma[weak_sens_df$p_value >= alpha]
+)
 
 # ---- chunk ----
 # Plot weak-null sensitivity results: Gammas vs. p-values

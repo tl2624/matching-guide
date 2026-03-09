@@ -815,6 +815,7 @@ dist_mat_mah <- match_on(
   data = data,
   standardization.scale = NULL,
   method = "mahalanobis" # Use Mahalanobis distance
+)
 \end{lstlisting}
 
 
@@ -1056,7 +1057,7 @@ from being matched.
 
 \begin{lstlisting}[language=R]
 # Euclidean distance on Polity score (bwplty2) with caliper = 2
-# Pairs differing by >2 are set to Inf
+# Pairs differing by > 2 are set to Inf
 euc_dist_polity_cal_2 <- match_on(
   x = UN ~ bwplty2,
   caliper = 2,  # Set caliper
