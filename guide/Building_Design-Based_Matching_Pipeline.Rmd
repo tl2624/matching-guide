@@ -139,7 +139,7 @@ We provide a high-level overview of the ideas behind matching and include code t
 
 We break the implementation into specific decision points that practitioners commonly face, and present the pipeline in three main stages (see \Cref{fig: pipeline}):
 
-**Part 1: Making a Matched Dataset (toward Justifying As-If Randomization)**
+**First Stage: Making a Matched Dataset (toward Justifying As-If Randomization)**
 
 (a) How Do I Measure Similarity on My Chosen Covariates?
 
@@ -154,14 +154,14 @@ We break the implementation into specific decision points that practitioners com
 (e) How Do I Decide Whether to Move Ahead with My Matched Design?
 
 
-**Part 2: Causal Inference (under As-If Randomization)**
+**Second Stage: Causal Inference (under As-If Randomization)**
 
 (a) How Do I Draw Inferences under the Sharp Framework?
 
 (b) How Do I Draw Inferences under the Weak Framework?
 
 
-**Part 3: Sensitivity Analysis (Departures from As-If Randomization)**
+**Third Stage: Sensitivity Analysis (Departures from As-If Randomization)**
 
 (a) How Do Inferences under the Sharp Framework Change under these Departures?
 
@@ -174,7 +174,7 @@ We break the implementation into specific decision points that practitioners com
 
 (b) How Do Inferences under the Weak Framework Change under these Departures?
 
-Before turning to Part 1, we introduce a running example taken from @gilligansergenti2008, which we use throughout this manuscript.
+Before turning to First Stage, we introduce a running example taken from @gilligansergenti2008, which we use throughout this manuscript.
 
 ## Running Example: United Nations Peacekeeping and Post-Conflict Peace
 
@@ -204,7 +204,7 @@ data <- readRDS(
 
 ```
 
-## Part 1: Making a Matched Dataset (toward Justifying As-If Randomization)
+## First Stage: Making a Matched Dataset (toward Justifying As-If Randomization)
 
 In an observational setting, treatment is not assigned by the flip of a coin but depends on individuals’ covariates. The goal of matching is to compare treated and control units that have the same chances of treatment based on those covariates --- i.e., the same *propensity scores*. If we could observe propensity scores, it would be straightforward to compare treated and control units by matching them directly on their propensity scores. Because propensity scores are not directly observed, we instead aim to create a collection of matched sets that is *balanced* --- meaning that treated and control observations are similar in their covariates.
 
@@ -928,7 +928,7 @@ This $\chi^2$ balance test yields an observed test statistic of `r bal_stat` and
 
 Despite the high $p$-value, there is no guarantee that balance is sufficient for as-if randomization. Residual imbalance on observed covariates and hidden imbalance on unobserved ones may undermine the as-if randomization assumption. For now, we proceed under the as-if randomization assumption, but we will later assess how sensitive our inferences are to violations of it due to such imbalances.
 
-## Part 2: Causal Inference (under As-If Randomization)
+## Second Stage: Causal Inference (under As-If Randomization)
 
 In both the sharp and weak frameworks, the causal targets of inference are defined through potential outcomes. Under what is known as SUTVA, the stable unit treatment value assumption [@rubin1980; @rubin1986; @cox1958], each unit has two potential outcomes: a value the outcome would take if that unit were assigned to treatment and a value the outcome would take if that unit were assigned to control. Let $y_{si}(1)$ and $y_{si}(0)$ denote these potential outcomes, respectively, for unit $i$ in set $s$, where the index $i$ runs over the $\{1, \ldots, n_s\}$ units in set $s$. The individual treatment effect is $\tau_{si} = y_{si}(1) - y_{si}(0)$. With $n = \sum_{s = 1}^S n_s$ total units, let $\bm{\tau} = (\tau_{1,1}, \tau_{1,2}, \ldots, \tau_{S,n_s})^{\top}$ collect all $n$ unit-level effects, indexed first by matched set and then by unit within set, and write the ATE as $\tau = (1/n) \sum_{s=1}^S \sum_{i=1}^{n_s} \tau_{si}$.
 
@@ -1673,7 +1673,7 @@ cs_weak_two_sided <- c(
 ```
 
 
-## Part 3: Sensitivity Analysis (Departures from As-If Randomization)
+## Third Stage: Sensitivity Analysis (Departures from As-If Randomization)
 
 Up to this point, we have supposed a framework in which each observation's chance of a UN intervention is like flipping a weighted coin. Each coin flip is independent across observations, but the probability of landing tails (i.e., receiving treatment) can differ from one unit to another depending on its baseline characteristics. With matching, we make our crucial assumption that all units within a set are similar enough on these characteristics that their coins have the same probability of landing tails.
 
@@ -1724,11 +1724,14 @@ The key idea is to reframe hypothesis testing in terms of a function that, for e
 
 We can code this function in \texttt{R} as follows.
 
-```{r}
+```{r, tidy = FALSE}
 
 # Rosenbaum (2018) objective: expectation - observed + kappa * SD
 # Nonpositive values imply rejection at level alpha
-sens_objective <- function(null_expect, null_variance, obs_stat, alpha = 0.05) {
+sens_objective <- function(null_expect,
+                           null_variance,
+                           obs_stat,
+                           alpha = 0.05) {
   # null_expect   : overall null expectation of the test statistic
   # null_variance : overall null variance of the test statistic
   # obs_stat      : observed value of the test statistic
@@ -2107,7 +2110,7 @@ for (g in Gamma_vals) { # Loop over Gamma values
     # Lower-tail test: ATE < 0
     p_val <- pnorm(std_stat)
   } else {
-    stop("Only one-sided alternatives ('greater' or 'less') are handled here.")
+    stop("Only one-sided alternatives (`greater' or `less').")
   }
 
   # Store result for this Gamma

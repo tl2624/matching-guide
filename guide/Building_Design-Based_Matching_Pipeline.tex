@@ -184,6 +184,20 @@
 \newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
 \newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
 
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
 \usepackage{bookmark}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
@@ -408,7 +422,7 @@ We break the implementation into specific decision points that
 practitioners commonly face, and present the pipeline in three main
 stages (see \Cref{fig: pipeline}):
 
-\textbf{Part 1: Making a Matched Dataset (toward Justifying As-If
+\textbf{First Stage: Making a Matched Dataset (toward Justifying As-If
 Randomization)}
 
 \begin{enumerate}
@@ -437,7 +451,7 @@ Randomization)}
   How Do I Decide Whether to Move Ahead with My Matched Design?
 \end{enumerate}
 
-\textbf{Part 2: Causal Inference (under As-If Randomization)}
+\textbf{Second Stage: Causal Inference (under As-If Randomization)}
 
 \begin{enumerate}
 \def\labelenumi{(\alph{enumi})}
@@ -447,7 +461,7 @@ Randomization)}
   How Do I Draw Inferences under the Weak Framework?
 \end{enumerate}
 
-\textbf{Part 3: Sensitivity Analysis (Departures from As-If
+\textbf{Third Stage: Sensitivity Analysis (Departures from As-If
 Randomization)}
 
 \begin{enumerate}
@@ -483,7 +497,7 @@ Randomization)}
   Departures?
 \end{enumerate}
 
-Before turning to Part 1, we introduce a running example taken from
+Before turning to First Stage, we introduce a running example taken from
 \citet{gilligansergenti2008}, which we use throughout this manuscript.
 
 \subsection{Running Example: United Nations Peacekeeping and
@@ -571,8 +585,9 @@ object named \texttt{data}.
 
 \doublespacing
 
-\subsection{Part 1: Making a Matched Dataset (toward Justifying As-If
-Randomization)}\label{part-1-making-a-matched-dataset-toward-justifying-as-if-randomization}
+\subsection{First Stage: Making a Matched Dataset (toward Justifying
+As-If
+Randomization)}\label{first-stage-making-a-matched-dataset-toward-justifying-as-if-randomization}
 
 In an observational setting, treatment is not assigned by the flip of a
 coin but depends on individuals' covariates. The goal of matching is to
@@ -1691,8 +1706,8 @@ as-if randomization assumption. For now, we proceed under the as-if
 randomization assumption, but we will later assess how sensitive our
 inferences are to violations of it due to such imbalances.
 
-\subsection{Part 2: Causal Inference (under As-If
-Randomization)}\label{part-2-causal-inference-under-as-if-randomization}
+\subsection{Second Stage: Causal Inference (under As-If
+Randomization)}\label{second-stage-causal-inference-under-as-if-randomization}
 
 In both the sharp and weak frameworks, the causal targets of inference
 are defined through potential outcomes. Under what is known as SUTVA,
@@ -2802,8 +2817,8 @@ sharp null framework.
 
 \doublespacing
 
-\subsection{Part 3: Sensitivity Analysis (Departures from As-If
-Randomization)}\label{part-3-sensitivity-analysis-departures-from-as-if-randomization}
+\subsection{Third Stage: Sensitivity Analysis (Departures from As-If
+Randomization)}\label{third-stage-sensitivity-analysis-departures-from-as-if-randomization}
 
 Up to this point, we have supposed a framework in which each
 observation's chance of a UN intervention is like flipping a weighted
@@ -2992,25 +3007,32 @@ We can code this function in \texttt{R} as follows.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{\# Rosenbaum (2018) objective: expectation {-} observed + kappa * SD Nonpositive}
-\CommentTok{\# values imply rejection at level alpha}
-\NormalTok{sens\_objective }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(null\_expect, null\_variance, obs\_stat, }\AttributeTok{alpha =} \FloatTok{0.05}\NormalTok{) \{}
-    \CommentTok{\# null\_expect : overall null expectation of the test statistic}
-    \CommentTok{\# null\_variance : overall null variance of the test statistic obs\_stat :}
-    \CommentTok{\# observed value of the test statistic alpha : test size (e.g., 0.05 gives}
-    \CommentTok{\# kappa about 1.64)}
+\CommentTok{\# Rosenbaum (2018) objective: expectation {-} observed + kappa * SD}
+\CommentTok{\# Nonpositive values imply rejection at level alpha}
+\NormalTok{sens\_objective }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(null\_expect,}
+\NormalTok{                           null\_variance,}
+\NormalTok{                           obs\_stat,}
+                           \AttributeTok{alpha =} \FloatTok{0.05}\NormalTok{) \{}
+  \CommentTok{\# null\_expect   : overall null expectation of the test statistic}
+  \CommentTok{\# null\_variance : overall null variance of the test statistic}
+  \CommentTok{\# obs\_stat      : observed value of the test statistic}
+  \CommentTok{\# alpha         : test size (e.g., 0.05 gives kappa about 1.64)}
 
-    \CommentTok{\# Normal critical value}
-\NormalTok{    kappa }\OtherTok{\textless{}{-}} \FunctionTok{qnorm}\NormalTok{(}\AttributeTok{p =} \DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ alpha)}
+  \CommentTok{\# Normal critical value}
+\NormalTok{  kappa  }\OtherTok{\textless{}{-}} \FunctionTok{qnorm}\NormalTok{(}
+    \AttributeTok{p =} \DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ alpha}
+\NormalTok{  )}
 
-    \CommentTok{\# Null standard deviation}
-\NormalTok{    null\_sd }\OtherTok{\textless{}{-}} \FunctionTok{sqrt}\NormalTok{(null\_variance)}
+  \CommentTok{\# Null standard deviation}
+\NormalTok{  null\_sd }\OtherTok{\textless{}{-}} \FunctionTok{sqrt}\NormalTok{(}
+\NormalTok{    null\_variance}
+\NormalTok{  )}
 
-    \CommentTok{\# Gap between null expectation and observed statistic (null\_expect {-}}
-    \CommentTok{\# obs\_stat), + Normal buffer (kappa * null\_sd)}
-\NormalTok{    obj\_val }\OtherTok{\textless{}{-}}\NormalTok{ (null\_expect }\SpecialCharTok{{-}}\NormalTok{ obs\_stat) }\SpecialCharTok{+}\NormalTok{ kappa }\SpecialCharTok{*}\NormalTok{ null\_sd}
+  \CommentTok{\# Gap between null expectation and observed statistic}
+  \CommentTok{\# (null\_expect {-} obs\_stat), + Normal buffer (kappa * null\_sd)}
+\NormalTok{  obj\_val }\OtherTok{\textless{}{-}}\NormalTok{ (null\_expect }\SpecialCharTok{{-}}\NormalTok{ obs\_stat) }\SpecialCharTok{+}\NormalTok{ kappa }\SpecialCharTok{*}\NormalTok{ null\_sd}
 
-    \FunctionTok{return}\NormalTok{(obj\_val)}
+  \FunctionTok{return}\NormalTok{(obj\_val)}
 \NormalTok{\}}
 \end{Highlighting}
 \end{Shaded}
@@ -3415,7 +3437,7 @@ statistic to the standard Normal distribution to obtain \(p\)-values.
     \CommentTok{\# Lower{-}tail test: ATE \textless{} 0}
 \NormalTok{    p\_val }\OtherTok{\textless{}{-}} \FunctionTok{pnorm}\NormalTok{(std\_stat)}
 \NormalTok{  \} }\ControlFlowTok{else}\NormalTok{ \{}
-    \FunctionTok{stop}\NormalTok{(}\StringTok{"Only one{-}sided alternatives (\textquotesingle{}greater\textquotesingle{} or \textquotesingle{}less\textquotesingle{}) are handled here."}\NormalTok{)}
+    \FunctionTok{stop}\NormalTok{(}\StringTok{"Only one{-}sided alternatives (\textasciigrave{}greater\textquotesingle{} or \textasciigrave{}less\textquotesingle{})."}\NormalTok{)}
 \NormalTok{  \}}
 
   \CommentTok{\# Store result for this Gamma}

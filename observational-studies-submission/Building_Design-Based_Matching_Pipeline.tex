@@ -2895,7 +2895,10 @@ We can code this function in \texttt{R} as follows.
 \begin{lstlisting}[language=R]
 # Rosenbaum (2018) objective: expectation - observed + kappa * SD
 # Nonpositive values imply rejection at level alpha
-sens_objective <- function(null_expect, null_variance, obs_stat, alpha = 0.05) {
+sens_objective <- function(null_expect,
+                           null_variance,
+                           obs_stat,
+                           alpha = 0.05) {
   # null_expect   : overall null expectation of the test statistic
   # null_variance : overall null variance of the test statistic
   # obs_stat      : observed value of the test statistic
@@ -3313,7 +3316,7 @@ for (g in Gamma_vals) { # Loop over Gamma values
     # Lower-tail test: ATE < 0
     p_val <- pnorm(std_stat)
   } else {
-    stop("Only one-sided alternatives ('greater' or 'less') are handled here.")
+    stop("Only one-sided alternatives (`greater' or `less').")
   }
 
   # Store result for this Gamma
