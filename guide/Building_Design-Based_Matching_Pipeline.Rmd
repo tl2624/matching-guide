@@ -2019,13 +2019,15 @@ When $\Gamma = 1$, this probability $p(\bm{z}_s)$ is $1/\abs{\Omega_s}$, and the
 \end{align}
 for all $\bm{z}_s \in \Omega_s$ and for all matched sets $s$.
 
-Since the IPW Difference-in-Means in \eqref{eq: weighted diff-in-means} cannot be directly computed when $\Gamma > 1$, @fogarty2023 instead uses the bounds in \eqref{eq: prob bounds} to construct a worst-case version of this IPW Difference-in-Means. For tests of a null hypothesis about the overall ATE across all matched sets, this worst-case procedure replaces $p(\bm{z}_s)$ with the upper bound from \eqref{eq: prob bounds} whenever $\hat{\tau}_s$ is greater than or equal to the null value of the overall ATE, and with the lower bound whenever $\hat{\tau}_s$ is less than that null value. When testing the null against a smaller alternative, the procedure reverses these substitutions.
+Since the IPW Difference-in-Means in \eqref{eq: weighted diff-in-means} cannot be directly computed when $\Gamma > 1$, @fogarty2023 instead uses the bounds in \eqref{eq: prob bounds} to construct a worst-case version of this IPW Difference-in-Means. For tests of a null hypothesis about the overall ATE across all matched sets, this worst-case procedure operates on the set-specific Difference-in-Means centered at the null ATE, $\hat{\tau}_s - \tau_0$, and applies the upper bound from \eqref{eq: prob bounds} whenever $\hat{\tau}_s \geq \tau_0$ and the lower bound whenever $\hat{\tau}_s < \tau_0$. When testing the
+null against a smaller alternative, the procedure reverses these
+substitutions.
 
 To see the value of this procedure, consider testing a null hypothesis about the ATE against the alternative of a larger ATE. @fogarty2023 shows that, for any $\Gamma \geq 1$, the expected value of this worst-case IPW Difference-in-Means --- defined under whatever the true distribution on $\Omega$ consistent with that $\Gamma$ happens to be --- is always less than or equal to the null when it is true. Conversely, when testing against the alternative of a smaller ATE, this expectation is greater than or equal to the null when it is true. Importantly, these properties hold for all possible values of $\bm{u}$ and all configurations of potential outcomes that are consistent with the null hypothesis.
 
 How does this property of the expected value ensures a valid test in sufficiently large studies? Sticking to the case of testing against a larger ATE, the intuition is straightforward: If the expected value of the worst-case IPW Difference-in-Means is less than or equal to the null when it is true, then the worst-case IPW Difference-in-Means tends to fall at or below the null rather than above it. In other words, the procedure intentionally "tilts" the worst-case IPW Difference-in-Means in the direction opposite the alternative, making the procedure conservative.
 
-In addition to this property of the expected value, a second key ingredient for valid hypothesis testing concerns variance estimation. For any fixed $\Gamma \geq 1$, an analogue of the variance estimator from @fogarty2018 (discussed above) consistently overestimates (or bounds above) the true variance of the worst-case IPW Difference-in-Means. As a result, using this variance estimator further reduces the magnitude of the standardized test statistic ---  the worst-case IPW Difference-in-Means minus the null ATE, divided by the square root of the estimated variance --- relative to what would be obtained using the true (but unknown) variance. 
+In addition to this property of the expected value, a second key ingredient for valid hypothesis testing concerns variance estimation. For any fixed $\Gamma \geq 1$, an analogue of the variance estimator from @fogarty2018 (discussed above) consistently overestimates (or bounds above) the true variance of the worst-case IPW Difference-in-Means. As a result, using this variance estimator further reduces the magnitude of the standardized test statistic --- the worst-case IPW Difference-in-Means, which is already centered at the null ATE, divided by the square root of the estimated variance --- relative to what would be obtained using the true (but unknown) variance.
 
 Together, these two properties work in the same direction:
 
@@ -2100,7 +2102,7 @@ for (g in Gamma_vals) { # Loop over Gamma values
     var_hat
   )
 
-  std_stat <- (wc_ipw_stat - null_ATE) / se_hat
+  std_stat <- wc_ipw_stat / se_hat
 
   # One-sided p-value, determined by the alternative
   if (alternative == "greater") {

@@ -3283,12 +3283,12 @@ cannot be directly computed when \(\Gamma > 1\), \citet{fogarty2023}
 instead uses the bounds in \eqref{eq: prob bounds} to construct a
 worst-case version of this IPW Difference-in-Means. For tests of a null
 hypothesis about the overall ATE across all matched sets, this
-worst-case procedure replaces \(p(\bm{z}_s)\) with the upper bound from
-\eqref{eq: prob bounds} whenever \(\hat{\tau}_s\) is greater than or
-equal to the null value of the overall ATE, and with the lower bound
-whenever \(\hat{\tau}_s\) is less than that null value. When testing the
-null against a smaller alternative, the procedure reverses these
-substitutions.
+worst-case procedure operates on the set-specific Difference-in-Means
+centered at the null ATE, \(\hat{\tau}_s - \tau_0\), and applies the
+upper bound from \eqref{eq: prob bounds} whenever
+\(\hat{\tau}_s \geq \tau_0\) and the lower bound whenever
+\(\hat{\tau}_s < \tau_0\). When testing the null against a smaller
+alternative, the procedure reverses these substitutions.
 
 To see the value of this procedure, consider testing a null hypothesis
 about the ATE against the alternative of a larger ATE.
@@ -3319,9 +3319,10 @@ from \citet{fogarty2018} (discussed above) consistently overestimates
 (or bounds above) the true variance of the worst-case IPW
 Difference-in-Means. As a result, using this variance estimator further
 reduces the magnitude of the standardized test statistic --- the
-worst-case IPW Difference-in-Means minus the null ATE, divided by the
-square root of the estimated variance --- relative to what would be
-obtained using the true (but unknown) variance.
+worst-case IPW Difference-in-Means, which is already centered at the
+null ATE, divided by the square root of the estimated variance ---
+relative to what would be obtained using the true (but unknown)
+variance.
 
 Together, these two properties work in the same direction:
 

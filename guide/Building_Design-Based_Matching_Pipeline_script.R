@@ -1242,7 +1242,7 @@ for (g in Gamma_vals) { # Loop over Gamma values
     var_hat
   )
   
-  std_stat <- (wc_ipw_stat - null_ATE) / se_hat
+  std_stat <- wc_ipw_stat / se_hat
   
   # One-sided p-value, determined by the alternative
   if (alternative == "greater") {
