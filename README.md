@@ -23,9 +23,9 @@ This repository contains all materials for the matching guide, including:
     
     - Clean, analysis-ready dataset (`data/` folder) originally from Gilligan, M. J., and E. J. Sergenti (2008). Do UN Interventions Cause Peace? Using Matching to Improve Causal Inference. *Quarterly Journal of Political Science* 3(2): 89-122
     
-    - Original raw data (`raw-data/` folder), accessed from the article's supplementary materials (publicly available from the *Quarterly Journal of Political Science*, DOI: [10.1561/100.00007051](https://doi.org/10.1561/100.00007051))
+    - Original raw data (`data-raw/` folder), accessed from the article's supplementary materials (publicly available from the *Quarterly Journal of Political Science*, DOI: [10.1561/100.00007051](https://doi.org/10.1561/100.00007051))
     
-    - The code for cleaning and preparing the analysis-ready dataset used throughout the manuscript (`raw-data/` folder)
+    - The code for cleaning and preparing the analysis-ready dataset used throughout the manuscript (`data-raw/` folder)
 
 - 📊 Figure of the matching pipeline flowchart (`guide/fig/`)
 
