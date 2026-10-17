@@ -176,7 +176,7 @@ euc_dist_polity_cal_2 <- match_on(
 overall_dist_mat <- em_region + euc_dist_polity_cal_2
 
 # ---- chunk ----
-# Apply a caliper of width 3 to the polity Euclidean distance matrix
+# Apply a caliper of width 3 to the Polity Euclidean distance matrix
 euc_dist_polity_cal_3 <- match_on(
   x = UN ~ bwplty2,
   caliper = 3,
@@ -185,7 +185,7 @@ euc_dist_polity_cal_3 <- match_on(
   method = "euclidean"
 )
 
-# Combine regional exact match distance with polity distance
+# Combine regional exact match distance with Polity distance
 em_region + euc_dist_polity_cal_3
 
 # ---- chunk ----
@@ -195,7 +195,7 @@ fullmatch(
   min.controls = 0.5,   # At least 0.5 controls per treated unit
   # (i.e., no more than 2 treated per control)
   max.controls = 2,     # At most 2 controls per treated unit
-  omit.fraction = NULL, # Governs fraction of units discarded
+  omit.fraction = NULL, # Fraction of controls (or, if negative, treated) to discard
   mean.controls = NULL, # Governs average controls per treated unit
   # Only one of omit.fraction or mean.controls can be non-NULL
   data = data
@@ -223,7 +223,7 @@ ps_mat <- match_on(
 
 # ---- chunk ----
 # Rank-based Mahalanobis distance on covariates
-# Covs defined earlier as covariate names; here, drop "region"
+# covs defined earlier as covariate names; here, drop "region"
 rank_mah_mat <- match_on(
   x      = reformulate(
     termlabels = setdiff(
@@ -370,13 +370,16 @@ before <- slice_mat(arr, "--")
 after  <- slice_mat(arr, "fm")
 
 # Build tibble with distinct internal names
+# Two decimals, with a typographic minus sign for negative values
+fmt_num <- function(x) sub("^-", "$-$", sprintf("%.2f", x))
+
 cov_tab <- tibble(
-  Covariate      = cov_labels,
-  Control_before = round(x = before[, "Control"],   digits = 2),
-  Treated_before = round(x = before[, "Treatment"], digits = 2),
+  Covariate      = gsub("&", "\\&", cov_labels, fixed = TRUE), # escape & for LaTeX
+  Control_before = fmt_num(before[, "Control"]),
+  Treated_before = fmt_num(before[, "Treatment"]),
   StdDiff_before = before[, "std.diff"],
-  Control_after  = round(x = after[,  "Control"],   digits = 2),
-  Treated_after  = round(x = after[,  "Treatment"], digits = 2),
+  Control_after  = fmt_num(after[,  "Control"]),
+  Treated_after  = fmt_num(after[,  "Treatment"]),
   StdDiff_after  = after[,  "std.diff"],
   p_before       = before[, "p"],  # keep for star annotation
   p_after        = after[,  "p"]
@@ -386,8 +389,8 @@ cov_tab <- tibble(
 fmt_sd <- function(x, p) {
   ifelse(
     test = !is.na(p) & p <= 0.05,
-    yes  = sprintf("%.2f*", x),
-    no   = sprintf("%.2f",  x)
+    yes  = paste0(fmt_num(x), "*"),
+    no   = fmt_num(x)
   )
 }
 
@@ -410,7 +413,8 @@ tab_tex <- kbl(
   col.names = c("Covariate", "Control mean", "Treated mean", "Std. diff",
                 "Control mean", "Treated mean", "Std. diff"),
   # no caption here!
-  linesep   = ""
+  linesep   = "",
+  escape    = FALSE  # keep the $-$ minus signs as LaTeX
 ) |>
   add_header_above(
     c(" " = 1, "Before matching" = 3, "After matching" = 3),
@@ -514,7 +518,7 @@ source(
   )
 )
 
-# Apply rescaling: adds .hm_scaled and returns matched dataset
+# Apply rescaling: adds ldur_tilde_hm_scaled and returns matched dataset
 data_matched <- hm_stat_rescale(
   data = data_matched,
   outcome = ldur_tilde, # Set outcome to be rescaled within matched sets
@@ -540,7 +544,7 @@ dim_hm <- data_matched |>
     dim_set   = mean(ldur_tilde[UN == 1]) - mean(ldur_tilde[UN == 0]),
     # Harmonic-mean weight (set's contribution to effective sample size)
     w_hm      = 2 * n_treated * n_control / (n_treated + n_control),
-    .groups   = "drop" # Drop grouping after summarise
+    .groups   = "drop" # Drop grouping after summarize
   ) |>
   summarize(
     # Harmonic-mean-weighted average of within-set Differences-in-Means
@@ -551,7 +555,7 @@ dim_hm <- data_matched |>
     dim_hm
   )
 
-# Approaches coincides with the sum statistic
+# Approach coincides with the sum statistic
 all.equal(
   dim_hm, obs_stat
 )
@@ -568,7 +572,7 @@ treat_coef_fe_fit <- unname(
   coef(fe_fit)["UN"]
 )
 
-# Approaches coincides with the sum statistic
+# Approach coincides with the sum statistic
 all.equal(
   treat_coef_fe_fit, obs_stat
 )
@@ -576,7 +580,7 @@ all.equal(
 # ---- chunk ----
 # Install "PSweight" package (only run if not already installed)
 # install.packages("PSweight")
-library(PSweight) # For overlap weights from Li et al (2018)
+library(PSweight) # For overlap weights from Li et al. (2018)
 
 # Treatment probabilities within matched sets: n_treated / n
 ps_fit <- PSmethod(
@@ -590,7 +594,7 @@ ps_fit <- PSmethod(
 assign_prob <- ps_fit$e.h[, "1"]  # Column for treatment level "1"
 
 # Overlap weights from treatment probabilities
-# Controls: treatment probability ; Treated: 1 - treatment probability
+# Controls: treatment probability; Treated: 1 - treatment probability
 w_ow <- ifelse(
   test = data_matched$UN == 1,
   yes  = 1 - assign_prob,
@@ -615,7 +619,7 @@ dim_ow <- data_matched |>
     dim_ow
   )
 
-# Approaches coincides with the sum statistic
+# Approach coincides with the sum statistic
 all.equal(
   dim_ow, obs_stat
 )
@@ -628,14 +632,14 @@ block_ns <- data_matched |>
   group_by(          # Group results by key variables
     fm
   ) |>
-  summarise(         # Aggregate to one row per group
+    summarize(         # Aggregate to one row per group
     n = n(),         # Row count per group
     m = sum(UN),
     .groups = "drop"
   )
 
 # Total possible treatment assignments = product of binomial coefficients
-# (choose n_s units for treatment in each set and multiply across sets)
+# (choose m_s of the n_s units for treatment in each set and multiply across sets)
 exact_n_assigns <- prod(
   choose(
     n = block_ns$n,
@@ -678,7 +682,7 @@ sim_assigns <- obtain_permutation_matrix(
 # ---- chunk ----
 # Randomization distribution under sharp null
 # Apply sum statistic to each assignment in sim_assigns
-# Outcome transformed so sum = harmonic-mean weighted diff in means
+# Outcome transformed so sum = harmonic-mean-weighted difference-in-means
 sim_sharp_null_dist <- apply(
   X = sim_assigns,    # Matrix of treatment assignments
   MARGIN = 2,         # Iterate over columns (assignments)
@@ -696,7 +700,7 @@ sim_sharp_null_dist <- apply(
 
 # ---- chunk ----
 # One-sided, upper p-value:
-# Propprtion of simulated randomization stats >= observed
+# Proportion of simulated randomization stats >= observed
 round(
   x = mean(
     sim_sharp_null_dist >= obs_stat
@@ -779,32 +783,95 @@ norm_upper_p_value <- pnorm(
 )
 # By default in pnorm(): mean = 0 and sd = 1 (standard normal distribution)
 
+# Display the Normal-approximation p-value
+round(
+  x = norm_upper_p_value,
+  digits = 4
+)
+
 # ---- chunk ----
 # Significance level
 alpha <- 0.05
 
-# Upper-tail confidence set (tau_h values not rejected by upper-tail test)
-# Lower endpoint: smallest tau_h with upper-tail p-value >= alpha
-# (any smaller tau_h would be rejected)
-cs_sharp_lower_one_sided <- c(
-  lower = obs_stat - qnorm(p = 1 - alpha) * sqrt(null_var),
+# Grid of constant-effect null values for the Normal approximation
+tau_h_grid_norm <- seq(
+  from = -0.5,
+  to = 2,
+  by = 0.001
+)
+
+# Repeat the Normal-approximation test for each tau_h
+# sapply() computes and stacks the resulting p-values
+p_mat_norm <- sapply(X = tau_h_grid_norm,
+                     FUN = function(tau_h) {
+
+                       # Reconstruct outcomes under null tau_h and rescale them
+                       dat_tau_h <- hm_stat_rescale(
+                         data    = transform(
+                           data_matched,
+                           ldur_tilde_shift = ldur - tau_h * UN),
+                         outcome = ldur_tilde_shift,
+                         treat   = UN,
+                         strata  = fm
+                       )
+
+                       # Observed statistic under null tau_h
+                       obs_stat_tau_h <- sum(
+                         dat_tau_h$ldur_tilde_shift_hm_scaled[dat_tau_h$UN == 1]
+                       )
+
+                       # Null expectation and variance of the statistic under tau_h
+                       moms_tau_h <- dat_tau_h |>
+                         group_by(
+                           fm
+                         ) |>
+                         summarize(
+                           expect   = ev(sc = ldur_tilde_shift_hm_scaled, z = UN,
+                                         m = 1, g = 1, method = "RK")$expect,
+                           variance = ev(sc = ldur_tilde_shift_hm_scaled, z = UN,
+                                         m = 1, g = 1, method = "RK")$vari,
+                           .groups  = "drop"
+                         )
+
+                       # Standardized statistic under null tau_h
+                       std_stat_tau_h <- (obs_stat_tau_h - sum(moms_tau_h$expect)) /
+                         sqrt(sum(moms_tau_h$variance))
+
+                       # Upper-tail and lower-tail Normal-approximation p-values
+                       c(
+                         upper_tail = pnorm(q = std_stat_tau_h, lower.tail = FALSE),
+                         lower_tail = pnorm(q = std_stat_tau_h)
+                       )
+                     })
+
+# Upper-tail confidence set: retain all tau_h with upper-tail p-value >= alpha
+cs_sharp_upper_tail_norm <- c(
+  lower = min(
+    tau_h_grid_norm[p_mat_norm["upper_tail", ] >= alpha]
+  ),
   upper = Inf
 )
-# qnorm(1 - alpha): upper one-sided Normal critical value
 
-cs_sharp_two_sided <- c(
-  lower = obs_stat - qnorm(p = 1 - alpha / 2) * sqrt(null_var),
-  upper = obs_stat + qnorm(p = 1 - alpha / 2) * sqrt(null_var)
+# Two-sided confidence set: retain tau_h only if neither one-sided test
+# rejects at level alpha / 2
+cs_sharp_two_sided_norm_vals <- tau_h_grid_norm[
+  p_mat_norm["upper_tail", ] >= alpha / 2 & p_mat_norm["lower_tail", ] >= alpha / 2
+]
+
+# Two-sided confidence set summarized by its bounds
+cs_sharp_two_sided_norm <- c(
+  lower = min(
+    cs_sharp_two_sided_norm_vals
+  ),
+  upper = max(
+    cs_sharp_two_sided_norm_vals
+  )
 )
-# At lower endpoint, upper-tail one-sided p-value equals alpha/2;
-# any smaller null value would be rejected by two-sided test
-# At upper endpoint, lower-tail one-sided p-value equals alpha/2;
-# any larger null value would be rejected by two-sided test
 
 # ---- chunk ----
 # Grid of constant-effect null values (sharp framework)
 tau_h_grid <- seq(
-  from = -0.02,
+    from = -0.5,
   to = 1.5,
   by = 0.0001
 )
@@ -890,7 +957,7 @@ cs_sharp_two_sided_sim_bounds <- c(
 # ---- chunk ----
 # Install blkvar (only run if not already installed)
 # install.packages("remotes")
-# Remotes::install_github("lmiratrix/blkvar")
+# remotes::install_github("lmiratrix/blkvar")
 
 # Load blkvar for block randomization variance estimators
 library(blkvar)
@@ -901,7 +968,7 @@ res <- block_estimator(
   Z = UN,              # Treatment indicator
   B = fm,              # Block (matched set) membership
   data = data_matched, # Dataset
-  method = "hybrid_p"  # variance estimation method
+  method = "hybrid_p"  # Variance estimation method
 )
 
 # Extract variance estimate
@@ -966,7 +1033,7 @@ sens_objective <- function(null_expect, null_variance, obs_stat, alpha = 0.05) {
   # obs_stat      : observed value of the test statistic
   # alpha         : test size (e.g., 0.05 gives kappa about 1.64)
   
-  # Normal critical value
+    # Normal critical value (not the set intercept kappa_s in (3))
   kappa  <- qnorm(
     p = 1 - alpha
   )
@@ -977,7 +1044,7 @@ sens_objective <- function(null_expect, null_variance, obs_stat, alpha = 0.05) {
   )
   
   # Gap between null expectation and observed statistic
-  # (null_expect - obs_stat), + Normal buffer (kappa * null_sd)
+    # (null_expect - obs_stat) + Normal buffer (kappa * null_sd)
   obj_val <- (null_expect - obs_stat) + kappa * null_sd
   
   return(obj_val)
@@ -1009,7 +1076,8 @@ sens_results <- lapply(
       z           = data_matched$UN,                   # treatment indicator
       st          = data_matched$fm,                   # matched set
       gamma       = g,                                 # Gamma
-      alternative = "greater",                         # upper-tail test
+            alternative = "greater",                         # upper-tail test
+      level       = alpha,                             # test level for cvA
       detail      = TRUE # return intermediate quantities
     )
     
@@ -1213,7 +1281,7 @@ for (g in Gamma_vals) { # Loop over Gamma values
     group_by(
       fm
     ) |>
-    summarise(
+        summarize(
       n      = n(),                        # Set size n_s
       weight = n / nrow(data_matched),     # Weight n_s / n
       est    = worst_case_IPW(             # Worst-case IPW in set s

@@ -13,8 +13,8 @@
 #
 # Probability bounds
 #   N <- length(z)
-#   lower = 1 / (Gamma * (n - 1) + 1)
-#   upper = Gamma / ((n - 1) + Gamma)
+#   lower = 1 / (Gamma * (N - 1) + 1)
+#   upper = Gamma / ((N - 1) + Gamma)
 #
 worst_case_IPW <- function(z,
                            y,
@@ -53,10 +53,12 @@ worst_case_IPW <- function(z,
   
   # ---- Worst-case IPW weight depending on alternative and sign of d ----
   if (alternative == "greater") {
-    # Favor rejection if d > 0 -> use 1 / upper; otherwise 1 / lower
+    # Conservative choice: if d > 0 use the smallest weight (1 / upper);
+    # otherwise the largest weight (1 / lower)
     w <- if (d > 0) 1 / prob_ub else 1 / prob_lb
   } else { # alternative == "less"
-    # Favor rejection if d < 0 -> use 1 / upper; otherwise 1 / lower
+    # Conservative choice: if d < 0 use the smallest weight (1 / upper);
+    # otherwise the largest weight (1 / lower)
     w <- if (d < 0) 1 / prob_ub else 1 / prob_lb
   }
   

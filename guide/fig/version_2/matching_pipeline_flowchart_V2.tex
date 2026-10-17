@@ -90,11 +90,11 @@
 };
 
 \node[process, below=of construct_matrix] (specify_stratum) {%
-    \centering\normalsize\textbf{Specify stratum structure constraints}\\[0.25cm]
+    \centering\normalsize\textbf{Specify matched-set structure constraints}\\[0.25cm]
     \raggedright\footnotesize
     \begin{itemize}
         \item Ratio bounds: min/max \# controls per treated unit
-        \item Optional: fraction rejected and average \# controls per treated
+        \item Optional: fraction rejected and average \# controls per treated unit
     \end{itemize}
 };
 
@@ -125,9 +125,9 @@
     \centering\normalsize\textbf{Draw inferences under weak framework}\\[0.25cm]
     \raggedright\footnotesize
     \begin{itemize}
-        \item Estimation: Difference-in-Means with weights
-        \item Testing: Plug-in variance with Normal approx.
-        \item R: \texttt{bikvar}; custom function (included herein)
+        \item Estimation: difference-in-means with weights
+        \item Testing: Plug-in variance with normal approx.
+        \item R: \texttt{blkvar}; custom function (included herein)
         \item \citet{pashleymiratrix2021}; \citet{fogarty2018}
     \end{itemize}
 };
@@ -136,8 +136,8 @@
     \centering\normalsize\textbf{Draw inferences under sharp framework}\\[0.25cm]
     \raggedright\footnotesize
     \begin{itemize}
-        \item Testing: Exact, simulation, or Normal approx.
-        \item Estimation: Test inversion (e.g., Hodges- Lehmann point estimator)
+        \item Testing: Exact, simulation, or normal approx.
+        \item Estimation: Test inversion (e.g., Hodges--Lehmann point estimator)
         \item R: \texttt{randomizr}
         \item[] $ $ 
     \end{itemize}

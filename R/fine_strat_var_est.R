@@ -24,8 +24,8 @@ fine_strat_var_est <- function(strat_ns,
   B <- length(strat_ns) # number of strata (matched sets)
   
   # Fogarty (2018, p. 1040) "Let W be a B x B diagonal matrix whose
-  # ith diagonal element contains the stratum weights w_i = K (n_i/N)"
-  W <- diag(B * (strat_ns / N))          # here K = B
+  # ith diagonal element contains the stratum weights w_i = Bn_i/N"
+  W <- diag(B * (strat_ns / N))
   
   # Fogarty (2018, p. 1040) "Let Q be an arbitrary B x L matrix with L < B"
   # Fogarty (2023, p. 2199) "Let Q = (Q_1, ... , Q_B)^T with Q_i = B(n_i/N)"
@@ -54,7 +54,7 @@ fine_strat_var_est <- function(strat_ns,
   
   return(var_hat)
   
-  # Alternatively, as in Fogarty (2023, p. 1040), we could omit W and directly
+  # Alternatively, as in Fogarty (2023, p. 2199), we could omit W and directly
   # define y_Gamma as
   # y_Gamma = as.matrix(x = (B * (strat_ns/N) * strat_ests) / sqrt(1 - diag(H_Q)))
 }

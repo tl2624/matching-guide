@@ -10,8 +10,7 @@
 # Description:
 #   Reads the original Stata replication file (peace_pre_match.dta),
 #   converts Stata monthly date formats to R Date objects,
-#   recodes region dummy variables into a single factor,
-#   rescales the ethnic fractionalization index, and saves the
+#   recodes region dummy variables into a single factor, and saves the
 #   cleaned dataset as data/peace_pre_match.rds for reproducible use.
 # ================================================================
 
@@ -60,7 +59,7 @@ d <- read_dta(file = raw_dta)
 # Convert Stata monthly date variables and recode key fields
 # - Stata %tm format counts months since Jan 1960
 # - Combine regional dummies into one factor variable
-# - Rescale ethnic fractionalization index from 0–100 to 0–1
+# - (ethnic fractionalization is kept on its original 0–100 scale)
 base_month <- ymd("1960-01-01")
 
 d_out <- d %>%
