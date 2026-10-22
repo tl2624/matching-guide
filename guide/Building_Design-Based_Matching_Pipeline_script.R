@@ -1,5 +1,6 @@
 # ---- chunk ----
-# Define base URL for the Matching Guide GitHub repo
+# Define base URL for the Matching Guide GitHub repository
+
 base_url <- "https://raw.githubusercontent.com/tl2624/matching-guide/main"
 
 # Load the cleaned dataset
@@ -510,8 +511,8 @@ data_matched <- data_matched |>
   )
 
 # ---- chunk ----
-# Load hm_stat_rescale() from GitHub repo
-# base_url (defined earlier) points to repo URL
+# Load hm_stat_rescale() from GitHub repository
+# base_url (defined earlier) points to repository URL
 source(
   paste0(
     base_url, "/R/hm_stat_rescale.R"
@@ -981,7 +982,8 @@ res <- block_estimator(
 res$var_est
 
 # ---- chunk ----
-# Load the fine_strat_var_est() function from the GitHub repo
+# Load the fine_strat_var_est() function from the GitHub repository
+
 source(
   paste0(
     base_url, "/R/fine_strat_var_est.R"
@@ -989,7 +991,7 @@ source(
 )
 
 # ---- chunk ----
-# Compute matched set sizes and matched-set-specific differences in means
+# Compute matched set sizes and matched-set-specific differences-in-means
 set_stats <- data_matched |>
   group_by(
     fm
@@ -1259,7 +1261,8 @@ ggplot(sens_df_long,
   )
 
 # ---- chunk ----
-# Load the worst_case_IPW() function from GitHub repo
+# Load the worst_case_IPW() function from GitHub repository
+
 source(
   paste0(
     base_url, "/R/worst_case_IPW.R"

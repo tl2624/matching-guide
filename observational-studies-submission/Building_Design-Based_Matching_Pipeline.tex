@@ -217,7 +217,7 @@ groups.
 
 Why is this procedure effective? Randomization is a \emph{fair lottery}, in that
 every individual has the same chance of being assigned to treatment.
-This means that individuals who would respond more strongly to treatment
+This equality of chances means that individuals who would respond more strongly to treatment
 are no more likely to receive it than those who would respond less
 strongly, and the same is true for control. Because each individual's
 assignment is determined by the same coin toss (with the same
@@ -440,6 +440,12 @@ Randomization)}
 
 \textbf{Second Stage: Causal Inference (under As-If Randomization)}
 
+\begin{itemize}
+\tightlist
+\item
+  The Assignment Process as the Basis for Inference
+\end{itemize}
+
 \begin{enumerate}
 \def\labelenumi{(\alph{enumi})}
 \item
@@ -558,7 +564,8 @@ object named \texttt{data}.
 
 
 \begin{lstlisting}[language=R]
-# Define base URL for the Matching Guide GitHub repo
+# Define base URL for the Matching Guide GitHub repository
+
 base_url <- "https://raw.githubusercontent.com/tl2624/matching-guide/main"
 
 # Load the cleaned dataset
@@ -636,8 +643,8 @@ covs <- c("lwdeaths", "lwdurat", "ethfrac", "pop", "lmtnest", "milper",
 The first four --- \texttt{lwdeaths}, \texttt{lwdurat},
 \texttt{ethfrac}, and \texttt{pop} --- were introduced earlier. The
 others include a logged measure of the percentage of a country's
-terrain that is mountainous (\texttt{lmtnest}), the logged total number of
-military personnel in a country (\texttt{milper}), logged GDP per capita
+terrain that is mountainous (\texttt{lmtnest}), the logged number of
+military personnel in a country, in thousands (\texttt{milper}), logged GDP per capita
 before the last civil war (\texttt{bwgdp}), the Polity score (a \(-10\)
 to \(10\) scale, from autocratic to democratic institutions) before the
 last civil war (\texttt{bwplty2}), and a region factor (\texttt{region})
@@ -790,8 +797,8 @@ Central African Republic (control).
 One concern with Euclidean distance is that it depends on the scale of
 the covariates. For example, Guatemala (treated) belongs to Latin America
 and Afghanistan (control) to Asia, a substantively large difference; yet
-belonging to different regions adds only \(2\) to the squared Euclidean
-distance between the two countries, because they differ by \(1\) on each of
+belonging to different regions adds only \(2\) to the hand-computed squared
+Euclidean distance between the two countries, because they differ by \(1\) on each of
 two region indicators (\texttt{lamerica} and \texttt{asia}). Their
 ethnic fractionalization scores (\texttt{ethfrac}), 64.37 and 65.83 on
 the 0--100 scale, differ by only 1.46 points, a substantively small
@@ -980,7 +987,9 @@ to \(0\) (about \(-0.003\) per point). By contrast, the gap in
 \texttt{milper}, 0.29 or about 0.18 standard deviations of
 \texttt{milper} across all 87 episodes, raises Haiti's
 index by about 0.26 because the estimated coefficient on \texttt{milper}
-is large (about \(-0.92\)). The estimated linear index therefore gives
+is large (about \(-0.92\)). The contributions of the remaining covariates
+largely offset one another, with a net contribution of about \(-0.13\).
+The estimated linear index therefore gives
 little weight to the covariate on which the two countries differ most and
 more weight to covariates that strongly predict treatment.
 
@@ -1045,9 +1054,10 @@ constraints:
 We now impose the first constraint, requiring an exact match on
 region. Doing so produces a sparse distance structure, \texttt{em\_region}, that
 stores a distance of \(0\) for every treated--control pair in the same
-region and stores no entry for pairs in different regions, which
-\texttt{optmatch} treats as forbidden (infinite) distances. Treated and
-control units can therefore be matched only within a region.
+region and stores no entry for pairs in different regions. The
+\texttt{optmatch} package treats these missing entries as forbidden
+(infinite) distances, so treated and control units can be matched only
+within a region.
 
 
 
@@ -1115,10 +1125,11 @@ units are arranged across the matched sets.
 
 The \texttt{optmatch} package will always produce matches with a
 particular arrangement of units across sets. In particular, all sets
-contain either \(1\) treated unit or \(1\) control unit. This structure minimizes the average, over treated units, of each treated
-unit's mean distance to the controls in the same set, while discarding the fewest
-units possible
-\citep{rosenbaum1991, gurosenbaum1993, hansen2004}. In
+contain either \(1\) treated unit or \(1\) control unit. \citet{rosenbaum1991} shows that any grouping of treated and control units
+into matched sets can be subdivided into sets of this form without
+increasing the quantity that \texttt{optmatch} minimizes, namely the sum
+of within-set treated--control distances, and without discarding any
+additional units \citep[see also][]{gurosenbaum1993, hansen2004}. In
 practice, optimal full matching can yield lopsided sets, with either
 \(1\) treated matched to many controls or \(1\) control matched to many
 treated units, which has implications for the effective sample size.
@@ -1292,7 +1303,7 @@ population standard deviation (dividing by \(n\)) of the logit across all
 treated and control units in the same set may differ by up to about
 0.98 on the logit scale. This caliper is wider than the commonly
 recommended \(0.20\) standard deviations, a guideline that traces to
-\citet[Table~2.3.1]{cochranrubin1973}.
+\citet[Table~2.3.1, p.~421]{cochranrubin1973}.
 
 
 
@@ -1609,7 +1620,8 @@ imbalance across covariates. Stars indicate covariates for which the adjusted me
 be unusually extreme under a completely randomized experiment within
 blocks (defined in
 \Cref{roadmap-of-the-design-based-matching-pipeline}), with the
-matched sets as blocks. The stars are based on a Normal approximation
+matched sets as blocks after matching and with all 87 episodes as a
+single block before matching. The stars are based on a Normal approximation
 to the randomization distribution of adjusted mean differences, and, because
 no adjustments are made for multiple comparisons, these stars are
 conservative for the purpose of judging balance. That is, the chance that
@@ -1627,11 +1639,11 @@ sample size that typically accompanies the matching process
 this possibility is less troubling than it first appears. The same
 increase in standard errors that produces high \(p\)-values for
 covariate balance tests will also be present in subsequent outcome
-analyses, meaning that those high \(p\)-values remain informative;
-they suggest that any bias that the remaining imbalances in observed
+analyses, meaning that those high \(p\)-values remain informative. They
+suggest that any bias that the remaining imbalances in observed
 covariates could introduce into those analyses is small relative to those
-standard errors, so that we are, if anything, less likely to overstate our
-causal conclusions --- for example, by rejecting a true hypothesis about
+standard errors. We are therefore, if anything, less likely to overstate
+our causal conclusions --- for example, by rejecting a true hypothesis about
 causal effects --- than if the balance tests had been significant.
 
 Regardless of whether the balance tests are statistically significant,
@@ -1640,12 +1652,12 @@ balance. While precise thresholds depend on context and substantive
 judgment about each covariate's importance, two rules of thumb appear in
 \citet{austin2009} and \citet{stuart2010}. \citet{austin2009} reports a
 proposal that standardized differences of 0.1 or greater indicate
-meaningful imbalance on a covariate, whereas \citet{stuart2010} gives a
-more lenient threshold of 0.25, attributing it to \citet{rubin2001}. In our
+meaningful imbalance on a covariate, whereas \citet[p.~11]{stuart2010} gives a
+more lenient threshold of 0.25. In our
 case, all covariates meet this latter standard, but three (duration of
 the last war, ethnic fractionalization, and GDP per capita, with
 standardized differences of 0.16, 0.22, and $-0.17$) exceed the 0.1
-threshold of \citet{austin2009}. None show
+threshold reported by \citet[p.~3090]{austin2009}. None show
 statistically significant differences, indicating that observed
 imbalances would not be unusual under a completely randomized experiment
 within blocks (i.e., under as-if randomization).
@@ -1675,8 +1687,8 @@ test has \(8\) rather than \(13\) degrees of freedom because the degrees of
 freedom equal the rank of the covariance matrix of the adjusted
 differences \citep[p.~229]{hansenbowers2008}. Because we matched exactly
 on region, the five region indicators are constant within every matched
-set, so their adjusted differences equal zero under every assignment in
-\(\Omega\). These five differences therefore have zero variance and zero
+set, so their adjusted differences equal zero under every assignment that
+holds fixed the number of treated units in each matched set. These five differences therefore have zero variance and zero
 covariance with the other adjusted differences, and the covariance matrix
 has rank \(8\), the number of remaining covariates.
 
@@ -1701,12 +1713,13 @@ outcomes, respectively, for unit \(i\) in set \(s\), where the index
 \(i\) runs over the \(\{1, \ldots, n_s\}\) units in set \(s\). The
 individual treatment effect is \(\tau_{si} = y_{si}(1) - y_{si}(0)\).
 With \(n = \sum_{s = 1}^S n_s\) total units, let
-\(\bm{\tau} = (\tau_{1,1}, \tau_{1,2}, \ldots, \tau_{S,n_S})^{\top}\)
+\(\bm{\tau} = (\tau_{11}, \tau_{12}, \ldots, \tau_{Sn_S})^{\top}\)
 collect all \(n\) unit-level effects, indexed first by matched set and
 then by unit within set, and write the ATE as
 \(\tau = (1/n) \sum_{s=1}^S \sum_{i=1}^{n_s} \tau_{si}\).
 
-Both \(\bm{\tau}\) and \(\tau\) are defined only for the subset of units
+Both the vector of unit-level effects, \(\bm{\tau}\), and the ATE,
+\(\tau\), are defined only for the subset of units
 retained after matching, which often differs from the original set of
 units prior to matching \citep{rosenbaumrubin1985, rosenbaum2012}. This
 difference is especially important when retention is driven by overlap
@@ -1746,10 +1759,10 @@ realized for each unit --- we must rely on statistical inference to draw
 conclusions about \(\bm{\tau}\) and \(\tau\).
 
 We consider inference under the sharp and weak frameworks, targeting
-\(\bm{\tau}\) and \(\tau\), respectively. A line of work shows how a single test can be exact for a sharp null and
+the vector of unit-level effects, \(\bm{\tau}\), and the ATE, \(\tau\), respectively. A line of work shows how a single test can be exact for a sharp null and
 asymptotically valid for the corresponding weak null under as-if
 randomization
-\citep{chungromano2013, wuding2021, cohenfogarty2022, fogarty2023} (see
+(\citealp{chungromano2013, wuding2021, cohenfogarty2022, fogarty2023}; see
 also \citealp{ding2017} on conflicts between the two types of tests). The
 unification of sharp and weak tests does not generally extend to
 sensitivity analyses outside matched-pair designs
@@ -1819,8 +1832,9 @@ this treated count is shown in \Cref{tab: ssafrica.3 assignments}.
 The column labeled Assignment 3 shows the assignment that actually
 occurred. The other possible assignments --- Assignment 1, Assignment 2,
 and Assignment 4 --- represent cases in which Lesotho, Somalia, or
-Burundi is treated instead of Rwanda. The set excludes any assignments
-with more than \(1\) treated unit.
+Burundi is treated instead of Rwanda. The set \(\Omega_s\) for
+\texttt{ssafrica.3} excludes every assignment that does not treat
+exactly one unit.
 
 \begin{table}[htbp]
 \centering
@@ -1947,7 +1961,7 @@ matched data:
 \item
   First, the harmonic-mean-weighted Difference-in-Means equals the
   coefficient on the treatment indicator from a fixed-effects (FE) regression
-  that includes matched set indicators
+  that includes matched-set indicators
   \citep[pp.~228--229]{hansenbowers2008}, an approach commonly used in
   practice after matching.
 \item
@@ -2002,8 +2016,8 @@ statistic.
 
 
 \begin{lstlisting}[language=R]
-# Load hm_stat_rescale() from GitHub repo
-# base_url (defined earlier) points to repo URL
+# Load hm_stat_rescale() from GitHub repository
+# base_url (defined earlier) points to repository URL
 source(
   paste0(
     base_url, "/R/hm_stat_rescale.R"
@@ -2029,7 +2043,7 @@ obs_stat <- sum(
 We can verify in \texttt{R} that this observed sum statistic coincides
 with the harmonic-mean-weighted Difference-in-Means, the coefficient on
 the treatment indicator from an FE regression that includes
-matched set indicators, and the overlap-weighted Difference-in-Means
+matched-set indicators, and the overlap-weighted Difference-in-Means
 constructed from the assignment probabilities implied by as-if
 randomization.
 
@@ -2078,7 +2092,7 @@ all.equal(
 
 Next, we verify that the same quantity is obtained as the coefficient on
 the treatment indicator from an FE regression that includes
-matched set indicators.
+matched-set indicators.
 
 
 
@@ -2280,7 +2294,7 @@ sim_sharp_null_dist <- apply(
 \end{lstlisting}
 
 
-From this null distribution, we compute a one-sided upper \(p\)-value,
+From this null distribution, we compute an upper one-sided \(p\)-value,
 which, under as-if randomization, is simply the proportion of null test
 statistics greater than or equal to the observed test statistic.
 
@@ -2743,16 +2757,16 @@ res$var_est
 
 
 We can also estimate the variance of the Difference-in-Means in a finely
-stratified design using the approach of \citet{fogarty2018}, using each
-set's size in the estimator's projection step, as in
-\citet[p.~2199]{fogarty2023}. To do so,
+stratified design using the approach of \citet{fogarty2018}, with set
+sizes incorporated as in \citet[p.~2199]{fogarty2023}. To do so,
 we load a custom \texttt{R} function, \mbox{\texttt{fine\_strat\_var\_est()}},
 from the companion GitHub repository.
 
 
 
 \begin{lstlisting}[language=R]
-# Load the fine_strat_var_est() function from the GitHub repo
+# Load the fine_strat_var_est() function from the GitHub repository
+
 source(
   paste0(
     base_url, "/R/fine_strat_var_est.R"
@@ -2771,7 +2785,7 @@ as inputs to \texttt{fine\_strat\_var\_est()}.
 
 
 \begin{lstlisting}[language=R]
-# Compute matched set sizes and matched-set-specific differences in means
+# Compute matched set sizes and matched-set-specific differences-in-means
 set_stats <- data_matched |>
   group_by(
     fm
@@ -2837,8 +2851,7 @@ inverting the corresponding hypothesis tests. We first construct a
 one-sided confidence set obtained by inverting the upper-tail test and
 retaining all null values that are not rejected at the \(\alpha = 0.05\)
 level. We then construct a two-sided confidence set by allocating
-\(\alpha/2 = 0.025\) to each tail, as in the tail allocation used in the
-sharp framework.
+\(\alpha/2 = 0.025\) to each tail.
 
 
 
@@ -2871,7 +2884,7 @@ Up to this point, we have assumed a framework in which each
 observation's chance of a UN intervention is like flipping a weighted
 coin. Each coin flip is independent across observations, but the
 probability of landing tails (i.e., receiving treatment) can differ from
-one unit to another depending on its baseline characteristics. With
+one unit to another depending on each unit's baseline characteristics. With
 matching, we make our crucial assumption that all units within a set are
 similar enough on these characteristics that their coins have the same
 probability of landing tails.
@@ -3115,7 +3128,7 @@ sens_objective(
 
 
 The resulting value is negative, indicating rejection of the null at the
-chosen significance level. This is exactly what we would expect. Because
+chosen significance level. This negative value is exactly what we would expect. Because
 we previously rejected the sharp null hypothesis that \(\tau_h = 0\) for
 all units at \(\Gamma = 1\), the function evaluated at \(\Gamma = 1\) is
 indeed nonpositive.
@@ -3165,9 +3178,10 @@ separable approximation, along with an indication of whether the
 resulting decision to reject or not reject the null hypothesis agrees
 with the decision implied by the Taylor series approximation. Agreement
 or disagreement between the two methods is determined by the sign of the
-Taylor-series-based bound on the objective function (computed by
-\texttt{sens\_objective()}) that governs
-rejection of the null hypothesis. Disagreement can occur only when the
+Taylor-series bound on the objective function that
+\texttt{sens\_objective()} codes. The \texttt{senstrat()} function reports
+this bound, stored as \texttt{cvA} in the following code, and the sign of
+this bound governs rejection of the null hypothesis. Disagreement can occur only when the
 separable approximation yields a \(p\)-value below \(\alpha\) (in practice, typically only slightly below),
 indicating rejection, while the Taylor series approximation yields a
 positive value, leading to non-rejection.
@@ -3257,7 +3271,7 @@ The results in the shaded vertical band --- corresponding to values of
 \(\Gamma\) for which the two approaches yield different conclusions
 (between 1.1361 and 1.1399) --- show that the two methods diverge in
 exactly the way one would expect. Over this range of \(\Gamma\) values,
-the Taylor series margin lies just above zero, indicating no rejection
+the Taylor series margin (the bound \texttt{cvA}) lies just above zero, indicating no rejection
 of the sharp null, while the separable approximation yields \(p\)-values
 just below \(0.05\), indicating rejection. This pattern reflects the
 relative conservatism of the Taylor series approximation, since rejection
@@ -3369,7 +3383,7 @@ That is, the statistic replaces the unknown probability \(p(\bm{z}_s)\) in
 \eqref{eq: weighted diff-in-means} with whichever bound in
 \eqref{eq: prob bounds} works against rejecting the null. Each set's
 Difference-in-Means is first centered at the null ATE. When the centered
-value \(\hat{\tau}_s - \tau_0\) is positive, and so counts as evidence against the null in favor of a larger ATE, dividing it by the largest probability that \(\Gamma\)
+value \(\hat{\tau}_s - \tau_0\) is positive, and so counts as evidence against the null in favor of a larger ATE, dividing the centered value by the largest probability that \(\Gamma\)
 allows makes the set's contribution as small as possible. When the
 centered value is negative, dividing it by the smallest probability makes
 the set's contribution as negative as possible. When testing the null
@@ -3379,10 +3393,12 @@ reversed. At \(\Gamma = 1\), both bounds equal \(1/\abs{\Omega_s}\), and
 
 Technically, \citet[Section~4.1]{fogarty2023} works with a rescaled
 version of this statistic, \(\tilde{K}_{\Gamma}^{(\tau_0)}\), which is
-exactly twice \(T_{\Gamma}(\tau_0)\). The rescaling does not change the
-test, because the standard error used to standardize the statistic is
-multiplied by the same factor of 2. The worst-case IPW interpretation comes from the preprint version
-of \citet{fogarty2023}, which describes each matched set's quantity
+exactly twice \(T_{\Gamma}(\tau_0)\). The rescaling alone does not change
+the test, because the estimated standard error of
+\(\tilde{K}_{\Gamma}^{(\tau_0)}\), computed with the same version of the
+variance estimator, is exactly twice that of \(T_{\Gamma}(\tau_0)\). The
+worst-case IPW interpretation comes from the preprint version of
+\citet{fogarty2023}. The preprint describes each matched set's quantity
 \((1/\abs{\Omega_s})(\hat{\tau}_s - \tau_0)/\tilde{p}_s\) in
 \eqref{eq: worst-case IPW} as a worst-case inverse probability weighted
 estimator \citep[Sections~5.2--5.4]{fogarty2020arxiv}.
@@ -3430,8 +3446,8 @@ Together, these two properties work in the same direction:
 \begin{itemize}
 \tightlist
 \item
-  The expected value is at or below zero, keeping the center of the
-  distribution at or shifted away from the upper tail, and
+  the expected value is at or below zero, keeping the center of the
+  distribution at zero or shifted away from the upper tail, and
 \item
   the variance estimator tends to overestimate the true variance,
   which pulls the
@@ -3443,15 +3459,15 @@ standardized statistic falls in the upper tail of the standard Normal
 distribution --- that is, the probability of falsely rejecting the null
 --- remains at or below the nominal significance level. Hence, the test
 is conservative (valid) asymptotically, as the number of matched sets
-grows \citep[Theorem~2]{fogarty2023}. With few matched sets, as in our
+grows \citep[Theorem~2]{fogarty2023}. Analogous reasoning applies when
+testing against the alternative of a smaller effect. When the null
+hypothesis is true, the probability that the standardized statistic falls
+in the lower tail of the standard Normal distribution also stays at or
+below the nominal significance level. With few matched sets, as in our
 application with 12, the Normal approximation may be inaccurate, the
 variance estimator may be imprecise, and the guarantees above, which are
 asymptotic, need not hold. The test can then over-reject, so readers
-should regard the resulting \(p\)-values as approximate. Analogous reasoning applies
-when testing against the alternative of a smaller effect. When the null
-hypothesis is true, the probability that the standardized value falls in
-the lower tail of the standard Normal distribution also stays at or
-below the nominal significance level.
+should regard the resulting \(p\)-values as approximate.
 
 To implement this approach from \citet{fogarty2023}, we first source
 from the GitHub repository an \texttt{R} function that, for a fixed
@@ -3462,7 +3478,8 @@ from the GitHub repository an \texttt{R} function that, for a fixed
 
 
 \begin{lstlisting}[language=R]
-# Load the worst_case_IPW() function from GitHub repo
+# Load the worst_case_IPW() function from GitHub repository
+
 source(
   paste0(
     base_url, "/R/worst_case_IPW.R"
@@ -3484,11 +3501,11 @@ conservative variance estimator of \citet{fogarty2018} from
 \Cref{how-do-i-draw-inferences-under-the-weak-framework}, and compare the
 resulting standardized test statistic to the standard Normal distribution
 to obtain \(p\)-values. For the rescaled statistic
-\(\tilde{K}_{\Gamma}^{(\tau_0)}\), \citet[p.~2202]{fogarty2023} uses
-different values in the projection step of the variance estimator. Any
-fixed choice of these values gives a conservative variance estimator
-\citep[Proposition~1]{fogarty2018}, and on our data the two choices give
-nearly identical sensitivity values (1.1756 and 1.1753).
+\(\tilde{K}_{\Gamma}^{(\tau_0)}\), \citet[p.~2202]{fogarty2023} uses a
+slightly different version of this variance estimator, one that depends
+on \(\Gamma\) as well as on set sizes. Both versions are conservative
+\citep[Proposition~1]{fogarty2018}, and on our data the two give nearly
+identical sensitivity values (1.1756 and 1.1753).
 
 
 
@@ -3574,8 +3591,9 @@ positive average effect; the \(p\)-value at \(\Gamma = 1\) in
 \Cref{fig:unnamed-chunk-59} is 0.036, rather than the 0.037 reported in
 \Cref{how-do-i-draw-inferences-under-the-weak-framework}, because the
 sensitivity analysis estimates the variance with the estimator of
-\citet{fogarty2018} instead of \texttt{hybrid\_p}. This conclusion is
-sensitive to departures from as-if randomization. Our qualitative
+\citet{fogarty2018} instead of \texttt{hybrid\_p}. This rejection of the
+null hypothesis of no average effect in favor of a positive average
+effect is sensitive to departures from as-if randomization. Our qualitative
 conclusion about the null hypothesis that the ATE equals zero changes at
 \(\Gamma \approx 1.18\) (1.1756). This sensitivity value is
 similar to the sensitivity value for the sharp null of no effect, but the
@@ -3599,11 +3617,11 @@ rejection is strictly below \(\alpha\), except in matched-pair designs
 \citep[Theorem~2]{fogarty2023}. By
 contrast, \citet{fogarty2023} also describes, and recommends, an
 alternative sensitivity analysis that is asymptotically sharp when
-effects are constant, and whose validity for the weak null is guaranteed
-under an additional
-condition that jointly restricts the potential outcomes and the pattern of
-hidden bias, a condition that researchers may regard as plausible
-\citep[Theorem~1 and Condition~1]{fogarty2023}. The alternative
+effects are constant. The validity of this alternative analysis for the
+weak null is guaranteed under an additional condition that jointly
+restricts the potential outcomes and the pattern of hidden bias, a
+condition that researchers may regard as plausible
+\citep[Theorem~1, Condition~1, and Section~8]{fogarty2023}. The alternative
 sensitivity analysis can produce smaller \(p\)-values, but at the cost of
 forfeiting validity for certain (possibly unrealistic) combinations of
 potential outcomes and hidden bias.
@@ -3612,8 +3630,8 @@ potential outcomes and hidden bias.
 
 We have now completed the full matching pipeline. We began by
 constructing matched sets and then conducted inference under the as-if
-randomization assumption, treating the matched design as a collection of
-completely randomized experiments within blocks. We examined inference
+randomization assumption, treating the matched design as a completely randomized
+experiment within blocks. We examined inference
 under both the sharp framework, which concerns the effect for every
 unit, and the weak framework, which concerns the average effect. We
 then assessed the sensitivity of these inferences to potential
@@ -3644,7 +3662,7 @@ a result, we have excluded attributable effects
 \citep{rosenbaum2001, rosenbaum2003, hansenbowers2009} and the average
 treatment effect on the treated \citep{sekhonshem-tov2021}. We have also
 set aside methods for joint inference on sharp and weak causal
-hypotheses \citep{wuding2021, cohenfogarty2022} (see also \citealp{ding2017}),
+hypotheses (\citealp{wuding2021, cohenfogarty2022}; see also \citealp{ding2017}),
 as well as
 strategies that improve the power of hypothesis tests by rescaling
 outcomes or choosing alternative test statistics, including
@@ -3701,7 +3719,7 @@ Several omissions are specific to matching methodology itself:
 \item
   Fifth, we have ignored \textbf{residual imbalance on observed
   covariates}. Specifically, we have proceeded under the assumption that
-  matched set membership can justify as-if randomization, even when
+  matched-set membership can justify as-if randomization, even when
   small imbalances remain within matched sets. Under this approach,
   concerns about residual imbalance are absorbed into the sensitivity
   analysis for hidden bias. This approach is not entirely satisfying,
@@ -3744,7 +3762,7 @@ Several omissions are specific to matching methodology itself:
   \citep{pashleyetal2021, pimentelhuang2024, pimentelyu2024}. Our
   exposition has relied on an analogy to Rubin's framework of
   ``assignment to treatment group on the basis of a covariate''
-  \citep{rubin1977}, where matched set membership plays the role of the
+  \citep{rubin1977}, where matched-set membership plays the role of the
   covariate. This analogy treats set membership as fixed, but because
   matching uses the realized treatment assignment, other assignments,
   including those in \(\Omega\) that permute treatment within the realized
@@ -3769,7 +3787,7 @@ developed here provide a coherent framework for understanding how
 matched designs support causal inference. The emphasis on design-based
 foundations clarifies the logic underlying the construction of matched
 sets and the subsequent steps of inference and sensitivity analysis
-under both weak and sharp frameworks. We present this work not as
+under both sharp and weak frameworks. We present this work not as
 exhaustive, but as a foundation on which researchers can build when
 incorporating more specialized methods tailored to their substantive and
 inferential goals.
