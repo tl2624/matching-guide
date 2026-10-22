@@ -195,9 +195,9 @@ fullmatch(
   min.controls = 0.5,   # At least 0.5 controls per treated unit
   # (i.e., no more than 2 treated per control)
   max.controls = 2,     # At most 2 controls per treated unit
-  omit.fraction = NULL, # Fraction of controls (or, if negative, treated) to discard
+  omit.fraction = NULL, # Fraction of controls (if < 0, treated) to discard
   mean.controls = NULL, # Governs average controls per treated unit
-  # Only one of omit.fraction or mean.controls can be non-NULL
+  # At most one of omit.fraction or mean.controls can be non-NULL
   data = data
 )
 
@@ -639,7 +639,7 @@ block_ns <- data_matched |>
   )
 
 # Total possible treatment assignments = product of binomial coefficients
-# (choose m_s of the n_s units for treatment in each set and multiply across sets)
+# (choose m_s of the n_s units in each set, then multiply across sets)
 exact_n_assigns <- prod(
   choose(
     n = block_ns$n,
@@ -805,7 +805,7 @@ tau_h_grid_norm <- seq(
 p_mat_norm <- sapply(X = tau_h_grid_norm,
                      FUN = function(tau_h) {
 
-                       # Reconstruct outcomes under null tau_h and rescale them
+                       # Reconstruct and rescale outcomes under null tau_h
                        dat_tau_h <- hm_stat_rescale(
                          data    = transform(
                            data_matched,
@@ -817,34 +817,39 @@ p_mat_norm <- sapply(X = tau_h_grid_norm,
 
                        # Observed statistic under null tau_h
                        obs_stat_tau_h <- sum(
-                         dat_tau_h$ldur_tilde_shift_hm_scaled[dat_tau_h$UN == 1]
+                         dat_tau_h$ldur_tilde_shift_hm_scaled[
+                           dat_tau_h$UN == 1]
                        )
 
-                       # Null expectation and variance of the statistic under tau_h
+                       # Null expectation and variance under null tau_h
                        moms_tau_h <- dat_tau_h |>
                          group_by(
                            fm
                          ) |>
                          summarize(
-                           expect   = ev(sc = ldur_tilde_shift_hm_scaled, z = UN,
-                                         m = 1, g = 1, method = "RK")$expect,
-                           variance = ev(sc = ldur_tilde_shift_hm_scaled, z = UN,
-                                         m = 1, g = 1, method = "RK")$vari,
+                           expect   = ev(sc = ldur_tilde_shift_hm_scaled,
+                                         z = UN, m = 1, g = 1,
+                                         method = "RK")$expect,
+                           variance = ev(sc = ldur_tilde_shift_hm_scaled,
+                                         z = UN, m = 1, g = 1,
+                                         method = "RK")$vari,
                            .groups  = "drop"
                          )
 
                        # Standardized statistic under null tau_h
-                       std_stat_tau_h <- (obs_stat_tau_h - sum(moms_tau_h$expect)) /
+                       std_stat_tau_h <- (obs_stat_tau_h -
+                                            sum(moms_tau_h$expect)) /
                          sqrt(sum(moms_tau_h$variance))
 
-                       # Upper-tail and lower-tail Normal-approximation p-values
+                       # Upper- and lower-tail Normal p-values
                        c(
-                         upper_tail = pnorm(q = std_stat_tau_h, lower.tail = FALSE),
+                         upper_tail = pnorm(q = std_stat_tau_h,
+                                            lower.tail = FALSE),
                          lower_tail = pnorm(q = std_stat_tau_h)
                        )
                      })
 
-# Upper-tail confidence set: retain all tau_h with upper-tail p-value >= alpha
+# Upper-tail confidence set: retain all tau_h with upper-tail p >= alpha
 cs_sharp_upper_tail_norm <- c(
   lower = min(
     tau_h_grid_norm[p_mat_norm["upper_tail", ] >= alpha]
@@ -855,7 +860,8 @@ cs_sharp_upper_tail_norm <- c(
 # Two-sided confidence set: retain tau_h only if neither one-sided test
 # rejects at level alpha / 2
 cs_sharp_two_sided_norm_vals <- tau_h_grid_norm[
-  p_mat_norm["upper_tail", ] >= alpha / 2 & p_mat_norm["lower_tail", ] >= alpha / 2
+  p_mat_norm["upper_tail", ] >= alpha / 2 &
+    p_mat_norm["lower_tail", ] >= alpha / 2
 ]
 
 # Two-sided confidence set summarized by its bounds
@@ -871,7 +877,7 @@ cs_sharp_two_sided_norm <- c(
 # ---- chunk ----
 # Grid of constant-effect null values (sharp framework)
 tau_h_grid <- seq(
-    from = -0.5,
+  from = -0.5,
   to = 1.5,
   by = 0.0001
 )
@@ -1033,7 +1039,7 @@ sens_objective <- function(null_expect, null_variance, obs_stat, alpha = 0.05) {
   # obs_stat      : observed value of the test statistic
   # alpha         : test size (e.g., 0.05 gives kappa about 1.64)
   
-    # Normal critical value (not the set intercept kappa_s in (3))
+  # Normal critical value (not the set intercept kappa_s in (3))
   kappa  <- qnorm(
     p = 1 - alpha
   )
@@ -1044,7 +1050,7 @@ sens_objective <- function(null_expect, null_variance, obs_stat, alpha = 0.05) {
   )
   
   # Gap between null expectation and observed statistic
-    # (null_expect - obs_stat) + Normal buffer (kappa * null_sd)
+  # (null_expect - obs_stat) + Normal buffer (kappa * null_sd)
   obj_val <- (null_expect - obs_stat) + kappa * null_sd
   
   return(obj_val)
@@ -1076,7 +1082,7 @@ sens_results <- lapply(
       z           = data_matched$UN,                   # treatment indicator
       st          = data_matched$fm,                   # matched set
       gamma       = g,                                 # Gamma
-            alternative = "greater",                         # upper-tail test
+      alternative = "greater",                         # upper-tail test
       level       = alpha,                             # test level for cvA
       detail      = TRUE # return intermediate quantities
     )
@@ -1281,7 +1287,7 @@ for (g in Gamma_vals) { # Loop over Gamma values
     group_by(
       fm
     ) |>
-        summarize(
+    summarize(
       n      = n(),                        # Set size n_s
       weight = n / nrow(data_matched),     # Weight n_s / n
       est    = worst_case_IPW(             # Worst-case IPW in set s

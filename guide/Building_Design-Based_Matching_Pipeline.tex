@@ -386,12 +386,8 @@ analysis:
   for recent variance estimators tailored to designs with only \(1\)
   treated or \(1\) control unit per matched set
   \citep{fogarty2018, pashleymiratrix2021} --- an important case, since
-  any matched design can be refined into sets that each contain one
-  treated unit or one control unit without increasing covariate
-  distances within sets
-  \citep{gurosenbaum1993, rosenbaum1991, hansen2004}, although such
-  refinement can come at the expense of effective sample size
-  \citep{hansen2004, hansen2011}.
+  such designs yield the closest matches while discarding the fewest
+  units \citep{gurosenbaum1993, rosenbaum1991, hansen2004, hansen2011}.
 \item
   \textbf{Assess sensitivity}. Finally, we turn to sensitivity analyses
   under both inferential frameworks. We review established methods for
@@ -549,23 +545,22 @@ onset of peace: ``Of the 19 post-conflict UN interventions, the United
 Nations was present within the first month for 16 of them''
 \citep[p.~118]{gilligansergenti2008}. In what follows, we set aside
 these measurement details, with one caveat about censoring. The outcome
-\texttt{ldur} is right-censored for 15 of the 19 UN episodes but for
-only 28 of the 68 other episodes, so our analyses concern the log of the
-observed, possibly censored, duration rather than the log of the full
-duration of peace.
+\texttt{ldur} is right-censored for 43 of the 87 episodes, so our
+analyses concern the log of the observed, possibly censored, duration
+rather than the log of the full duration of peace.
 
 As \citet{gilligansergenti2008} state, ``UN missions are not randomly
 assigned'' (p.~89). Whether peacekeepers are present during a given
 post-conflict peace period presumably depends on baseline covariates
 measured by \citet{gilligansergenti2008}, including the logged number of
 deaths (\texttt{lwdeaths}), the duration of the previous war in months
-(\texttt{lwdurat}; despite its name, this variable is not logged),
-ethnic fractionalization (\texttt{ethfrac}, a 0--100 index for which
-dividing by 100 is intended to represent the probability that two
-randomly chosen individuals belong to different ethnic groups), logged
-population size (\texttt{pop}), and others. We implement matching using
-these same covariates, but emphasize that our exercise is expository and
-not intended as a replication of the original findings.
+(\texttt{lwdurat}), which, despite its name, is not logged, ethnic
+fractionalization (\texttt{ethfrac}, a 0--100 index for which dividing
+by 100 is intended to represent the probability that two randomly chosen
+individuals belong to different ethnic groups), logged population size
+(\texttt{pop}), and others. We implement matching using these same
+covariates, but emphasize that our exercise is expository and not
+intended as a replication of the original findings.
 
 \subsubsection{Loading the Data for the Running
 Example}\label{loading-the-data-for-the-running-example}
@@ -829,14 +824,17 @@ last listed entry is the distance between Namibia (treated) and the
 Central African Republic (control).
 
 One concern with Euclidean distance is that it depends on the scale of
-the covariates. For example, a country in Sub-Saharan Africa and a
-country in Latin America differ by \(1\) on each of two region
-indicators (\texttt{ssafrica} and \texttt{lamerica}), and these two
-differences together add \(2\) to the squared Euclidean distance; a
-difference of only about 1.4 months in the duration of the previous war
-(\texttt{lwdurat}) adds the same amount. Intuitively, we would not want
-such a tiny difference in war duration to be treated as equally
-important as belonging to different regions of the world. More
+the covariates. For example, Guatemala (treated) belongs to Latin
+America and Afghanistan (control) to Asia, a substantively large
+difference; yet belonging to different regions adds only \(2\) to the
+squared Euclidean distance between the two countries, because they
+differ by \(1\) on each of two region indicators (\texttt{lamerica} and
+\texttt{asia}). Their ethnic fractionalization scores
+(\texttt{ethfrac}), 64.37 and 65.83 on the 0--100 scale, differ by only
+1.46 points, a substantively small difference; yet this difference adds
+2.13, slightly more than belonging to different regions. Intuitively, we
+would not want such a small difference in ethnic fractionalization to
+count for more than belonging to different regions of the world. More
 generally, we want differences across variables to be placed on a
 comparable scale, so that a meaningful difference in one variable counts
 about the same as a difference of similar importance in another.
@@ -880,8 +878,8 @@ Substantive transformations --- such as logging certain covariates ---
 reflect subject-matter considerations and precede the matching
 procedure. The standardization in the Mahalanobis distance is a
 statistical device that operates on the pre-specified covariates to
-compute distances comparably across covariates. The purpose of this
-device is to facilitate matches that are similar on the original
+compute distances comparably across covariates. Ultimately, the purpose
+of this device is to facilitate matches that are similar on the original
 covariate scales.
 
 \paragraph{Similarity on the Estimated Propensity
@@ -922,9 +920,10 @@ This quantity, \(\hat{\lambda}(\bm{x}_i)\), is a simple transformation
 of a linear index of covariates that best ``separates'' treated from
 control units. The estimated coefficients (\(\bm{\hat{\beta}}\))
 ``separate'' treated from control units on the linear index because the
-coefficients are chosen to maximize the likelihood, which is larger when
-the fitted probabilities are close to 1 for treated units and close to 0
-for controls. When treated and control units have little or no covariate
+coefficients are chosen to maximize the likelihood of the logistic model
+in \eqref{eq: linear index}, and this likelihood is larger when the
+fitted probabilities are close to 1 for treated units and close to 0 for
+controls. When treated and control units have little or no covariate
 overlap, the estimated linear indices can diverge substantially, very
 positive for treated units and very negative for controls. With greater
 overlap, the estimated linear indices for treated and control units are
@@ -1020,20 +1019,31 @@ beginning in 1991). The two countries differ greatly in ethnic
 fractionalization (\texttt{ethfrac}), about 1 versus 45 on the 0--100
 scale, but have the same logged number of battle deaths
 (\texttt{lwdeaths}) and similar logged numbers of military personnel
-(\texttt{milper}). Yet the estimated linear indices for Haiti and Papua
-New Guinea differ by only about 0.26. The gap in \texttt{ethfrac}, 43
-points or about 1.7 standard deviations, raises Haiti's index by only
-about 0.13 because the estimated coefficient on \texttt{ethfrac} is
-close to \(0\) (about \(-0.003\) per point). By contrast, the gap in
-\texttt{milper}, 0.29 or about 0.18 standard deviations, raises Haiti's
-index by about 0.26 because the estimated coefficient on \texttt{milper}
-is large (about \(-0.92\)). The estimated linear index therefore gives
-little weight to the covariate on which the two countries differ most
-and more weight to covariates that strongly predict treatment.
+(\texttt{milper}). Despite this large difference in ethnic
+fractionalization, the estimated linear indices for Haiti and Papua New
+Guinea differ by only about 0.26. The gap in \texttt{ethfrac}, 43 points
+or about 1.7 standard deviations of \texttt{ethfrac} across all 87
+episodes, raises Haiti's index by only about 0.13 because the estimated
+coefficient on \texttt{ethfrac} is close to \(0\) (about \(-0.003\) per
+point). By contrast, the gap in \texttt{milper}, 0.29 or about 0.18
+standard deviations of \texttt{milper} across all 87 episodes, raises
+Haiti's index by about 0.26 because the estimated coefficient on
+\texttt{milper} is large (about \(-0.92\)). The estimated linear index
+therefore gives little weight to the covariate on which the two
+countries differ most and more weight to covariates that strongly
+predict treatment.
 
 To illustrate these broader patterns, \Cref{fig:unnamed-chunk-11}
 compares the distributions of the estimated linear covariate index for
-treated and control groups.
+treated and control groups. As \Cref{fig:unnamed-chunk-11} shows, there
+is some, but limited, overlap between treated and control groups. In
+accordance with our earlier discussion of how the estimated linear
+covariate index ``separates'' treated from control units, many control
+observations have very negative values (as low as \(-7.52\)), far from
+the treated units' range of \(-2.24\) to 2.21. Nevertheless, a
+sufficient number of treated and control observations have estimated
+linear covariate indices that cluster around \(0\), indicating covariate
+overlap for at least a subset of treated and control observations.
 
 \singlespacing
 \begin{figure}[H]
@@ -1045,16 +1055,6 @@ treated and control groups.
 \caption{The empirical distributions of the estimated linear covariate index for treated and control groups.}\label{fig:unnamed-chunk-11}
 \end{figure}
 \doublespacing
-
-As \Cref{fig:unnamed-chunk-11} shows, there is some, but limited,
-overlap between treated and control groups. In accordance with our
-earlier discussion of how the estimated linear covariate index
-``separates'' treated from control units, many control observations have
-very negative values (as low as \(-7.52\)), far from the treated units'
-range of \(-2.24\) to 2.21. Nevertheless, a sufficient number of treated
-and control observations have estimated linear covariate indices that
-cluster around \(0\), indicating covariate overlap for at least a subset
-of treated and control observations.
 
 \subsubsection{How Can I Apply Rules for Matches to Ensure
 Comparability?}\label{how-can-i-apply-rules-for-matches-to-ensure-comparability}
@@ -1095,10 +1095,11 @@ constraints:
 \end{itemize}
 
 We now impose the first constraint, requiring an exact match on region.
-Doing so produces a distance structure, \texttt{em\_region}, whose entry
-for a treated--control pair is \(0\) if the two units belong to the same
-region and \(\infty\) (\texttt{Inf}) otherwise, so that treated and
-control units can be matched only within a region.
+Doing so produces a sparse distance structure, \texttt{em\_region}, that
+stores a distance of \(0\) for every treated--control pair in the same
+region and stores no entry for pairs in different regions, which
+\texttt{optmatch} treats as forbidden (infinite) distances. Treated and
+control units can therefore be matched only within a region.
 
 \singlespacing
 
@@ -1149,9 +1150,9 @@ matching on geographic region, matching proceeds on only \(1\) covariate
 (Polity score), so we do not have to worry about covariates' relative
 scales.
 
-Finally, as the following code shows, we combine the two constraints
-into distance matrices defined within each region by ``adding'' the
-objects \texttt{em\_region} and \texttt{euc\_dist\_polity\_cal\_2}.
+Finally, we combine the two constraints into distance matrices defined
+within each region by ``adding'' the objects \texttt{em\_region} and
+\texttt{euc\_dist\_polity\_cal\_2}, as the following code shows.
 
 \singlespacing
 
@@ -1175,13 +1176,13 @@ arranged across the matched sets.
 
 The \texttt{optmatch} package will always produce matches with a
 particular arrangement of units across sets. In particular, all sets
-contain either \(1\) treated unit or \(1\) control unit --- an overall
-structure that, absent ratio constraints, minimizes within-set covariate
-distances while discarding only units that have no permissible match
-\citep{rosenbaum1991, gurosenbaum1993, hansen2004}. In practice, optimal
-full matching can yield lopsided sets, with either \(1\) treated matched
-to many controls or \(1\) control matched to many treated units, which
-has implications for the effective sample size.
+contain either \(1\) treated unit or \(1\) control unit. This structure
+minimizes the average, over treated units, of each treated unit's mean
+distance to the controls in the same set, while discarding the fewest
+units possible \citep{rosenbaum1991, gurosenbaum1993, hansen2004}. In
+practice, optimal full matching can yield lopsided sets, with either
+\(1\) treated matched to many controls or \(1\) control matched to many
+treated units, which has implications for the effective sample size.
 
 In the \texttt{optmatch} package, the effective sample size is defined
 as the sum, across matched sets, of the harmonic mean of the numbers of
@@ -1210,12 +1211,17 @@ directly on the precision of estimators and the power of hypothesis
 tests. Assuming constant, additive treatment effects within a set, the
 variance of the Difference-in-Means --- the average outcome among
 treated units minus the average outcome among control units --- in that
-set is minimized when the harmonic mean is largest
-\citep{hansenbowers2008, hansen2011}. For a fixed set size, the harmonic
-mean is largest when the numbers of treated and control units are equal.
-Thus, all else equal, matched pairs and other balanced sets provide more
-information about causal effects than lopsided sets with unequal
-treated-to-control ratios.
+set is proportional to the set's outcome variance divided by the set's
+harmonic mean \citep{hansenbowers2008, hansen2011}. For a fixed set
+size, the harmonic mean is largest when the numbers of treated and
+control units are equal. Thus, all else equal, matched pairs and other
+balanced sets provide more information about causal effects than
+lopsided sets with unequal treated-to-control ratios. If outcome
+variances are also similar across sets, weighting each set's
+Difference-in-Means by the set's harmonic mean minimizes the variance of
+the weighted average across sets \citep[p.~164, fn. 3]{hansen2011}, and
+the effective sample size in \eqref{eq: harmonic mean} then measures the
+precision of that weighted average.
 
 One straightforward way to increase effective sample size is to relax
 restrictions on which units can be matched. Relaxing calipers can admit
@@ -1290,9 +1296,9 @@ with \(2\) controls.
   \AttributeTok{min.controls =} \FloatTok{0.5}\NormalTok{,   }\CommentTok{\# At least 0.5 controls per treated unit}
                         \CommentTok{\# (i.e., no more than 2 treated per control)}
   \AttributeTok{max.controls =} \DecValTok{2}\NormalTok{,     }\CommentTok{\# At most 2 controls per treated unit}
-  \AttributeTok{omit.fraction =} \ConstantTok{NULL}\NormalTok{, }\CommentTok{\# Fraction of controls (or, if negative, treated) to discard}
+  \AttributeTok{omit.fraction =} \ConstantTok{NULL}\NormalTok{, }\CommentTok{\# Fraction of controls (if \textless{} 0, treated) to discard}
   \AttributeTok{mean.controls =} \ConstantTok{NULL}\NormalTok{, }\CommentTok{\# Governs average controls per treated unit}
-  \CommentTok{\# Only one of omit.fraction or mean.controls can be non{-}NULL}
+  \CommentTok{\# At most one of omit.fraction or mean.controls can be non{-}NULL}
   \AttributeTok{data =}\NormalTok{ data}
 \NormalTok{)}
 \end{Highlighting}
@@ -1304,16 +1310,16 @@ Note, in addition, that the \texttt{fullmatch()} arguments of
 \texttt{omit.fraction} and \texttt{mean.controls} provide explicit
 levers for controlling how many treated and control units are discarded,
 though at most one of \texttt{omit.fraction} or \texttt{mean.controls}
-may be specified.
+may be set to a value other than \texttt{NULL}.
 
-Imposing ratio constraints can have mixed consequences. In some cases,
-balance may worsen if a control is forced to match with a less similar
-treated unit --- though still within the specified calipers --- in order
-to satisfy the minimum and maximum ratio rules. In other cases, such
-constraints may improve effective sample size by redistributing how
-units are grouped without hurting balance. However, if the ratio
-constraints are too stringent, they can reduce effective sample size by
-forcing too many units to be discarded.
+Imposing ratio constraints can have mixed consequences for balance and
+effective sample size. In some cases, balance may worsen if a control is
+forced to match with a less similar treated unit --- though still within
+the specified calipers --- in order to satisfy the minimum and maximum
+ratio rules. In other cases, such constraints may improve effective
+sample size by redistributing how units are grouped without hurting
+balance. However, if the ratio constraints are too stringent, they can
+reduce effective sample size by forcing too many units to be discarded.
 
 In applied settings, final choices of calipers and ratio constraints
 typically follow iterative checks of both covariate balance and
@@ -1335,7 +1341,7 @@ we will often prefer some combination of Mahalanobis distance and
 propensity score matching, sometimes adding calipers on specific
 covariates. In what follows, we use \emph{rank-based} Mahalanobis
 distance, which has the advantage of being less sensitive to outliers
-and to heavily tied covariates, such as rare binary indicators
+and to covariates with many tied values, such as rare binary indicators
 \citep[pp.~171--172]{rosenbaum2010}. We further constrain the matching
 by imposing a caliper on the estimated propensity score, requiring
 treated and control observations to come from the same geographic
@@ -1343,20 +1349,18 @@ region, and applying additional calipers directly to two covariates:
 ethnic fractionalization (\texttt{ethfrac}) and logged GDP per capita
 (\texttt{bwgdp}).
 
-We impose a caliper equal to \(0.5\) standard deviations of the logit of
-the estimated propensity score (the estimated linear covariate index
-defined in \eqref{eq: linear index}). This choice is larger than a
-common rule of thumb of \(0.20\) standard deviations. That rule of thumb
-traces to the finding of \citet[Table 2.3.1, p.~421]{cochranrubin1973}
-that, for a single normally distributed covariate, a caliper of \(0.20\)
-standard deviations (the square root of the average of the treated and
-control variances) removes practically all of the bias. Given that the
-standard deviation of the logit index is approximately 1.96, our choice
-of \(0.5\) permits treated and control units to differ by up to roughly
-0.98 on the logit scale, compared with about 0.39 under the \(0.20\)
-guideline. (With Cochran and Rubin's definition of the standard
-deviation, about 1.58 for the logit index here, the \(0.20\) guideline
-corresponds to about 0.32.)
+We impose a caliper on the logit of the estimated propensity score, that
+is, on the estimated linear covariate index in \eqref{eq: linear index}.
+The caliper is the largest difference on this logit scale that a treated
+and a control unit in the same matched set may have. Narrower calipers
+yield closer matches on the estimated propensity score but leave more
+units without a permissible match. We set the caliper to \(0.5\) times
+the population standard deviation (dividing by \(n\)) of the logit
+across all 87 episodes. Because this standard deviation is approximately
+1.96, treated and control units in the same set may differ by up to
+about 0.98 on the logit scale. This caliper is wider than the commonly
+recommended \(0.20\) standard deviations, a guideline that traces to
+\citet[Table 2.3.1]{cochranrubin1973}.
 
 \singlespacing
 
@@ -1409,7 +1413,7 @@ distance.
 
 \doublespacing
 
-Finally, we construct the Euclidean distance matrix for ethnic
+Finally, we construct Euclidean distance matrices for ethnic
 fractionalization (\texttt{ethfrac}) and logged GDP per capita
 (\texttt{bwgdp}) using calipers of \(35\) and \(2\), respectively. The
 exact-match constraint on region has already been defined through the
@@ -1452,15 +1456,19 @@ treated unit. If instead we wanted to perform pair matching, the
 matched-pair structure via the \texttt{pairmatch()} function.
 Alternatively, one can request pair matching by setting
 \texttt{min.controls\ =\ 1} and \texttt{max.controls\ =\ 1} in the
-\texttt{fullmatch()} call. The \texttt{pairmatch()} call and this
-\texttt{fullmatch()} call coincide when every treated unit can be
-paired, but \texttt{pairmatch()} additionally sets
-\texttt{omit.fraction} so as to require that all treated units be
-matched. The results of the two calls can therefore differ when calipers
-or exact-matching constraints make it impossible to match every treated
-unit. The following code chunk proceeds with full matching under the
-constraint that no more than \(4\) controls may be matched to any
-treated unit.
+\texttt{fullmatch()} call. The two calls coincide when every treated
+unit can be paired, but they handle infeasibility differently. Within
+each subproblem (here, each region), \texttt{pairmatch()} sets
+\texttt{omit.fraction} so that every treated unit must be matched when
+controls are at least as numerous as treated units, and so that the
+excess treated units are left unmatched otherwise. If calipers make the
+required pairs impossible to form, \texttt{pairmatch()} does not stop
+with an error but instead issues a warning and leaves every unit in that
+subproblem unmatched. Setting \texttt{remove.unmatchables\ =\ TRUE}
+first drops treated units that have no permissible control, which avoids
+some, but not all, of these failures. The following code chunk proceeds
+with full matching under the constraint that no more than \(4\) controls
+may be matched to any treated unit.
 
 \singlespacing
 
@@ -1535,9 +1543,8 @@ no controls (effectively an unmatched treated unit). Similarly,
 \texttt{0:1} indicates no treated units and \(1\) control (effectively
 an unmatched control). For each label, the output shows how many matched
 sets have that particular structure. Here 6 of the 19 treated episodes
-are left unmatched, so the inferences that follow concern the 13 matched
-UN episodes and their 23 matched controls rather than all UN
-interventions.
+are left unmatched, so the inferences that follow concern only the 13
+matched UN episodes and their 23 matched controls.
 
 If we examine the object returned by the matching call (\texttt{fm}), we
 see that \texttt{optmatch} labels each observation according to its
@@ -1684,23 +1691,22 @@ Sub-Saharan Africa & 0.43 & 0.32 & $-$0.23 & 0.38 & 0.38 & 0.00\\
 
 \FloatBarrier
 
-In \Cref{tab: balance}, the adjusted means offer a direct description of
-balance. The standardized differences place all covariates on a common
-scale, enabling at-a-glance comparisons of imbalance across covariates.
-Stars indicate covariates for which the adjusted mean difference would
-be unusually extreme under a block-randomized experiment that assigns
-treatment completely at random within matched sets, holding fixed the
-observed number of treated units in each set. The stars are based on a
-Normal approximation to the randomization distribution of adjusted mean
-differences, and, because no adjustments are made for multiple
-comparisons, these stars are conservative for the purpose of judging
-balance. That is, although each covariate is tested at approximately the
-nominal level, the chance that at least one of the 13 covariates is
-starred under complete random assignment within matched sets exceeds
-that level, so the stars err toward flagging imbalance. Alternative
-adjustments for testing multiple covariates are available, such as the
-Holm procedure \citep{holm1979}, which is the default option in
-\texttt{RItools}'s \texttt{balanceTest()} function.
+\Cref{tab: balance} reports the results before and after matching. The
+adjusted means offer a direct description of balance. The standardized
+differences place all covariates on a common scale, enabling at-a-glance
+comparisons of imbalance across covariates. Stars indicate covariates
+for which the adjusted mean difference would be unusually extreme under
+a completely randomized experiment within blocks (defined in
+\Cref{roadmap-of-the-design-based-matching-pipeline}), with the matched
+sets as blocks. The stars are based on a Normal approximation to the
+randomization distribution of adjusted mean differences, and, because no
+adjustments are made for multiple comparisons, these stars are
+conservative for the purpose of judging balance. That is, the chance
+that at least one covariate is starred under a completely randomized
+experiment within blocks exceeds 0.05, so the stars err toward flagging
+imbalance. Alternative adjustments for testing multiple covariates are
+available, such as the Holm procedure \citep{holm1979}, which is the
+default option in \texttt{RItools}'s \texttt{balanceTest()} function.
 
 One concern with balance tests is that high \(p\)-values may arise not
 from improved covariate balance but from the reduction in effective
@@ -1708,10 +1714,14 @@ sample size that typically accompanies the matching process
 \citep{austin2008, imaietal2008}. As \citet{hansen2008b} notes, however,
 this possibility is less troubling than it first appears. The same
 increase in standard errors that produces high \(p\)-values for
-covariate balance tests will also affect subsequent causal inferences,
-meaning that those high \(p\)-values remain informative; they suggest
-that we are, if anything, less likely to overstate our causal
-conclusions than if the tests had been significant.
+covariate balance tests will also be present in subsequent outcome
+analyses, meaning that those high \(p\)-values remain informative; they
+suggest that any bias that the remaining imbalances in observed
+covariates could introduce into those analyses is small relative to
+those standard errors, so that we are, if anything, less likely to
+overstate our causal conclusions --- for example, by rejecting a true
+hypothesis about causal effects --- than if the balance tests had been
+significant.
 
 Regardless of whether the balance tests are statistically significant,
 there are also established guidelines for what constitutes sufficient
@@ -1721,10 +1731,10 @@ judgment about each covariate's importance, two rules of thumb appear in
 proposal that standardized differences of 0.1 or greater indicate
 meaningful imbalance on a covariate, whereas \citet{stuart2010} gives a
 more lenient threshold of 0.25, attributing it to \citet{rubin2001}. In
-our case, all covariates meet this latter standard, although three
-(duration of the last war, ethnic fractionalization and GDP per capita,
-with standardized differences of 0.16, 0.22 and \(-0.17\)) exceed the
-0.1 threshold of \citet{austin2009}; none show statistically significant
+our case, all covariates meet this latter standard, but three (duration
+of the last war, ethnic fractionalization, and GDP per capita, with
+standardized differences of 0.16, 0.22, and \(-0.17\)) exceed the 0.1
+threshold of \citet{austin2009}. None show statistically significant
 differences, indicating that observed imbalances would not be unusual
 under a completely randomized experiment within blocks (i.e., under
 as-if randomization).
@@ -1752,15 +1762,17 @@ fm  2.631007  8 0.9553417
 \doublespacing
 
 This \(\chi^2\) balance test yields an observed test statistic of 2.63
-and a corresponding \(p\)-value of 0.96. The test has \(8\) rather than
-\(13\) degrees of freedom because its degrees of freedom equal the rank
-of the covariance matrix of the adjusted differences
-\citep[p.~229]{hansenbowers2008}. With exact matching on region, the
-five region indicators are constant within every matched set, so their
-adjusted differences are identically zero. Our high \(p\)-value
-indicates that the observed level of covariate balance is consistent
-with what we would expect in a completely randomized experiment within
-blocks.
+and a corresponding \(p\)-value of 0.96. This high \(p\)-value indicates
+that the observed level of covariate balance is consistent with what we
+would expect in a completely randomized experiment within blocks. The
+test has \(8\) rather than \(13\) degrees of freedom because the degrees
+of freedom equal the rank of the covariance matrix of the adjusted
+differences \citep[p.~229]{hansenbowers2008}. Because we matched exactly
+on region, the five region indicators are constant within every matched
+set, so their adjusted differences equal zero under every assignment in
+\(\Omega\). These five differences therefore have zero variance and zero
+covariance with the other adjusted differences, and the covariance
+matrix has rank \(8\), the number of remaining covariates.
 
 Despite the high \(p\)-value, there is no guarantee that balance is
 sufficient for as-if randomization. Residual imbalance on observed
@@ -1875,9 +1887,10 @@ the number of treated units within each set, \(m_s\), even if the actual
 assignment mechanism were to consist of \(n_s\) independent assignments.
 For further discussion of this form of ``conditional as-if analysis,''
 see \citet{pashleyetal2021} and \citet[pp.~289--290, fn.
-15]{rosenbaum2017}; \citet[Section 5]{pashleyetal2021} also discuss why
-forming matched sets from the realized assignment complicates
-conditional as-if analysis (see
+15]{rosenbaum2017}. Forming matched sets from the realized assignment
+complicates conditional as-if analysis \citep[Section
+5]{pashleyetal2021}, a problem that \citet{pimentelhuang2024} call
+\(\bm{Z}\)-dependence and that \citet{pimentelyu2024} also examine (see
 \Cref{limitations-and-related-topics-beyond-our-scope}).
 
 We denote by \(\Omega_s\) the set of all possible treatment assignments
@@ -1896,7 +1909,12 @@ In the \texttt{ssafrica.3} set, for example, there are \(4\)
 observations --- \(1\) treated and \(3\) control --- so
 \(\abs{\Omega_s}\) for the \texttt{ssafrica.3} set is
 \(\binom{4}{1} = 4\). The corresponding set of possible assignments with
-this treated count is shown in \Cref{tab: ssafrica.3 assignments}.
+this treated count is shown in \Cref{tab: ssafrica.3 assignments}. The
+column labeled Assignment 3 shows the assignment that actually occurred.
+The other possible assignments --- Assignment 1, Assignment 2, and
+Assignment 4 --- represent cases in which Lesotho, Somalia, or Burundi
+is treated instead of Rwanda. The set excludes any assignments with more
+than \(1\) treated unit.
 
 \singlespacing
 \begin{table}[htbp]
@@ -1919,12 +1937,6 @@ Lesotho & 1 & 0 & 0 & 0 \\
 
 \FloatBarrier
 
-The column labeled Assignment 3 shows the assignment that actually
-occurred. The other possible assignments --- Assignment 1, Assignment 2,
-and Assignment 4 --- represent cases in which Lesotho, Somalia, or
-Burundi is treated instead of Rwanda. The set excludes any assignments
-with more than \(1\) treated unit.
-
 The set of possible treatment assignments across all matched sets, given
 the number treated in each, is
 \(\Omega = \Omega_1 \times \cdots \times \Omega_S\), which consists of
@@ -1936,7 +1948,8 @@ to another is which potential outcomes we would actually observe. In the
 observed Assignment 3, we see Rwanda's treated potential outcome and the
 control potential outcomes of Burundi, Somalia, and Lesotho, but not
 Rwanda's control potential outcome or the treated potential outcomes of
-the others. Under a different assignment, a different set of treated and
+the others. Under a different assignment, such as Assignment 1 in
+\Cref{tab: ssafrica.3 assignments}, a different set of treated and
 control potential outcomes would have been observed. No matter which
 assignment occurs, we observe only partial information about our causal
 targets.
@@ -2003,23 +2016,25 @@ averaged across sets, with each set weighted by its contribution to the
 effective sample size.
 
 Under as-if randomization, the harmonic-mean-weighted
-Difference-in-Means is useful because, as discussed earlier, the
-variance of the within-set Difference-in-Means is minimized --- under
-homogeneous treatment effects --- when the harmonic mean of the numbers
-of treated and control units is largest. As a result, under this model
-of homogeneous individual treatment effects with similar outcome
-variances across sets, a test has greater power when the test places
-more weight on sets with large harmonic means --- that is, sets in which
-the Difference-in-Means is most informative. Weighting sets solely by
-their share of units, by contrast, can overweight large but highly
-lopsided sets and dilute information from more balanced comparisons.
-When effects are heterogeneous, however, the harmonic-mean weights also
-change the quantity being estimated. The harmonic-mean-weighted
-Difference-in-Means estimates a harmonic-mean-weighted average of
-set-level effects, the matched-set analogue of the overlap-weighted
-average effect of \citet{lietal2018}, rather than the ATE targeted in
-the weak framework of
-\Cref{how-do-i-draw-inferences-under-the-weak-framework}.
+Difference-in-Means is useful because, as noted in
+\Cref{how-can-i-apply-rules-for-matches-to-improve-effective-sample-size},
+harmonic-mean weights minimize the variance of the weighted average of
+within-set Differences-in-Means when treatment effects are homogeneous
+and outcome variances are similar across sets. Under these conditions, a
+test has greater power when the test places more weight on sets with
+large harmonic means --- that is, sets in which the Difference-in-Means
+is most informative. Weighting sets solely by their share of units, by
+contrast, can overweight large but highly lopsided sets and dilute
+information from more balanced comparisons. When effects are
+heterogeneous, the choice of weights has no bearing on the validity of a
+test of a sharp null, but the choice may bear on the test's power
+against heterogeneous alternatives and on the interpretation of the
+Hodges--Lehmann estimate at the end of this section. Under as-if
+randomization, the expected value of the harmonic-mean-weighted
+Difference-in-Means is the harmonic-mean-weighted average of set-level
+effects, the matched-set analogue of the overlap-weighted average effect
+of \citet{lietal2018}, rather than the ATE targeted in the weak
+framework of \Cref{how-do-i-draw-inferences-under-the-weak-framework}.
 
 The harmonic-mean-weighted Difference-in-Means also has the practical
 advantage of coinciding with two other common approaches to analyzing
@@ -2036,17 +2051,16 @@ matched data:
   Second, the harmonic-mean-weighted Difference-in-Means coincides with
   the overlap-weighted Difference-in-Means \citep{lietal2018} when
   overlap weights are constructed using the treatment assignment
-  probabilities implied by as-if randomization. Overlap weights weight
-  each control unit by the unit's probability of treatment and each
-  treated unit by \(1\) minus that probability, so that the weighted
-  treated group and the weighted control group share a common covariate
-  distribution that gives the most weight to units with intermediate
-  assignment probabilities. Because the assignment probabilities implied
-  by as-if randomization are constant within each matched set, the
-  resulting overlap weights are constant within the treated units and
-  within the control units of each set, and these overlap weights
-  aggregate exactly to the harmonic-mean weights implied by the matched
-  sets.
+  probabilities implied by as-if randomization. Overlap weighting
+  assigns each control unit a weight equal to the unit's probability of
+  treatment and each treated unit a weight equal to \(1\) minus that
+  probability, so that the weighted treated group and the weighted
+  control group place the same total weight on each matched set. Because
+  the assignment probabilities implied by as-if randomization are
+  constant within each matched set, the resulting overlap weights are
+  constant within the treated units and within the control units of each
+  set, and these overlap weights aggregate to weights proportional to
+  the harmonic-mean weights implied by the matched sets.
 \end{itemize}
 
 To implement a sum statistic equivalent to the harmonic-mean-weighted
@@ -2286,7 +2300,7 @@ then calculate the sum statistic over all possible assignments in
 \NormalTok{  )}
 
 \CommentTok{\# Total possible treatment assignments = product of binomial coefficients}
-\CommentTok{\# (choose m\_s of the n\_s units for treatment in each set and multiply across sets)}
+\CommentTok{\# (choose m\_s of the n\_s units in each set, then multiply across sets)}
 \NormalTok{exact\_n\_assigns }\OtherTok{\textless{}{-}} \FunctionTok{prod}\NormalTok{(}
   \FunctionTok{choose}\NormalTok{(}
     \AttributeTok{n =}\NormalTok{ block\_ns}\SpecialCharTok{$}\NormalTok{n,}
@@ -2408,9 +2422,7 @@ statistics greater than or equal to the observed test statistic.
 \doublespacing
 
 The upper \(p\)-value of a test of the sharp null of no effect against
-the alternative of a larger effect is 0.0346. (Counting the observed
-assignment as one of the draws, \((1 + 346)/(1 + 10{,}000) = 0.0347\),
-gives a \(p\)-value that is valid by construction.)
+the alternative of a larger effect is 0.0346.
 
 In this particular case, unlike in most applications, the matched study
 is small enough to compute the exact \(p\)-value and assess the accuracy
@@ -2577,7 +2589,7 @@ rejection regions.
 \NormalTok{p\_mat\_norm }\OtherTok{\textless{}{-}} \FunctionTok{sapply}\NormalTok{(}\AttributeTok{X =}\NormalTok{ tau\_h\_grid\_norm,}
                      \AttributeTok{FUN =} \ControlFlowTok{function}\NormalTok{(tau\_h) \{}
 
-                       \CommentTok{\# Reconstruct outcomes under null tau\_h and rescale them}
+                       \CommentTok{\# Reconstruct and rescale outcomes under null tau\_h}
 \NormalTok{                       dat\_tau\_h }\OtherTok{\textless{}{-}} \FunctionTok{hm\_stat\_rescale}\NormalTok{(}
                          \AttributeTok{data    =} \FunctionTok{transform}\NormalTok{(}
 \NormalTok{                           data\_matched,}
@@ -2589,34 +2601,39 @@ rejection regions.
 
                        \CommentTok{\# Observed statistic under null tau\_h}
 \NormalTok{                       obs\_stat\_tau\_h }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(}
-\NormalTok{                         dat\_tau\_h}\SpecialCharTok{$}\NormalTok{ldur\_tilde\_shift\_hm\_scaled[dat\_tau\_h}\SpecialCharTok{$}\NormalTok{UN }\SpecialCharTok{==} \DecValTok{1}\NormalTok{]}
+\NormalTok{                         dat\_tau\_h}\SpecialCharTok{$}\NormalTok{ldur\_tilde\_shift\_hm\_scaled[}
+\NormalTok{                           dat\_tau\_h}\SpecialCharTok{$}\NormalTok{UN }\SpecialCharTok{==} \DecValTok{1}\NormalTok{]}
 \NormalTok{                       )}
 
-                       \CommentTok{\# Null expectation and variance of the statistic under tau\_h}
+                       \CommentTok{\# Null expectation and variance under null tau\_h}
 \NormalTok{                       moms\_tau\_h }\OtherTok{\textless{}{-}}\NormalTok{ dat\_tau\_h }\SpecialCharTok{|\textgreater{}}
                          \FunctionTok{group\_by}\NormalTok{(}
 \NormalTok{                           fm}
 \NormalTok{                         ) }\SpecialCharTok{|\textgreater{}}
                          \FunctionTok{summarize}\NormalTok{(}
-                           \AttributeTok{expect   =} \FunctionTok{ev}\NormalTok{(}\AttributeTok{sc =}\NormalTok{ ldur\_tilde\_shift\_hm\_scaled, }\AttributeTok{z =}\NormalTok{ UN,}
-                                         \AttributeTok{m =} \DecValTok{1}\NormalTok{, }\AttributeTok{g =} \DecValTok{1}\NormalTok{, }\AttributeTok{method =} \StringTok{"RK"}\NormalTok{)}\SpecialCharTok{$}\NormalTok{expect,}
-                           \AttributeTok{variance =} \FunctionTok{ev}\NormalTok{(}\AttributeTok{sc =}\NormalTok{ ldur\_tilde\_shift\_hm\_scaled, }\AttributeTok{z =}\NormalTok{ UN,}
-                                         \AttributeTok{m =} \DecValTok{1}\NormalTok{, }\AttributeTok{g =} \DecValTok{1}\NormalTok{, }\AttributeTok{method =} \StringTok{"RK"}\NormalTok{)}\SpecialCharTok{$}\NormalTok{vari,}
+                           \AttributeTok{expect   =} \FunctionTok{ev}\NormalTok{(}\AttributeTok{sc =}\NormalTok{ ldur\_tilde\_shift\_hm\_scaled,}
+                                         \AttributeTok{z =}\NormalTok{ UN, }\AttributeTok{m =} \DecValTok{1}\NormalTok{, }\AttributeTok{g =} \DecValTok{1}\NormalTok{,}
+                                         \AttributeTok{method =} \StringTok{"RK"}\NormalTok{)}\SpecialCharTok{$}\NormalTok{expect,}
+                           \AttributeTok{variance =} \FunctionTok{ev}\NormalTok{(}\AttributeTok{sc =}\NormalTok{ ldur\_tilde\_shift\_hm\_scaled,}
+                                         \AttributeTok{z =}\NormalTok{ UN, }\AttributeTok{m =} \DecValTok{1}\NormalTok{, }\AttributeTok{g =} \DecValTok{1}\NormalTok{,}
+                                         \AttributeTok{method =} \StringTok{"RK"}\NormalTok{)}\SpecialCharTok{$}\NormalTok{vari,}
                            \AttributeTok{.groups  =} \StringTok{"drop"}
 \NormalTok{                         )}
 
                        \CommentTok{\# Standardized statistic under null tau\_h}
-\NormalTok{                       std\_stat\_tau\_h }\OtherTok{\textless{}{-}}\NormalTok{ (obs\_stat\_tau\_h }\SpecialCharTok{{-}} \FunctionTok{sum}\NormalTok{(moms\_tau\_h}\SpecialCharTok{$}\NormalTok{expect)) }\SpecialCharTok{/}
+\NormalTok{                       std\_stat\_tau\_h }\OtherTok{\textless{}{-}}\NormalTok{ (obs\_stat\_tau\_h }\SpecialCharTok{{-}}
+                                            \FunctionTok{sum}\NormalTok{(moms\_tau\_h}\SpecialCharTok{$}\NormalTok{expect)) }\SpecialCharTok{/}
                          \FunctionTok{sqrt}\NormalTok{(}\FunctionTok{sum}\NormalTok{(moms\_tau\_h}\SpecialCharTok{$}\NormalTok{variance))}
 
-                       \CommentTok{\# Upper{-}tail and lower{-}tail Normal{-}approximation p{-}values}
+                       \CommentTok{\# Upper{-} and lower{-}tail Normal p{-}values}
                        \FunctionTok{c}\NormalTok{(}
-                         \AttributeTok{upper\_tail =} \FunctionTok{pnorm}\NormalTok{(}\AttributeTok{q =}\NormalTok{ std\_stat\_tau\_h, }\AttributeTok{lower.tail =} \ConstantTok{FALSE}\NormalTok{),}
+                         \AttributeTok{upper\_tail =} \FunctionTok{pnorm}\NormalTok{(}\AttributeTok{q =}\NormalTok{ std\_stat\_tau\_h,}
+                                            \AttributeTok{lower.tail =} \ConstantTok{FALSE}\NormalTok{),}
                          \AttributeTok{lower\_tail =} \FunctionTok{pnorm}\NormalTok{(}\AttributeTok{q =}\NormalTok{ std\_stat\_tau\_h)}
 \NormalTok{                       )}
 \NormalTok{                     \})}
 
-\CommentTok{\# Upper{-}tail confidence set: retain all tau\_h with upper{-}tail p{-}value \textgreater{}= alpha}
+\CommentTok{\# Upper{-}tail confidence set: retain all tau\_h with upper{-}tail p \textgreater{}= alpha}
 \NormalTok{cs\_sharp\_upper\_tail\_norm }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}
   \AttributeTok{lower =} \FunctionTok{min}\NormalTok{(}
 \NormalTok{    tau\_h\_grid\_norm[p\_mat\_norm[}\StringTok{"upper\_tail"}\NormalTok{, ] }\SpecialCharTok{\textgreater{}=}\NormalTok{ alpha]}
@@ -2627,7 +2644,8 @@ rejection regions.
 \CommentTok{\# Two{-}sided confidence set: retain tau\_h only if neither one{-}sided test}
 \CommentTok{\# rejects at level alpha / 2}
 \NormalTok{cs\_sharp\_two\_sided\_norm\_vals }\OtherTok{\textless{}{-}}\NormalTok{ tau\_h\_grid\_norm[}
-\NormalTok{  p\_mat\_norm[}\StringTok{"upper\_tail"}\NormalTok{, ] }\SpecialCharTok{\textgreater{}=}\NormalTok{ alpha }\SpecialCharTok{/} \DecValTok{2} \SpecialCharTok{\&}\NormalTok{ p\_mat\_norm[}\StringTok{"lower\_tail"}\NormalTok{, ] }\SpecialCharTok{\textgreater{}=}\NormalTok{ alpha }\SpecialCharTok{/} \DecValTok{2}
+\NormalTok{  p\_mat\_norm[}\StringTok{"upper\_tail"}\NormalTok{, ] }\SpecialCharTok{\textgreater{}=}\NormalTok{ alpha }\SpecialCharTok{/} \DecValTok{2} \SpecialCharTok{\&}
+\NormalTok{    p\_mat\_norm[}\StringTok{"lower\_tail"}\NormalTok{, ] }\SpecialCharTok{\textgreater{}=}\NormalTok{ alpha }\SpecialCharTok{/} \DecValTok{2}
 \NormalTok{]}
 
 \CommentTok{\# Two{-}sided confidence set summarized by its bounds}
@@ -2654,7 +2672,7 @@ approximation to the null randomization distribution.
 \begin{Highlighting}[]
 \CommentTok{\# Grid of constant{-}effect null values (sharp framework)}
 \NormalTok{tau\_h\_grid }\OtherTok{\textless{}{-}} \FunctionTok{seq}\NormalTok{(}
-    \AttributeTok{from =} \SpecialCharTok{{-}}\FloatTok{0.5}\NormalTok{,}
+  \AttributeTok{from =} \SpecialCharTok{{-}}\FloatTok{0.5}\NormalTok{,}
   \AttributeTok{to =} \FloatTok{1.5}\NormalTok{,}
   \AttributeTok{by =} \FloatTok{0.0001}
 \NormalTok{)}
@@ -2771,9 +2789,9 @@ Difference-in-Means is
 
 These weights are appealing because, under as-if randomization, the
 resulting Difference-in-Means is an unbiased estimator of the ATE.
-Formally, the expected value of the estimator --- i.e., the average of
-\(\hat{\tau}\) taken over all treatment assignments consistent with the
-matched design and their associated probabilities --- equals the true
+Formally, the estimator's expected value --- i.e., the average of
+\(\hat{\tau}\) taken over all treatment assignments in \(\Omega\), each
+of which is equally likely under as-if randomization --- equals the true
 ATE. Nevertheless, although correct in expectation, the
 Difference-in-Means can vary substantially across assignments. In any
 given assignment, the estimate may lie far from the target ATE.
@@ -2785,7 +2803,7 @@ introduced a canonical variance estimator. Under as-if randomization,
 this estimator is exactly unbiased when individual treatment effects are
 homogeneous; otherwise, it is conservative, meaning its expected value
 is greater than or equal to the true variance of the
-Difference-in-Means, although subsequent refinements reduce this
+Difference-in-Means, although subsequent refinements can reduce this
 conservativeness while maintaining validity
 \citep[see][]{robins1988, aronowetal2014, harshawetal2024}. In
 principle, we could apply this approach by estimating the variance of
@@ -2810,13 +2828,15 @@ designs.
 
 The first approach in \citet{pashleymiratrix2021}, \texttt{hybrid\_m},
 requires at least two matched sets of each unique set size in the data.
-The second approach, \texttt{hybrid\_p}, permits variation in set sizes
-as long as no single set contains half or more of the units in sets with
-only one treated or one control unit (here, all units). Our matched
-design meets the condition for the second approach, not the first. We
-therefore estimate the variance using \texttt{hybrid\_p} through the
-\texttt{blkvar} package, the companion software for
-\citet{pashleymiratrix2021}.
+The second approach, \texttt{hybrid\_p}, permits variation in set sizes,
+provided that no single set with one treated or one control unit
+contains half or more of the units in all such sets. In our design,
+every set has one treated or one control unit, so the condition requires
+only that no set contain half or more of the 36 matched units, and our
+largest set contains 5. Our matched design meets the condition for the
+second approach, not the first. We therefore estimate the variance using
+\texttt{hybrid\_p} through the \texttt{blkvar} package, the companion
+software for \citet{pashleymiratrix2021}.
 
 \singlespacing
 
@@ -2872,7 +2892,7 @@ GitHub repository.
 \doublespacing
 
 The function takes as inputs the set-specific treatment effect estimates
-and the number of units in each set, and it returns a single scalar
+and the number of units in each set, and returns a single scalar
 representing the estimated variance. We compute the set-specific
 estimates and corresponding set sizes, and then pass these two vectors
 as inputs to \texttt{fine\_strat\_var\_est()}.
@@ -3151,9 +3171,9 @@ The separable approximation is a useful shortcut, but the separable
 approximation's \(p\)-value is never larger than, and typically slightly
 smaller than, the worst-case \(p\)-value over \(\mathcal{U}_{+}\)
 computed with the same Normal approximation
-\citep[p.~2321]{rosenbaum2018}. No result guarantees that the difference
-between these two \(p\)-values is negligible in designs with relatively
-few matched sets or with highly unbalanced set sizes.
+\citep[pp.~2321--2322]{rosenbaum2018}. No result guarantees that the
+difference between these two \(p\)-values is negligible in designs with
+relatively few matched sets or with highly unbalanced set sizes.
 \citet{rosenbaum2018} therefore introduces a refinement that is never
 less conservative than this worst case, so that the resulting test is
 valid whenever the Normal approximation is adequate.
@@ -3193,7 +3213,7 @@ We can code this function in \texttt{R} as follows.
   \CommentTok{\# obs\_stat      : observed value of the test statistic}
   \CommentTok{\# alpha         : test size (e.g., 0.05 gives kappa about 1.64)}
 
-    \CommentTok{\# Normal critical value (not the set intercept kappa\_s in (3))}
+  \CommentTok{\# Normal critical value (not the set intercept kappa\_s in (3))}
 \NormalTok{  kappa  }\OtherTok{\textless{}{-}} \FunctionTok{qnorm}\NormalTok{(}
     \AttributeTok{p =} \DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ alpha}
 \NormalTok{  )}
@@ -3204,7 +3224,7 @@ We can code this function in \texttt{R} as follows.
 \NormalTok{  )}
 
   \CommentTok{\# Gap between null expectation and observed statistic}
-    \CommentTok{\# (null\_expect {-} obs\_stat) + Normal buffer (kappa * null\_sd)}
+  \CommentTok{\# (null\_expect {-} obs\_stat) + Normal buffer (kappa * null\_sd)}
 \NormalTok{  obj\_val }\OtherTok{\textless{}{-}}\NormalTok{ (null\_expect }\SpecialCharTok{{-}}\NormalTok{ obs\_stat) }\SpecialCharTok{+}\NormalTok{ kappa }\SpecialCharTok{*}\NormalTok{ null\_sd}
 
   \FunctionTok{return}\NormalTok{(obj\_val)}
@@ -3242,39 +3262,42 @@ we previously rejected the sharp null hypothesis that \(\tau_h = 0\) for
 all units at \(\Gamma = 1\), the function evaluated at \(\Gamma = 1\) is
 indeed nonpositive.
 
-The crucial property of this function is concavity. Although
-\(\mathcal{U}_{+}\) is a finite set, the function extends to a concave
-function of continuous weights placed on the candidate configurations
-within each set, because the null expectation and variance are linear in
-these weights and the only nonlinear term is the square root of the
-variance \citep[p.~2323]{rosenbaum2018}. Hence a tangent drawn at
-\emph{any} \(\bm{u} \in \mathcal{U}_+\) lies above the function at
-\emph{every} configuration in \(\mathcal{U}_{+}\). \citet{rosenbaum2018}
-draws the tangent line at the configuration of \(\bm{u}\) chosen by the
-separable approximation. Because the original function is concave, this
-tangent line provides a global upper bound on the function for all
-candidate configurations of hidden confounding. If this upper bound is
-nonpositive, then the function itself must also be nonpositive.
-Consequently, rather than maximizing a curved function over
-\(\mathcal{U}_{+}\), we can instead maximize a linear function, which
-greatly simplifies the optimization.
+The crucial property of this function is concavity. For a configuration
+\(\bm{u} \in \mathcal{U}_{+}\), let \(\mu\) and \(\nu\) denote the null
+expectation and null variance of the test statistic, and let \(t\)
+denote the observed test statistic. For \(\alpha = 0.05\), the function
+is \(\mu - t + 1.64\sqrt{\nu}\), which is concave in \((\mu, \nu)\)
+because the function is linear in \(\mu\) and \(\sqrt{\nu}\) is concave
+in \(\nu\). Hence the tangent plane to this function at any point
+\((\mu^{*}, \nu^{*})\) with \(\nu^{*} > 0\) lies on or above the
+function at every \((\mu, \nu)\), and in particular at the
+\((\mu, \nu)\) of every configuration in \(\mathcal{U}_{+}\).
+\citet[pp.~2322--2323]{rosenbaum2018} obtains this linear bound as a
+first-order Taylor approximation at the configuration chosen by the
+separable approximation. If the maximum of the tangent plane over
+\(\mathcal{U}_{+}\) is nonpositive, then the function itself is
+nonpositive for every \(\bm{u} \in \mathcal{U}_{+}\). Consequently,
+rather than maximizing a nonlinear function over \(\mathcal{U}_{+}\), we
+can instead maximize a linear function, which greatly simplifies the
+optimization.
 
-The tangent is easy to work with because it is linear in the
-set-specific null expectations and variances, so it decomposes
-additively across matched sets. We can therefore determine, within each
-matched set separately, which hidden-bias pattern makes the tangent line
-as large as possible, and then add up these set-specific contributions.
-The resulting sum is the maximum value of the tangent line over all
+The tangent plane is easy to work with because it is linear in \(\mu\)
+and \(\nu\), which are sums of set-specific null expectations and
+variances, so the tangent plane decomposes additively across matched
+sets. We can therefore determine, within each matched set separately,
+which hidden-bias pattern makes the tangent plane as large as possible,
+and then add up these set-specific contributions. The resulting sum is
+the maximum value of the tangent plane over all
 \(\bm{u} \in \mathcal{U}_{+}\).
 
-Recalling that the original function is concave, if the maximum value of
-the tangent-line approximation over \(\bm{u} \in \mathcal{U}_{+}\) is at
-or below zero, then the original function itself must be nonpositive for
-every \(\bm{u} \in \mathcal{U}_{+}\). Therefore, within the Normal
-approximation, we can safely base the decision to reject the null
-hypothesis or not on the Taylor approximation. Although valid, this
-procedure can be conservative, because the tangent line may remain above
-zero even when the original function would be below zero at the true
+Because the function lies on or below the tangent plane, if the maximum
+value of the tangent plane over \(\bm{u} \in \mathcal{U}_{+}\) is at or
+below zero, then the function itself must be nonpositive for every
+\(\bm{u} \in \mathcal{U}_{+}\). Therefore, provided that the Normal
+approximation is adequate, we can safely base the decision to reject the
+null hypothesis or not on the Taylor approximation. Although valid, this
+procedure can be conservative, because the tangent plane may remain
+above zero even when the function would be below zero at the true
 worst-case \(\bm{u}\). By contrast, the separable approximation can be
 liberal, as it may reject even when the worst-case value of the function
 is positive.
@@ -3314,7 +3337,7 @@ approximation yields a positive value, leading to non-rejection.
       \AttributeTok{z           =}\NormalTok{ data\_matched}\SpecialCharTok{$}\NormalTok{UN,                   }\CommentTok{\# treatment indicator}
       \AttributeTok{st          =}\NormalTok{ data\_matched}\SpecialCharTok{$}\NormalTok{fm,                   }\CommentTok{\# matched set}
       \AttributeTok{gamma       =}\NormalTok{ g,                                 }\CommentTok{\# Gamma}
-            \AttributeTok{alternative =} \StringTok{"greater"}\NormalTok{,                         }\CommentTok{\# upper{-}tail test}
+      \AttributeTok{alternative =} \StringTok{"greater"}\NormalTok{,                         }\CommentTok{\# upper{-}tail test}
       \AttributeTok{level       =}\NormalTok{ alpha,                             }\CommentTok{\# test level for cvA}
       \AttributeTok{detail      =} \ConstantTok{TRUE} \CommentTok{\# return intermediate quantities}
 \NormalTok{    )}
@@ -3376,7 +3399,17 @@ a larger effect at the \(\alpha = 0.05\) level for values of \(\Gamma\)
 of approximately 1.14 or larger.
 
 \Cref{fig:unnamed-chunk-56} illustrates this comparison and clarifies
-how the two approaches relate across values of \(\Gamma\).
+how the two approaches relate across values of \(\Gamma\). The results
+in the shaded vertical band --- corresponding to values of \(\Gamma\)
+for which the two approaches yield different conclusions (between 1.1361
+and 1.1399) --- show that the two methods diverge in exactly the way one
+would expect. Over this range of \(\Gamma\) values, the Taylor series
+margin lies just above zero, indicating no rejection of the sharp null,
+while the separable approximation yields \(p\)-values just below
+\(0.05\), indicating rejection. This pattern reflects the relative
+conservatism of the Taylor series approximation, since rejection under
+the Taylor series approach implies rejection under the separable
+approach, but not vice versa.
 
 \singlespacing
 \begin{figure}[H]
@@ -3388,17 +3421,6 @@ how the two approaches relate across values of \(\Gamma\).
 \caption{Sensitivity analysis for the sharp null of no individual treatment effect for all units. The top panel shows upper one-sided $p$-values under the separable approximation across values of $\Gamma$; the bottom panel reports, across the same values of $\Gamma$, the corresponding Taylor series margin, with the zero line marking the rejection boundary. The shaded vertical band highlights values of $\Gamma$ for which the separable approximation and the Taylor series approximation lead to different rejection decisions.}\label{fig:unnamed-chunk-56}
 \end{figure}
 \doublespacing
-
-The results in the shaded vertical band --- corresponding to values of
-\(\Gamma\) for which the two approaches yield different conclusions
-(between 1.1361 and 1.1399) --- show that the two methods diverge in
-exactly the way one would expect. Over this range of \(\Gamma\) values,
-the Taylor series margin lies just above zero, indicating no rejection
-of the sharp null, while the separable approximation yields \(p\)-values
-just below \(0.05\), indicating rejection. This pattern reflects the
-relative conservatism of the Taylor series approximation, since
-rejection under the Taylor series approach implies rejection under the
-separable approach, but not vice versa.
 
 Both approaches to sensitivity analysis rely on multiple approximations.
 For example, the separable approximation is used to approximate the
@@ -3421,7 +3443,7 @@ the worst-case \(p\)-value. Our study is small enough to compute the
 The exact worst-case \(p\)-value first exceeds \(0.05\) at
 \(\Gamma \approx 1.12\), compared with about 1.14 under the Normal
 approximation, so with only 12 matched sets the Normal approximation
-somewhat overstates the robustness of our conclusion.
+slightly overstates the robustness of our conclusion.
 
 \subsubsection{How Do Inferences under the Weak Framework Change under
 These
@@ -3491,38 +3513,41 @@ T_{\Gamma}(\tau_0) = \sum \limits_{s = 1}^S (n_s/n) \left(\frac{1}{\abs{\Omega_s
 bound in \eqref{eq: prob bounds} works against rejecting the null. Each
 set's Difference-in-Means is first centered at the null ATE. When the
 centered value \(\hat{\tau}_s - \tau_0\) is positive, and so counts as
-evidence against the null, dividing it by the largest probability that
-\(\Gamma\) allows makes the set's contribution as small as possible.
-When the centered value is negative, dividing it by the smallest
-probability makes the set's contribution as negative as possible. When
-testing the null against the alternative of a smaller ATE, the two
-substitutions are reversed. At \(\Gamma = 1\), both bounds equal
-\(1/\abs{\Omega_s}\), and \(T_{\Gamma}(\tau_0)\) reduces to
+evidence against the null in favor of a larger ATE, dividing it by the
+largest probability that \(\Gamma\) allows makes the set's contribution
+as small as possible. When the centered value is negative, dividing it
+by the smallest probability makes the set's contribution as negative as
+possible. When testing the null against the alternative of a smaller
+ATE, the two substitutions are reversed. At \(\Gamma = 1\), both bounds
+equal \(1/\abs{\Omega_s}\), and \(T_{\Gamma}(\tau_0)\) reduces to
 \(\hat{\tau} - \tau_0\).
 
 Technically, \citet[Section 4.1]{fogarty2023} works with a rescaled
 version of this statistic, \(\tilde{K}_{\Gamma}^{(\tau_0)}\), which is
 exactly twice \(T_{\Gamma}(\tau_0)\). The rescaling does not change the
 test, because the standard error used to standardize the statistic is
-multiplied by the same factor of 2. The worst-case IPW form of the
-statistic comes from the preprint version of \citet{fogarty2023}, which
-describes each matched set's quantity
+multiplied by the same factor of 2. The worst-case IPW interpretation
+comes from the preprint version of \citet{fogarty2023}, which describes
+each matched set's quantity
 \((1/\abs{\Omega_s})(\hat{\tau}_s - \tau_0)/\tilde{p}_s\) in
 \eqref{eq: worst-case IPW} as a worst-case inverse probability weighted
-estimator \citep[Sections 5.2--5.3]{fogarty2020arxiv}.
+estimator \citep[Sections 5.2--5.4]{fogarty2020arxiv}.
 
 To see the value of this procedure, consider testing a null hypothesis
-about the ATE against the alternative of a larger ATE.
-\citet{fogarty2023} shows that, for any \(\Gamma \geq 1\), the expected
-value of this worst-case IPW Difference-in-Means --- defined under
-whatever the true distribution on \(\Omega\) consistent with that
-\(\Gamma\) happens to be --- is always less than or equal to zero when
-the null is true, because the statistic is centered at \(\tau_0\).
-Conversely, when testing against the alternative of a smaller ATE, this
-expectation is greater than or equal to zero when the null is true.
-Importantly, these properties hold for all possible values of \(\bm{u}\)
-and all configurations of potential outcomes that are consistent with
-the null hypothesis.
+about the ATE against the alternative of a larger ATE. The construction
+of \(T_{\Gamma}(\tau_0)\) has two features. First, each set's
+Difference-in-Means is centered at \(\tau_0\). Second, each set uses
+whichever bound in \eqref{eq: prob bounds} works against rejection. As a
+consequence, \citet[Section 4.1 and Lemma 3]{fogarty2023} shows that,
+for any \(\Gamma \geq 1\), the expected value of this worst-case IPW
+Difference-in-Means --- defined under whatever the true distribution on
+\(\Omega\) consistent with that \(\Gamma\) happens to be --- is always
+less than or equal to zero when the null is true. Conversely, when
+testing against the alternative of a smaller ATE, this expectation is
+greater than or equal to zero when the null is true. Importantly, these
+properties hold for all possible values of \(\bm{u}\) and all
+configurations of potential outcomes that are consistent with the null
+hypothesis.
 
 How does this property of the expected value ensure a valid test in
 sufficiently large studies? Focusing on the case of testing against a
@@ -3540,10 +3565,11 @@ For any fixed \(\Gamma \geq 1\), an analogue of the variance estimator
 from \citet{fogarty2018} (discussed in
 \Cref{how-do-i-draw-inferences-under-the-weak-framework}) is
 conservative for the true variance of the worst-case IPW
-Difference-in-Means, in that the estimator's expected value is at least
-that variance and, as the number of matched sets grows, the estimator's
-ratio to that variance converges to a value of at least \(1\)
-\citep[Lemma 2]{fogarty2023}. As a result, in large studies, using this
+Difference-in-Means in two respects. The variance estimator's expected
+value is at least as large as the true variance, and, as the number of
+matched sets grows, the variance estimator's ratio to the true variance
+converges in probability to a value of at least \(1\) \citep[Lemma 2 and
+p.~2202]{fogarty2023}. As a result, in large studies, using this
 variance estimator tends to reduce the magnitude of the standardized
 test statistic --- the worst-case IPW Difference-in-Means, which is
 already centered at the null ATE, divided by the square root of the
@@ -3558,8 +3584,8 @@ Together, these two properties work in the same direction:
   The expected value is at or below zero, keeping the center of the
   distribution at or shifted away from the upper tail, and
 \item
-  the variance estimate tends to be too large, which pulls the
-  standardized statistic closer to zero.
+  the variance estimator tends to overestimate the true variance, which
+  pulls the standardized statistic closer to zero.
 \end{itemize}
 
 As a result, when the null is true, the probability that the
@@ -3568,13 +3594,14 @@ distribution --- that is, the probability of falsely rejecting the null
 --- remains at or below the nominal significance level. Hence, the test
 is conservative (valid) asymptotically, as the number of matched sets
 grows \citep[Theorem 2]{fogarty2023}. With few matched sets, as in our
-application with 12, the Normal approximation and the variance estimator
-can both be poor, so the test can over-reject, and readers should regard
-the resulting \(p\)-values as approximate. Analogous reasoning applies
-when testing against the alternative of a smaller effect. When the null
-hypothesis is true, the probability that the standardized value falls in
-the lower tail of the standard Normal distribution also stays at or
-below the nominal significance level.
+application with 12, the Normal approximation may be inaccurate, the
+variance estimator may be imprecise, and the guarantees above, which are
+asymptotic, need not hold. The test can then over-reject, so readers
+should regard the resulting \(p\)-values as approximate. Analogous
+reasoning applies when testing against the alternative of a smaller
+effect. When the null hypothesis is true, the probability that the
+standardized value falls in the lower tail of the standard Normal
+distribution also stays at or below the nominal significance level.
 
 To implement this approach from \citet{fogarty2023}, we first source
 from the GitHub repository an \texttt{R} function that, for a fixed
@@ -3603,9 +3630,10 @@ statistic \(T_{\Gamma}(\tau_0)\) in \eqref{eq: worst-case IPW}, we
 average the set-specific values using weights equal to each set's share
 of the total number of units, \(n_s/n\). Because
 \texttt{worst\_case\_IPW()} already centers each set's
-Difference-in-Means at the null ATE before applying the bounds, no
-further centering is needed. Finally, we standardize this statistic
-using the conservative variance estimator of \citet{fogarty2018} from
+Difference-in-Means at the null ATE before applying the bounds in
+\eqref{eq: prob bounds} on the assignment probability, no further
+centering is needed. Finally, we standardize this statistic using the
+conservative variance estimator of \citet{fogarty2018} from
 \Cref{how-do-i-draw-inferences-under-the-weak-framework}, and compare
 the resulting standardized test statistic to the standard Normal
 distribution to obtain \(p\)-values. For the rescaled statistic
@@ -3613,7 +3641,7 @@ distribution to obtain \(p\)-values. For the rescaled statistic
 different values in the projection step of the variance estimator. Any
 fixed choice of these values gives a conservative variance estimator
 \citep[Proposition 1]{fogarty2018}, and on our data the two choices give
-nearly identical sensitivity values (1.1756 and 1.1753 on our grid).
+nearly identical sensitivity values (1.1756 and 1.1753).
 
 \singlespacing
 
@@ -3639,7 +3667,7 @@ nearly identical sensitivity values (1.1756 and 1.1753 on our grid).
     \FunctionTok{group\_by}\NormalTok{(}
 \NormalTok{      fm}
 \NormalTok{    ) }\SpecialCharTok{|\textgreater{}}
-        \FunctionTok{summarize}\NormalTok{(}
+    \FunctionTok{summarize}\NormalTok{(}
       \AttributeTok{n      =} \FunctionTok{n}\NormalTok{(),                        }\CommentTok{\# Set size n\_s}
       \AttributeTok{weight =}\NormalTok{ n }\SpecialCharTok{/} \FunctionTok{nrow}\NormalTok{(data\_matched),     }\CommentTok{\# Weight n\_s / n}
       \AttributeTok{est    =} \FunctionTok{worst\_case\_IPW}\NormalTok{(             }\CommentTok{\# Worst{-}case IPW in set s}
@@ -3695,7 +3723,19 @@ nearly identical sensitivity values (1.1756 and 1.1753 on our grid).
 \doublespacing
 
 \Cref{fig:unnamed-chunk-59} plots the upper one-sided \(p\)-values
-corresponding to \(\Gamma\) values from 1 to 1.5.
+corresponding to \(\Gamma\) values from 1 to 1.5. Under as-if
+randomization (\(\Gamma = 1\)), we find evidence of a positive average
+effect; the \(p\)-value at \(\Gamma = 1\) in \Cref{fig:unnamed-chunk-59}
+is 0.036, rather than the 0.037 reported in
+\Cref{how-do-i-draw-inferences-under-the-weak-framework}, because the
+sensitivity analysis estimates the variance with the estimator of
+\citet{fogarty2018} instead of \texttt{hybrid\_p}. This conclusion is
+sensitive to departures from as-if randomization. Our qualitative
+conclusion about the null hypothesis that the ATE equals zero changes at
+\(\Gamma \approx 1.18\) (1.1756). This sensitivity value is similar to
+the sensitivity value for the sharp null of no effect, but the two
+analyses use different test statistics, variance calculations, and
+approximations.
 
 \singlespacing
 \begin{figure}[H]
@@ -3708,37 +3748,21 @@ corresponding to \(\Gamma\) values from 1 to 1.5.
 \end{figure}
 \doublespacing
 
-Under as-if randomization (\(\Gamma = 1\)), we find evidence of a
-positive average effect; the \(p\)-value at \(\Gamma = 1\) in
-\Cref{fig:unnamed-chunk-59} is 0.036, rather than the 0.037 reported in
-\Cref{how-do-i-draw-inferences-under-the-weak-framework}, because the
-sensitivity analysis estimates the variance with the estimator of
-\citet{fogarty2018} instead of \texttt{hybrid\_p}. This evidence is
-sensitive to departures from as-if randomization. Our qualitative
-conclusion about the null hypothesis that the ATE equals zero changes at
-\(\Gamma \approx 1.18\) (1.1756 on our grid). This sensitivity value is
-similar to the sensitivity value for the sharp null of no effect, but
-the two analyses use different test statistics, variance calculations,
-and approximations, so readers should not take the small difference
-between the two sensitivity values as evidence that the weak-null
-conclusion is more robust. With only 12 matched sets, both analyses rest
-on fragile Normal approximations, and we regard both sensitivity values
-as rough.
-
 This sensitivity analysis guarantees (in large studies) validity across
 \emph{all} configurations of potential outcomes consistent with the weak
 null. The price of this guarantee is conservativeness. If effects are in
-fact constant, the size of the test is strictly below \(\alpha\) in
-designs other than matched pairs \citep[Theorem 2]{fogarty2023}. By
-contrast, \citet{fogarty2023} also describes, and recommends, an
-alternative sensitivity analysis that is asymptotically exact when
-effects are constant but is valid for the weak null only under an
-additional condition that jointly restricts the potential outcomes and
-the pattern of hidden bias, a condition that researchers may regard as
-plausible \citep[Theorem 1 and Condition 1]{fogarty2023}. The
-alternative sensitivity analysis can produce smaller \(p\)-values, but
-at the cost of forfeiting validity for certain (possibly unrealistic)
-combinations of potential outcomes and hidden bias.
+fact constant and \(\Gamma > 1\), the test's limiting probability of
+rejection is strictly below \(\alpha\), except in matched-pair designs
+\citep[Theorem 2]{fogarty2023}. By contrast, \citet{fogarty2023} also
+describes, and recommends, an alternative sensitivity analysis that is
+asymptotically sharp when effects are constant, and whose validity for
+the weak null is guaranteed under an additional condition that jointly
+restricts the potential outcomes and the pattern of hidden bias, a
+condition that researchers may regard as plausible \citep[Theorem 1 and
+Condition 1]{fogarty2023}. The alternative sensitivity analysis can
+produce smaller \(p\)-values, but at the cost of forfeiting validity for
+certain (possibly unrealistic) combinations of potential outcomes and
+hidden bias.
 
 \section{Conclusion}\label{conclusion}
 
@@ -3746,13 +3770,13 @@ We have now completed the full matching pipeline. We began by
 constructing matched sets and then conducted inference under the as-if
 randomization assumption, treating the matched design as a collection of
 completely randomized experiments within blocks. We examined inference
-under both the sharp and weak frameworks --- corresponding,
-respectively, to unit-level causal effects and average effects --- and
-then assessed the sensitivity of these inferences to potential
-violations of the as-if randomization assumption. The embedded code,
-accompanied by extensive comments and illustrated through the running
-example from \citet{gilligansergenti2008}, is intended to be readily
-adapted by practitioners to their own datasets.
+under both the sharp framework, which concerns the effect for every
+unit, and the weak framework, which concerns the average effect. We then
+assessed the sensitivity of these inferences to potential violations of
+the as-if randomization assumption. The embedded code, accompanied by
+extensive comments and illustrated through the running example from
+\citet{gilligansergenti2008}, is intended to be readily adapted by
+practitioners to their own datasets.
 
 \subsection{Limitations and Related Topics Beyond Our
 Scope}\label{limitations-and-related-topics-beyond-our-scope}
@@ -3804,7 +3828,8 @@ Several omissions are specific to matching methodology itself:
   balance constraints such as fine and near-fine balance
   \citep{rosenbaumetal2007, yangetal2012, yu2023, pimenteletal2015a, pimenteletal2015b},
   which enforce exact or nearly exact equality of the marginal
-  distributions of selected nominal covariates.
+  distributions of selected nominal covariates (categorical covariates
+  with unordered categories).
 \item
   Second, we have not discussed the use of \textbf{prognostic
   covariates} identified using pilot or external data. Such approaches
@@ -3876,14 +3901,18 @@ Several omissions are specific to matching methodology itself:
   ``assignment to treatment group on the basis of a covariate''
   \citep{rubin1977}, where matched set membership plays the role of the
   covariate. This analogy treats set membership as fixed, but because
-  matching uses the realized treatment assignment, other assignments can
-  produce different matched sets. In our application, permuting
-  treatment within any single matched set and re-running our matching
-  code produces a different matched structure. Assignments that would
-  have produced a different matched structure do not belong in the
-  reference distribution, and the standard justification for permuting
-  treatments within sets requires exact matching on all matching
-  variables \citep[Section 5]{pashleyetal2021}. In the simulations of
+  matching uses the realized treatment assignment, other assignments,
+  including those in \(\Omega\) that permute treatment within the
+  realized sets, can produce different matched sets. In our application,
+  permuting treatment within any single matched set and re-running our
+  matching code produces a different matched structure. Strictly,
+  assignments that would have produced a different matched structure do
+  not belong in the reference distribution. \citet[Section
+  5]{pashleyetal2021} show that exact matching on the covariates that
+  determine treatment justifies the usual permutation analysis by a
+  conditioning argument and that approximate matching does not.
+  \citet[p.~276]{pashleyetal2021} add, however, that this distinction
+  may matter more in theory than in practice. In the simulations of
   \citet{pimentelhuang2024} and \citet{pimentelyu2024}, propensity score
   calipers reduced, but did not always remove, the resulting excess Type
   I error. We thank Samuel Pimentel for helpful discussions of
