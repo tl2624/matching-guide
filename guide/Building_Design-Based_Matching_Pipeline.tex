@@ -184,20 +184,6 @@
 \newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
 \newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
 
-\usepackage{booktabs}
-\usepackage{longtable}
-\usepackage{array}
-\usepackage{multirow}
-\usepackage{wrapfig}
-\usepackage{float}
-\usepackage{colortbl}
-\usepackage{pdflscape}
-\usepackage{tabu}
-\usepackage{threeparttable}
-\usepackage{threeparttablex}
-\usepackage[normalem]{ulem}
-\usepackage{makecell}
-\usepackage{xcolor}
 \usepackage{bookmark}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
@@ -599,12 +585,12 @@ Covariates?}\label{how-do-i-measure-similarity-on-my-chosen-covariates}
 
 In the simplest terms, matching is about ensuring apples-to-apples,
 rather than apples-to-oranges, comparisons between treated and control
-observations \citep{rubinwaterman2006}. To create matched sets in which
-treated and control groups are similar in their covariates, we first
-need a distance measure that quantifies how close any two observations
-are. With such a measure in hand, we can then construct sets of treated
-and control observations that are close on this measure --- i.e.,
-apples-to-apples in their pre-treatment characteristics.
+observations \citep[see][]{rubinwaterman2006}. To create matched sets in
+which treated and control groups are similar in their covariates, we
+first need a distance measure that quantifies how close any two
+observations are. With such a measure in hand, we can then construct
+sets of treated and control observations that are close on this measure
+--- i.e., apples-to-apples in their pre-treatment characteristics.
 
 We record the distances between treated and control units in a distance
 matrix, in which the rows correspond to treated units and the columns to
@@ -649,7 +635,8 @@ outcome of interest in \citet{gilligansergenti2008}, the log duration of
 the peace period (\texttt{ldur}) that countries would potentially
 experience with or without a UN intervention. This prognostic value of
 covariates can provide an additional reason to match on them
-\citep{hansen2008a, salesetal2018}.
+\citep{hansen2008a} or to adjust for them after matching
+\citep{salesetal2018}.
 
 There are many ways to measure the distance between a treated and a
 control unit. For example, we might compare units using the Euclidean
@@ -1839,8 +1826,11 @@ and substantive goals.
   units, making the ATE a more relevant target in many settings.
   Nevertheless, tests of a constant effect can provide a useful
   approximation to a more complex hypothesis with heterogeneous effects
-  \citep[pp.~44--46]{rosenbaum2010}, and such tests remain valid for a
-  range of bounded but heterogeneous effects \citep{caugheyetal2023}.
+  \citep[pp.~44--46]{rosenbaum2010}, and such tests remain valid for
+  bounded null hypotheses, under which heterogeneous effects all lie on
+  one side of the hypothesized constant, for a broad class of test
+  statistics that includes the Difference-in-Means \citep[Theorems
+  1--2]{caugheyetal2023}.
 \end{itemize}
 
 \paragraph{The Assignment Process as the Basis for
@@ -2993,9 +2983,10 @@ first by matched set and then by unit within set, with each \(u_{si}\)
 constrained to lie in the interval from \(0\) to \(1\). Although the
 restriction that each element of \(\bm{u}\) is between 0 and 1 may seem
 strong, \citet[p.~300, fn. 33]{rosenbaum2017} shows that any departure
-from complete random assignment within blocks can be represented by such
-a \(\bm{u}\) in the sense that as-if randomization would hold if we had
-access to and exactly matched on this \(\bm{u}\).
+from complete random assignment within blocks that leaves every unit's
+probability of treatment strictly between 0 and 1 can be represented by
+such a \(\bm{u}\) in the sense that as-if randomization would hold if we
+had access to and exactly matched on this \(\bm{u}\).
 
 \citet{rosenbaum1987a} and \citet{rosenbaumkrieger1990} then propose a
 model in which each unit's independent probability of treatment
@@ -3137,7 +3128,7 @@ within each matched set, rather than searching over all possible
 combinations across sets. The resulting \(\bm{u}\) may not give the
 worst-case \(p\)-value over \(\mathcal{U}_{+}\); yet as the number of
 matched sets grows, with set sizes bounded, the error becomes negligible
-\citep[Proposition 1]{gastwirthetal2000}.
+under regularity conditions \citep[Proposition 1]{gastwirthetal2000}.
 
 \subparagraph{Taylor Series
 Approximation}\label{taylor-series-approximation}
@@ -3852,16 +3843,17 @@ Several omissions are specific to matching methodology itself:
   Sixth, we have not incorporated into the overall pipeline an explicit
   approach for defining an \textbf{interpretable study population} in
   matched designs. Common practice excludes units based on limited
-  overlap in the estimated propensity score
-  \citep{crumpetal2009, kingzeng2006}, but study populations defined in
-  this way can be difficult to characterize substantively. Hence,
-  alternative approaches define the study population directly in terms
-  of a small number of covariates. For example, \citet{traskinsmall2011}
-  use a classification tree to define a study population that
-  approximates one defined by trimming on the estimated propensity
-  score, while \citet{fogartyetal2016} use discrete optimization to
-  define a maximal, rectangular region of covariate space with adequate
-  overlap on key covariates.
+  overlap, whether in the estimated propensity score
+  \citep{crumpetal2009} or in the covariate space itself
+  \citep{kingzeng2006}, but study populations defined in this way can be
+  difficult to characterize substantively. Hence, alternative approaches
+  define the study population directly in terms of a small number of
+  covariates. For example, \citet{traskinsmall2011} use a classification
+  tree to define a study population that approximates one defined by
+  trimming on the estimated propensity score, while
+  \citet{fogartyetal2016} use discrete optimization to define a maximal,
+  rectangular region of covariate space with adequate overlap on key
+  covariates.
 \item
   Seventh, we have not considered \textbf{quasi-experimental devices}
   \citep{campbell1957, campbellstanley1963, shadishetal2002},
