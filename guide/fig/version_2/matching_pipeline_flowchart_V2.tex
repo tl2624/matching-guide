@@ -112,7 +112,7 @@
     \raggedright\footnotesize
     \begin{itemize}
         \item Diagnostics: balance and effective sample size
-        \item R: \texttt{RItools}
+        \item R: \texttt{optmatch}; \texttt{RItools}
         \item \citet{hansenbowers2008}
     \end{itemize}
 };
@@ -188,9 +188,9 @@
 
 % Shaded boxes
 \begin{scope}[on behind layer]
-\draw[fill=shade1, draw=none] ($(specify_covariates.north-|sharp_sensitivity.west)+(0,0)$) rectangle ($(decision.south-|weak_sensitivity.east)+(0,0)$) node[pos=0, text=mygray, yshift=-1.6cm, align=justify, text width=6cm] {\textbf{First Stage}:\\[1.5mm]Making a Matched Dataset\\ \fontsize{6.5}{7.8}\selectfont\textit{(toward Justifying As-If Randomization)}}; 
+\draw[fill=shade1, draw=none] ($(specify_covariates.north-|sharp_sensitivity.west)+(0,0)$) rectangle ($(decision.south-|weak_sensitivity.east)+(0,0)$) node[pos=0, text=mygray, yshift=-1.6cm, align=justify, text width=6cm] {\textbf{First Stage}:\\[1.5mm]Making a Matched Dataset\\ \fontsize{6.5}{7.8}\selectfont\textit{(Toward Justifying As-If Randomization)}}; 
 
-\draw[fill=shade2, draw=none] ($(target_selection.north-|sharp_inference.north west)+(0,0)$) rectangle ($(weak_inference.south east)+(0,-.25)$) node[pos=0, text=mygray, yshift=-1.6cm, align=left] {\textbf{Second Stage}:\\[1.5mm] Causal Inference\\ \fontsize{6.5}{7.8}\selectfont \textit{(under As-If Randomization)}}; 
+\draw[fill=shade2, draw=none] ($(target_selection.north-|sharp_inference.north west)+(0,0)$) rectangle ($(weak_inference.south east)+(0,-.25)$) node[pos=0, text=mygray, yshift=-1.6cm, align=left] {\textbf{Second Stage}:\\[1.5mm] Causal Inference\\ \fontsize{6.5}{7.8}\selectfont \textit{(Under As-If Randomization)}}; 
 
 \draw[fill=shade3, draw=none] ($(sharp_sensitivity.north west)+(0,2.35)$) rectangle ($(weak_sensitivity.south east)+(0,-0.25)$) node[pos=0, text=mygray, yshift=-1.6cm, align=left] {\textbf{Third Stage}:\\[1.5mm] Sensitivity Analysis\\ \fontsize{6.5}{7.8}\selectfont\textit{(Departures from As-If Randomization)}}; 
 

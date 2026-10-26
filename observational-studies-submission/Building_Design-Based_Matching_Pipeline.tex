@@ -220,7 +220,7 @@ every individual has the same chance of being assigned to treatment.
 This equality of chances means that individuals who would respond more strongly to treatment
 are no more likely to receive it than those who would respond less
 strongly, and the same is true for control. Because each individual's
-assignment is determined by the same coin toss (with the same
+assignment is determined by a toss of the same coin (with the same
 probability of landing heads or tails), randomization leaves only two
 possibilities: (1) the difference in outcomes between treatment and
 control groups reflects the true causal effect, or (2) chance variation
@@ -251,7 +251,7 @@ each individual in which the probability of heads or tails depends on
 that individual's value of a single covariate. Consequently, all
 individuals with the same covariate value share the same chance of
 receiving treatment, while those with a different covariate value
-share a different chance.
+may have a different chance.
 
 In this setting, we can envision forming groups (i.e., matched sets) so
 that all individuals within a group share the same covariate value. Each
@@ -287,9 +287,8 @@ We call the condition in which all individuals within each matched set
 share the same treatment probability, strictly between 0 and 1,
 \emph{as-if randomization}. As-if randomization is closely related to the
 conditions known as \emph{selection on observables} and \emph{strong
-ignorability}, although those conditions are stated in terms of covariates
-rather than matched sets. The term as-if randomization is especially
-fitting because, when all units within each matched set share the same
+ignorability}, although those conditions are typically stated directly in terms of covariates rather than in terms of matched sets built from those covariates. The term as-if randomization is especially
+fitting because, when units are assigned independently and all units within each matched set share the same
 individual treatment probability, all assignments within each set ---
 holding fixed the set's observed number of treated units --- are equally
 likely (treating the matched sets themselves as fixed; see
@@ -298,7 +297,7 @@ assignments is equivalent to that induced by a randomized experiment in
 which a researcher first forms blocks corresponding to the matched sets
 and then randomly assigns a fixed number of units to treatment within
 each block. Thus, when as-if randomization holds, we can apply the same
-statistical tools that we would use under such a block-randomized design
+statistical tools that we would use under such a completely randomized experiment within blocks
 to draw credible causal inferences from the observational study.
 
 \subsection{Why Sensitivity Analysis
@@ -339,8 +338,7 @@ analysis:
   --- maximum allowable distances between treated and control units for
   inclusion in the same matched set --- and imposing structural
   constraints (e.g., requiring matches to be pairs). We then show how to
-  evaluate the resulting design in terms of both effective sample size
-  and covariate balance. For the latter, we focus on tests proposed by
+  evaluate the resulting design in terms of both covariate balance and effective sample size. For the former, we focus on tests proposed by
   \citet{hansenbowers2008} that compare the matched design's covariate
   balance to what one would expect under an equivalent completely
   randomized experiment within blocks (that is, random assignment with a
@@ -359,8 +357,7 @@ analysis:
   ATE and hypothesis tests about it. We emphasize exposition and code
   for recent variance estimators tailored to designs with only \(1\)
   treated or \(1\) control unit per matched set
-  \citep{fogarty2018, pashleymiratrix2021} --- an important case, since
-  such designs yield the closest matches while discarding the fewest units
+  \citep{fogarty2018, pashleymiratrix2021} --- an important case, since the closest matches that discard the fewest units can always be achieved with such designs
   \citep{gurosenbaum1993, rosenbaum1991, hansen2004, hansen2011}.
 \item
   \textbf{Assess sensitivity}. Finally, we turn to sensitivity analyses
@@ -417,17 +414,6 @@ Randomization)}
 \tightlist
 \item
   How Do I Measure Similarity on My Chosen Covariates?
-\end{enumerate}
-
-\begin{itemize}
-\tightlist
-\item
-  Similarity on the Estimated Propensity Score
-\end{itemize}
-
-\begin{enumerate}
-\def\labelenumi{(\alph{enumi})}
-\setcounter{enumi}{1}
 \item
   How Can I Apply Rules for Matches to Ensure Comparability?
 \item
@@ -440,14 +426,9 @@ Randomization)}
 
 \textbf{Second Stage: Causal Inference (under As-If Randomization)}
 
-\begin{itemize}
-\tightlist
-\item
-  The Assignment Process as the Basis for Inference
-\end{itemize}
-
 \begin{enumerate}
 \def\labelenumi{(\alph{enumi})}
+\tightlist
 \item
   How Do I Draw Inferences under the Sharp Framework?
 \item
@@ -463,28 +444,6 @@ Randomization)}
 \item
   How Do Inferences under the Sharp Framework Change under these
   Departures?
-\end{enumerate}
-
-\begin{itemize}
-\item
-  Finding the Worst-Case Scenario of Hidden Confounding for Valid
-  Inference
-
-  \begin{itemize}
-  \tightlist
-  \item
-    Separable Approximation
-  \item
-    Taylor Series Approximation
-  \end{itemize}
-\item
-  Conducting Worst-Case Sensitivity Analysis
-\end{itemize}
-
-\begin{enumerate}
-\def\labelenumi{(\alph{enumi})}
-\setcounter{enumi}{1}
-\tightlist
 \item
   How Do Inferences under the Weak Framework Change under these
   Departures?
@@ -517,26 +476,22 @@ peacekeepers intervened (e.g., Sierra Leone, Jan 2001 -- Dec 2003), while
 in others they did not (e.g., Macedonia, Sep 2001 -- Dec 2003). The
 treatment variable is UN intervention (\texttt{UN}), coded as \(1\) if a
 UN mission was present during the peace period and \(0\) otherwise. The
-outcome variable is the duration of the peace spell, which
-\citet{gilligansergenti2008} measure as the log of the number of months
-from the start of peace until either the outbreak of a new conflict or
-right-censoring at December 2003. This log-transformed outcome
-(\texttt{ldur}) captures the total length of the peace period rather
-than the time elapsed after a potential UN intervention. In practice,
-however, UN interventions almost always began immediately after the
-onset of peace: ``Of the 19 post-conflict UN interventions, the United
-Nations was present within the first month for 16 of them''
-\citep[p.~118]{gilligansergenti2008}. In what follows, we set aside
-these measurement details, with one caveat about censoring. The outcome
-\texttt{ldur} is right-censored for 43 of the 87 episodes, so our analyses concern the log of the
-observed, possibly censored, duration rather than the log of the full
-duration of peace.
+outcome variable, \texttt{ldur}, is the log of the duration of the peace
+spell in months, which \citet{gilligansergenti2008} measure from the start of
+peace until the outbreak of a new conflict. Duration is thus measured from the
+onset of peace rather than from the start of a UN intervention, but the two
+nearly coincide: ``Of the 19 post-conflict UN interventions, the United Nations
+was present within the first month for 16 of them''
+\citep[p.~118]{gilligansergenti2008}. For 43 of the 87 episodes, peace had not
+ended by December 2003, so duration is right-censored at that date. Our analyses
+therefore concern the log of the observed, possibly censored, duration rather
+than the log of the full duration of peace.
 
 As \citet{gilligansergenti2008} state, ``UN missions are not randomly
 assigned'' (p.~89). Whether peacekeepers are present during a given
 post-conflict peace period presumably depends on baseline covariates
 measured by \citet{gilligansergenti2008}, including the logged number of
-deaths (\texttt{lwdeaths}), the duration of the previous war in months
+battle deaths (\texttt{lwdeaths}), the duration of the previous war in months
 (\texttt{lwdurat}), which, despite its name, is not logged, ethnic fractionalization (\texttt{ethfrac}, a 0--100
 index for which dividing by 100 is intended to represent the probability
 that two randomly chosen individuals belong to different ethnic groups),
@@ -555,7 +510,7 @@ the files to your working directory, and then use a package such as
 \texttt{peace\_pre\_match.dta}, into \texttt{R}. However, for our
 purposes, we recommend loading our pre-created .rds file
 (\texttt{peace\_pre\_match.rds}), in which Stata's monthly numeric dates
-have been converted to \texttt{R}'s year-month format and the geographic
+have been converted to \texttt{R}'s \texttt{Date} class and the geographic
 region indicators recoded into a single factor variable
 (\texttt{region}). The following command loads this pre-created dataset
 (\texttt{peace\_pre\_match.rds}) into the \texttt{R} environment as an
@@ -642,7 +597,7 @@ covs <- c("lwdeaths", "lwdurat", "ethfrac", "pop", "lmtnest", "milper",
 
 The first four --- \texttt{lwdeaths}, \texttt{lwdurat},
 \texttt{ethfrac}, and \texttt{pop} --- were introduced earlier. The
-others include a logged measure of the percentage of a country's
+others are a logged measure of the percentage of a country's
 terrain that is mountainous (\texttt{lmtnest}), the logged number of
 military personnel in a country, in thousands (\texttt{milper}), logged GDP per capita
 before the last civil war (\texttt{bwgdp}), the Polity score (a \(-10\)
@@ -666,11 +621,12 @@ There are many ways to measure the distance between a treated and a
 control unit. For example, we might compare units using the Euclidean
 distance --- i.e., the square root of the sum of squared differences ---
 across all baseline covariates. To do so, we first convert the factor
-variable \texttt{region}, which stores categorical labels, into a set of
-dummy (\(0\) or \(1\)) variables for each region. This conversion
-ensures that distances between treated and control units can be
-computed, since distance measures require numeric variables rather than
-categorical labels.
+variable \texttt{region}, which stores categorical labels, into an indicator variable
+for each region, since distance measures require numeric variables rather
+than categorical labels. Following the convention of \texttt{match\_on()},
+introduced below, each indicator equals \(1/\sqrt{2}\) for units in that region
+and \(0\) otherwise, so that belonging to different regions adds exactly \(1\) to
+the squared distance.
 
 
 
@@ -681,16 +637,16 @@ categorical labels.
 # Load package for data manipulation (mutate, group_by, summarize, etc.)
 library(dplyr)
 
-# Convert categorical variable "region" into 0/1 dummy indicators
+# Convert "region" into indicators equal to 1/sqrt(2) or 0
 data <- data |> # Pipe (|>) to pass left-hand result into next function call
   mutate(
     # Use mutate() to create new variables by transforming existing columns
     # ifelse() returns one value if condition is TRUE and another if FALSE
-    eeurop   = ifelse(test = region == "eeurop",   yes = 1, no = 0),
-    lamerica = ifelse(test = region == "lamerica", yes = 1, no = 0),
-    asia     = ifelse(test = region == "asia",     yes = 1, no = 0),
-    ssafrica = ifelse(test = region == "ssafrica", yes = 1, no = 0),
-    nafrme   = ifelse(test = region == "nafrme",   yes = 1, no = 0)
+    eeurop   = ifelse(test = region == "eeurop",   yes = 1/sqrt(2), no = 0),
+    lamerica = ifelse(test = region == "lamerica", yes = 1/sqrt(2), no = 0),
+    asia     = ifelse(test = region == "asia",     yes = 1/sqrt(2), no = 0),
+    ssafrica = ifelse(test = region == "ssafrica", yes = 1/sqrt(2), no = 0),
+    nafrme   = ifelse(test = region == "nafrme",   yes = 1/sqrt(2), no = 0)
   )
 
 # Covariate names with "region" replaced by dummy indicators
@@ -735,11 +691,9 @@ sqrt(
 We can obtain the full matrix of pairwise distance values using
 \texttt{match\_on()} from the \texttt{optmatch} package. We do not need
 to manually recode factor variables into dummy indicators because
-\texttt{match\_on()} handles this conversion automatically. (The function
-\texttt{match\_on()} scales each region dummy by \(1/\sqrt{2}\), so units in
-different regions differ by \(1\) rather than \(2\) in squared distance;
-distances within a region, including all entries in the submatrix that
-follows, equal the manual calculation.)
+\texttt{match\_on()} handles this conversion automatically. (Like our hand
+calculation, \texttt{match\_on()} scales each region indicator by
+\(1/\sqrt{2}\), so its distances equal the manual calculation.)
 
 
 
@@ -761,7 +715,6 @@ library(optmatch)
 dist_mat_euc <- match_on(
   x = cov_fmla,                 # Formula for covariates
   data = data,                  # Dataset used
-  standardization.scale = NULL, # No rescaling of covariates
   method = "euclidean"          # Use Euclidean distance
 )
 
@@ -797,13 +750,13 @@ Central African Republic (control).
 One concern with Euclidean distance is that it depends on the scale of
 the covariates. For example, Guatemala (treated) belongs to Latin America
 and Afghanistan (control) to Asia, a substantively large difference; yet
-belonging to different regions adds only \(2\) to the hand-computed squared
-Euclidean distance between the two countries, because they differ by \(1\) on each of
-two region indicators (\texttt{lamerica} and \texttt{asia}). Their
-ethnic fractionalization scores (\texttt{ethfrac}), 64.37 and 65.83 on
+belonging to different regions adds only \(1\) to the squared Euclidean
+distance between the two countries, because they differ by \(1/\sqrt{2}\) on
+each of two region indicators (\texttt{lamerica} and \texttt{asia}). The two
+countries' ethnic fractionalization scores (\texttt{ethfrac}), 64.37 and 65.83 on
 the 0--100 scale, differ by only 1.46 points, a substantively small
-difference; yet this difference adds 2.13, slightly more than belonging
-to different regions. Intuitively, we would not want such a small
+difference; yet this difference adds 2.13, more than twice as much as
+belonging to different regions. Intuitively, we would not want such a small
 difference in ethnic fractionalization to count for more than belonging
 to different regions of the world. More generally, we want
 differences across variables to be placed on a comparable scale, so that
@@ -834,7 +787,6 @@ matrix based on Mahalanobis rather than Euclidean distances as follows.
 dist_mat_mah <- match_on(
   x = cov_fmla,
   data = data,
-  standardization.scale = NULL,
   method = "mahalanobis" # Use Mahalanobis distance
 )
 \end{lstlisting}
@@ -876,8 +828,8 @@ score of an individual unit \(i\). We write this model as
 superscript \(^{\top}\) denotes the transpose, turning the column vector
 \(\bm{\hat{\beta}}\) into a row vector, so that \(\bm{\hat{\beta}}^{\top}\bm{x}_i\) is a scalar. The quantity
 \(\bm{\hat{\beta}}^{\top}\bm{x}_i\) is the estimated linear index, and
-the logistic (inverse-logit) function, \(1 / (1 + \exp(-x))\), maps any
-real-valued input, \(x\), onto the interval \((0, \, 1)\). The estimated
+the logistic (inverse-logit) function, \(1 / (1 + \exp(-a))\), maps any
+real number, \(a\), onto the interval \((0, \, 1)\). The estimated
 linear covariate index for unit \(i\),
 \(\bm{\hat{\beta}}^{\top}\bm{x}_i\), is simply the logit, i.e., log
 odds, transformation of \(\hat{\lambda}(\bm{x}_i)\) in
@@ -893,7 +845,7 @@ when the fitted probabilities are close to 1 for treated units and close to 0 fo
 little or no covariate overlap, the estimated linear indices can diverge
 substantially, very positive for treated units and very negative for
 controls. With greater overlap, the estimated linear indices for treated
-and control units are similar, clustering around a common value.
+and control units are more similar, clustering more closely around a common value.
 
 This estimation process reflects how predictive each covariate is of
 treatment, holding the other covariates fixed. A covariate that strongly
@@ -909,9 +861,8 @@ importance to those that do not.
 
 To see this logic in action, we first estimate a logistic propensity
 score model using all covariates except \texttt{region}, which we
-exclude because some regions perfectly --- or nearly perfectly ---
-predict treatment assignment, leading to (near-)complete separation
-\citep{albertanderson1984}.
+exclude because all episodes in one region (Asia) are controls, a case of
+separation in logistic regression \citep{albertanderson1984}.
 
 
 
@@ -978,17 +929,17 @@ fractionalization (\texttt{ethfrac}), about 1 versus 45 on the 0--100
 scale, but have the same logged number of battle deaths
 (\texttt{lwdeaths}) and similar logged numbers of military personnel
 (\texttt{milper}). Despite this large difference in ethnic
-fractionalization, the estimated linear indices for Haiti and Papua
-New Guinea differ by only about 0.26. The gap in \texttt{ethfrac}, 43
+fractionalization, Haiti's estimated linear index exceeds Papua New
+Guinea's by only about 0.26. The gap in \texttt{ethfrac}, 43
 points or about 1.7 standard deviations of \texttt{ethfrac} across all
-87 episodes, raises Haiti's index by only
-about 0.13 because the estimated coefficient on \texttt{ethfrac} is close
+87 episodes, contributes only
+about 0.13 to this difference because the estimated coefficient on \texttt{ethfrac} is close
 to \(0\) (about \(-0.003\) per point). By contrast, the gap in
 \texttt{milper}, 0.29 or about 0.18 standard deviations of
-\texttt{milper} across all 87 episodes, raises Haiti's
-index by about 0.26 because the estimated coefficient on \texttt{milper}
-is large (about \(-0.92\)). The contributions of the remaining covariates
-largely offset one another, with a net contribution of about \(-0.13\).
+\texttt{milper} across all 87 episodes, contributes
+about 0.26 because the estimated coefficient on \texttt{milper}
+is large (about \(-0.92\)). The remaining covariates contribute positive
+and negative amounts that net to about \(-0.13\).
 The estimated linear index therefore gives
 little weight to the covariate on which the two countries differ most and
 more weight to covariates that strongly predict treatment.
@@ -1076,8 +1027,8 @@ This matrix records the absolute difference in Polity scores when the
 difference is \(2\) or less, and assigns a value of \(\infty\) (denoted
 in \texttt{R} as \texttt{Inf}) when the difference exceeds \(2\). The
 \(\infty\) entries are crucial because \texttt{optmatch} minimizes the
-sum, across all matched sets, of the within-set sums of covariate
-distances between each treated-control pair. Consequently, any
+sum, across all matched sets, of the distances between each
+treated--control pair within the set. Consequently, any
 treated--control pair differing by more than 2 points on the Polity
 score is assigned an overall distance of \(\infty\), and this infinite distance prevents the two units
 from being matched.
@@ -1091,7 +1042,6 @@ euc_dist_polity_cal_2 <- match_on(
   x = UN ~ bwplty2,
   caliper = 2,  # Set caliper
   data = data,
-  standardization.scale = NULL,
   method = "euclidean"
 )
 \end{lstlisting}
@@ -1164,11 +1114,10 @@ variance of the Difference-in-Means --- the average outcome among
 treated units minus the average outcome among control units --- in that
 set is proportional to the set's outcome variance divided by the set's
 harmonic mean \citep{hansenbowers2008, hansen2011}. For a fixed set size, the harmonic mean is
-largest when the numbers of treated and control units are equal. Thus,
-all else equal, matched pairs and other balanced sets provide more
-information about causal effects than lopsided sets with unequal treated-to-control ratios. If outcome variances are also similar across
-sets, weighting each set's Difference-in-Means by the set's harmonic mean
-minimizes the variance of the weighted average across sets
+largest when the numbers of treated and control units are as equal as possible. Thus,
+all else equal, matched pairs and other sets with equal numbers of treated and control units provide more
+information about causal effects than lopsided sets with unequal treated-to-control ratios. If outcome variances are also equal across sets, then among weighted averages of the sets' Differences-in-Means,
+weighting by the sets' harmonic means gives the smallest variance
 \citep[p.~164, fn.~3]{hansen2011}, and the effective sample size in
 \eqref{eq: harmonic mean} then measures the precision of that weighted
 average.
@@ -1188,7 +1137,6 @@ euc_dist_polity_cal_3 <- match_on(
   x = UN ~ bwplty2,
   caliper = 3,
   data = data,
-  standardization.scale = NULL,
   method = "euclidean"
 )
 
@@ -1197,7 +1145,7 @@ em_region + euc_dist_polity_cal_3
 \end{lstlisting}
 
 
-Doing so increases the effective sample size, but such gains need not be
+In this case, doing so increases the effective sample size, but such gains need not be
 substantial. When newly admitted units are absorbed into existing
 matched sets --- each of which contains only one treated or one control
 unit --- rather than generating additional treated-versus-control
@@ -1216,7 +1164,7 @@ specify lower and upper bounds, respectively, on the ratio of control to
 treated units within each matched set. By default,
 \texttt{min.controls\ =\ 0} and \texttt{max.controls\ =\ Inf}, which
 impose no restrictions on matched set composition. Changing these
-defaults allows researchers to control how balanced or lopsided matched
+defaults allows researchers to control how lopsided matched
 sets may be, thereby shaping the effective sample size.
 
 To illustrate, suppose we want to restrict matches using the
@@ -1284,7 +1232,7 @@ matching on many covariates, however, we will often prefer some
 combination of Mahalanobis distance and propensity score matching,
 sometimes adding calipers on specific covariates. In what follows, we
 use \emph{rank-based} Mahalanobis distance, which has the advantage of
-being less sensitive to outliers and to covariates with many tied values, such as
+being less sensitive than the ordinary Mahalanobis distance to outliers and to covariates with many tied values, such as
 rare binary indicators \citep[pp.~171--172]{rosenbaum2010}. We further constrain the matching by
 imposing a caliper on the estimated propensity score, requiring treated
 and control observations to come from the same geographic region, and
@@ -1298,7 +1246,7 @@ The caliper is the largest difference on this logit scale that a treated
 and a control unit in the same matched set may have. Narrower calipers
 yield closer matches on the estimated propensity score but leave more
 units without a permissible match. We set the caliper to \(0.5\) times the
-population standard deviation (dividing by \(n\)) of the logit across all
+population standard deviation of the logit across all
 87 episodes. Because this standard deviation is approximately 1.96,
 treated and control units in the same set may differ by up to about
 0.98 on the logit scale. This caliper is wider than the commonly
@@ -1323,7 +1271,6 @@ ps_mat <- match_on(
   x = UN ~ logit_p_score,
   caliper = 0.5 * pop_sd_logit,
   data = data,
-  standardization.scale = NULL,
   method = "euclidean"
 )
 \end{lstlisting}
@@ -1345,7 +1292,6 @@ rank_mah_mat <- match_on(
       y = "region"),
     response   = "UN"),
   data   = data,
-  standardization.scale = NULL,
   method = "rank_mahalanobis" # Use rank-based Mahalanobis distance
 )
 \end{lstlisting}
@@ -1366,7 +1312,6 @@ eth_mat <- match_on(
   x = UN ~ ethfrac,
   caliper = 35,
   data = data,
-  standardization.scale = NULL,
   method = "euclidean"
 )
 
@@ -1375,7 +1320,6 @@ bwgdp_mat <- match_on(
   x = UN ~ bwgdp,
   caliper = 2,
   data = data,
-  standardization.scale = NULL,
   method = "euclidean"
 )
 \end{lstlisting}
@@ -1387,24 +1331,7 @@ Next, we combine the \texttt{ps\_mat}, \texttt{rank\_mah\_mat},
 to form the overall distance structure. We then pass the combined object
 to \texttt{optmatch}'s \texttt{fullmatch()} function, imposing a
 constraint that no more than \(4\) control units may be matched to any
-treated unit. If instead we wanted to perform pair matching, the
-\texttt{optmatch} package allows users to directly specify a
-matched-pair structure via the \texttt{pairmatch()} function.
-Alternatively, one can request pair matching by setting
-\texttt{min.controls\ =\ 1} and \texttt{max.controls\ =\ 1} in the
-\texttt{fullmatch()} call. The two calls coincide when every treated unit can be paired, but they
-handle infeasibility differently. Within each subproblem (here, each
-region), \texttt{pairmatch()} sets \texttt{omit.fraction} so that every
-treated unit must be matched when controls are at least as numerous as
-treated units, and so that the excess treated units are left unmatched
-otherwise. If calipers make the required pairs impossible to form,
-\texttt{pairmatch()} does not stop with an error but instead issues a
-warning and leaves every unit in that subproblem unmatched. Setting
-\texttt{remove.unmatchables\ =\ TRUE} first drops treated units that have
-no permissible control, which avoids some, but not all, of these
-failures. The following code chunk proceeds with full
-matching under the constraint that no more than \(4\) controls may be
-matched to any treated unit.
+treated unit.
 
 
 
@@ -1483,7 +1410,7 @@ index within that stratum. For example, the label \texttt{lamerica.1}
 denotes the first matched set within the Latin America stratum.
 
 To see which units were matched together, we can add the \texttt{fm}
-object to the data frame and then tabulate. For example, to view the
+object to the data frame and then list the units in a chosen set. For example, to view the
 \texttt{ssafrica.3} set, we run the following.
 
 
@@ -1538,6 +1465,16 @@ Mahalanobis distance including \texttt{bwplty2}, but we did not apply a
 caliper directly to \texttt{bwplty2}, though such a caliper could easily
 be added if desired.
 
+Had we wanted pair matching instead, we could call \texttt{pairmatch()} or set
+\texttt{min.controls\ =\ 1} and \texttt{max.controls\ =\ 1} in
+\texttt{fullmatch()}. The two calls give the same match when every treated
+unit can be paired. Otherwise the two calls can differ, because
+\texttt{fullmatch()} requires every treated unit with a permissible match to be
+paired, whereas \texttt{pairmatch()} uses the group sizes in each subproblem
+(here, each region) to fix how many units may go unmatched. When calipers rule
+out so many pairs that more units would have to go unmatched than
+\texttt{pairmatch()} allows, \texttt{pairmatch()} issues a warning and leaves that subproblem entirely unmatched, as \texttt{fullmatch()} does when it cannot pair every treated unit that has a permissible match.
+
 \subsubsection{How Do I Decide Whether to Move Ahead with My Matched
 Design?}\label{how-do-i-decide-whether-to-move-ahead-with-my-matched-design}
 
@@ -1550,8 +1487,7 @@ expect to see in a completely randomized experiment within blocks
 
 We next calculate adjusted covariate means for the treated and control
 groups by averaging set-specific means across matched sets, with each
-set weighted by its number of treated units, as \texttt{RItools} does by
-default; the adjusted treated mean is therefore the mean among matched
+set weighted by its number of treated units, as \texttt{RItools} does; the adjusted treated mean is therefore the mean among matched
 treated units. We also report standardized differences, defined as the
 treated-minus-control difference in these adjusted means divided by a
 pooled standard deviation of the covariate --- the square root of the
@@ -1602,7 +1538,7 @@ Democracy (Polity Score) Before Last War & $-$0.84 & $-$2.58 & $-$0.32 & $-$2.19
 Asia & 0.19 & 0.00 & $-$0.68* & 0.00 & 0.00 & 0.00\\
 Eastern Europe & 0.15 & 0.37 & 0.51* & 0.46 & 0.46 & 0.00\\
 Latin America & 0.12 & 0.21 & 0.25 & 0.08 & 0.08 & 0.00\\
-North Africa \& Middle East & 0.12 & 0.11 & $-$0.04 & 0.08 & 0.08 & 0.00\\
+North Africa/Middle East & 0.12 & 0.11 & $-$0.04 & 0.08 & 0.08 & 0.00\\
 Sub-Saharan Africa & 0.43 & 0.32 & $-$0.23 & 0.38 & 0.38 & 0.00\\
 \bottomrule
 \end{tabular}}
@@ -1616,15 +1552,18 @@ Sub-Saharan Africa & 0.43 & 0.32 & $-$0.23 & 0.38 & 0.38 & 0.00\\
 \Cref{tab: balance} reports the results before and after matching.
 The adjusted means offer a direct description of balance. The standardized differences place all
 covariates on a common scale, enabling at-a-glance comparisons of
-imbalance across covariates. Stars indicate covariates for which the adjusted mean difference would
-be unusually extreme under a completely randomized experiment within
-blocks (defined in
-\Cref{roadmap-of-the-design-based-matching-pipeline}), with the
-matched sets as blocks after matching and with all 87 episodes as a
-single block before matching. The stars are based on a Normal approximation
-to the randomization distribution of adjusted mean differences, and, because
-no adjustments are made for multiple comparisons, these stars are
-conservative for the purpose of judging balance. That is, the chance that
+imbalance across covariates. Stars indicate covariates whose harmonic-mean-weighted Difference-in-Means,
+which weights each set's treated-minus-control difference by the set's
+contribution to the effective sample size, would be unusually extreme under a
+completely randomized experiment within blocks, with the matched sets as blocks
+after matching and with all 87 episodes as a single block before matching. The
+harmonic-mean-weighted Difference-in-Means is not the difference between the
+adjusted means in \Cref{tab: balance}, which weight each set by its number
+of treated units, although the two coincide before matching. The stars are
+based on a Normal approximation to the randomization distribution of the
+harmonic-mean-weighted Difference-in-Means, and, because no adjustments are
+made for multiple comparisons, these stars are conservative for the purpose of
+judging balance. That is, the chance that
 at least one covariate is starred under a completely randomized
 experiment within blocks exceeds 0.05, so the stars err toward
 flagging imbalance.
@@ -1710,7 +1649,7 @@ outcomes: a value the outcome would take if that unit were assigned to
 treatment and a value the outcome would take if that unit were assigned
 to control. Let \(y_{si}(1)\) and \(y_{si}(0)\) denote these potential
 outcomes, respectively, for unit \(i\) in set \(s\), where the index
-\(i\) runs over the \(\{1, \ldots, n_s\}\) units in set \(s\). The
+\(i \in \{1, \ldots, n_s\}\) runs over the \(n_s\) units in set \(s\). The
 individual treatment effect is \(\tau_{si} = y_{si}(1) - y_{si}(0)\).
 With \(n = \sum_{s = 1}^S n_s\) total units, let
 \(\bm{\tau} = (\tau_{11}, \tau_{12}, \ldots, \tau_{Sn_S})^{\top}\)
@@ -1762,11 +1701,12 @@ We consider inference under the sharp and weak frameworks, targeting
 the vector of unit-level effects, \(\bm{\tau}\), and the ATE, \(\tau\), respectively. A line of work shows how a single test can be exact for a sharp null and
 asymptotically valid for the corresponding weak null under as-if
 randomization
-(\citealp{chungromano2013, wuding2021, cohenfogarty2022, fogarty2023}; see
-also \citealp{ding2017} on conflicts between the two types of tests). The
+(\citealp{wuding2021, cohenfogarty2022, fogarty2023}; see
+\citealp{chungromano2013} for the precursor with independent samples, and
+\citealp{ding2017} on conflicts between the two types of tests). The
 unification of sharp and weak tests does not generally extend to
 sensitivity analyses outside matched-pair designs
-\citep{fogarty2020, fogarty2023}. When researchers must choose between the two, the
+\citep{fogarty2020, fogarty2023}. When researchers must choose between the two frameworks, the
 decision depends on both statistical properties and substantive goals.
 
 \begin{itemize}
@@ -1879,12 +1819,12 @@ a randomized experiment, this distribution is unknown in an
 observational study. Because this distribution is unknown, we must make
 assumptions about it when drawing inferences from observational data.
 Under the assumption of as-if randomization, every possible assignment
-within each \(\Omega_s\) is equally likely, making each overall
+within each \(\Omega_s\) is equally likely, independently across sets, making each overall
 assignment in \(\Omega\) equally likely as well. In this case, all
 individuals within the same matched set have the same probability of
 treatment, equal to \(m_s / n_s\). When as-if randomization does not
 hold, however, assignments are no longer equally likely, and some
-individuals have a higher probability of treatment than others.
+individuals within the same matched set have a higher probability of treatment than others.
 
 \subsubsection{How Do I Draw Inferences under the Sharp
 Framework?}\label{how-do-i-draw-inferences-under-the-sharp-framework}
@@ -1936,7 +1876,7 @@ Difference-in-Means is useful because, as noted in
 \Cref{how-can-i-apply-rules-for-matches-to-improve-effective-sample-size},
 harmonic-mean weights minimize the variance of the weighted average of
 within-set Differences-in-Means when treatment effects are homogeneous
-and outcome variances are similar across sets. Under these conditions, a
+and outcome variances are equal across sets. Under these conditions, a
 test has greater power
 when the test places more weight on sets with large harmonic means --- that
 is, sets in which the Difference-in-Means is most informative. Weighting
@@ -2235,7 +2175,7 @@ exact_assigns <- obtain_permutation_matrix(
     blocks = data_matched$fm, # Matched set membership
     block_m = block_ns$m      # Number treated in each set
   ),
-# Total number of assignments with treated counts fixed within sets
+  # Total number of assignments with treated counts fixed within sets
   maximum_permutations = exact_n_assigns
 )
 \end{lstlisting}
@@ -2244,7 +2184,7 @@ exact_assigns <- obtain_permutation_matrix(
 
 However, in most applications, exactly enumerating all possible
 assignments is computationally infeasible. Instead, we typically draw a
-random subset of assignments (e.g., \(10{,}000\)) to approximate the
+random sample of assignments (e.g., \(10{,}000\)) to approximate the
 exact randomization distribution, as the following code illustrates.
 
 
@@ -2680,7 +2620,7 @@ resulting Difference-in-Means is an unbiased estimator of the ATE.
 Formally, the estimator's expected value --- i.e., the average of
 \(\hat{\tau}\) taken over all treatment assignments in \(\Omega\), each of
 which is equally likely under as-if randomization --- equals the true
-ATE. Nevertheless, although correct in expectation, the
+ATE. Although correct in expectation, the
 Difference-in-Means can vary substantially across assignments. In any
 given assignment, the estimate may lie far from the target ATE.
 
@@ -2715,7 +2655,7 @@ develops a single method that applies more broadly to finely stratified
 designs.
 
 The first approach in \citet{pashleymiratrix2021}, \texttt{hybrid\_m},
-requires at least two matched sets of each unique set size in the data.
+requires at least two matched sets of each unique size among the sets with one treated or one control unit.
 The second approach, \texttt{hybrid\_p}, permits variation in set sizes,
 provided that no single set with one treated or one control unit
 contains half or more of the units in all such sets. In our design,
@@ -2848,7 +2788,7 @@ conventional significance level of \(\alpha = 0.05\).
 As in the construction of confidence sets for a homogeneous treatment
 effect under the sharp framework, we form 95\% confidence sets by
 inverting the corresponding hypothesis tests. We first construct a
-one-sided confidence set obtained by inverting the upper-tail test and
+one-sided confidence set by inverting the upper-tail test and
 retaining all null values that are not rejected at the \(\alpha = 0.05\)
 level. We then construct a two-sided confidence set by allocating
 \(\alpha/2 = 0.025\) to each tail.
@@ -2958,7 +2898,7 @@ restriction.
 Thus far, we have conducted inference assuming \(\Gamma = 1\), meaning
 that all units within a matched set share the same treatment
 probability. Under this as-if randomization assumption, tests of sharp
-null hypotheses are exactly valid, while tests of weak null hypotheses
+null hypotheses based on the exact randomization distribution are exactly valid, while tests of weak null hypotheses
 are valid asymptotically, as the number of matched sets grows with set
 sizes bounded \citep{fogarty2018, fogarty2023}. In both cases, validity means that the
 probability of falsely rejecting the null hypothesis does not exceed the
@@ -3001,8 +2941,8 @@ Inference}\label{finding-the-worst-case-scenario-of-hidden-confounding-for-valid
 Finding this worst-case \(\bm{u}\) exactly is difficult. As a first
 step, \citet{rosenbaumkrieger1990} show that in the unmatched (i.e.,
 two-sample) case, for a broad class of test statistics that includes sum
-statistics, the vector \(\bm{u}\) that maximizes the \(p\)-value under
-any fixed \(\Gamma \geq 1\) must belong to a restricted set of
+statistics, the \(p\)-value under
+any fixed \(\Gamma \geq 1\) is maximized by a vector \(\bm{u}\) in a restricted set of
 possibilities, denoted by \(\mathcal{U}_{+}\). Once the subjects are
 ordered from the largest to the smallest outcome, all the candidate
 vectors in \(\mathcal{U}_{+}\) look the same: a sequence of \(1\)s at
@@ -3018,7 +2958,7 @@ Unfortunately, in matched designs, the overall worst-case vector
 worst-case vectors from each matched set. That is, the global worst case
 is not simply the collection of local worst cases. Instead,
 \(\mathcal{U}_{+}\) consists of \(\prod_{s = 1}^S (n_s - 1)\) total
-candidate vectors for the worst-case \(\bm{u}\) --- a quantity that
+candidate vectors for the worst-case \(\bm{u}\) \citep[p.~496]{rosenbaumkrieger1990} --- a quantity that
 quickly becomes infeasible to enumerate directly. For example, with only
 \(20\) matched sets of \(4\) units each, the number of candidate vectors
 is already nearly \(3.5\) billion (\(3^{20} = 3{,}486{,}784{,}401\)).
@@ -3036,7 +2976,7 @@ that set under the null. The method is called ``separable'' because it
 then stitches together the choices of \(\bm{u}_s\) made separately
 within each matched set, rather than searching over all possible
 combinations across sets. The resulting \(\bm{u}\) may not give the
-exact worst-case \(p\)-value; yet as the number of matched sets grows,
+worst-case \(p\)-value over \(\mathcal{U}_{+}\); yet as the number of matched sets grows,
 with set sizes bounded, the error becomes negligible
 \citep[Proposition~1]{gastwirthetal2000}.
 
@@ -3055,7 +2995,7 @@ the resulting test is valid whenever the Normal approximation is
 adequate.
 
 The key idea is to reframe hypothesis testing in terms of a function
-that, for each configuration of hidden confounding
+that, for each configuration of hidden bias
 \(\bm{u} \in \mathcal{U}_{+}\), combines the gap between the null
 expectation and the observed test statistic with a corresponding Normal
 critical buffer. Concretely, for \(\alpha = 0.05\) and corresponding
@@ -3164,7 +3104,7 @@ value of the tangent plane over \(\bm{u} \in \mathcal{U}_{+}\) is at or
 below zero, then the function itself must be nonpositive for every
 \(\bm{u} \in \mathcal{U}_{+}\). Therefore, provided that the Normal
 approximation is adequate, we can safely base the decision to reject the
-null hypothesis or not on the Taylor approximation. Although valid, this
+null hypothesis or not on the Taylor series approximation. Although valid, this
 procedure can be conservative, because the tangent plane may remain above
 zero even when the function would be below zero at the true worst-case
 \(\bm{u}\). By contrast, the separable approximation can be liberal, as it
@@ -3176,13 +3116,13 @@ Analysis}\label{conducting-worst-case-sensitivity-analysis}
 We next report the upper one-sided \(p\)-value obtained under the
 separable approximation, along with an indication of whether the
 resulting decision to reject or not reject the null hypothesis agrees
-with the decision implied by the Taylor series approximation. Agreement
-or disagreement between the two methods is determined by the sign of the
-Taylor-series bound on the objective function that
+with the decision implied by the Taylor series approximation. The decision
+implied by the Taylor series approximation is determined by the sign of the
+Taylor series bound on the objective function that
 \texttt{sens\_objective()} codes. The \texttt{senstrat()} function reports
 this bound, stored as \texttt{cvA} in the following code, and the sign of
 this bound governs rejection of the null hypothesis. Disagreement can occur only when the
-separable approximation yields a \(p\)-value below \(\alpha\) (in practice, typically only slightly below),
+separable approximation yields a \(p\)-value at or below \(\alpha\) (in practice, typically only slightly below),
 indicating rejection, while the Taylor series approximation yields a
 positive value, leading to non-rejection.
 
@@ -3275,7 +3215,7 @@ the Taylor series margin (the bound \texttt{cvA}) lies just above zero, indicati
 of the sharp null, while the separable approximation yields \(p\)-values
 just below \(0.05\), indicating rejection. This pattern reflects the
 relative conservatism of the Taylor series approximation, since rejection
-under the Taylor series approach implies rejection under the separable
+under the Taylor series approximation implies rejection under the separable
 approach, but not vice versa.
 
 \begin{figure}[h!]
@@ -3284,7 +3224,7 @@ approach, but not vice versa.
 
 }
 
-\caption{Sensitivity analysis for the sharp null of no individual treatment effect for all units. The top panel shows upper one-sided $p$-values under the separable approximation across values of $\Gamma$; the bottom panel reports, across the same values of $\Gamma$, the corresponding Taylor series margin, with the zero line marking the rejection boundary. The shaded vertical band highlights values of $\Gamma$ for which the separable approximation and the Taylor series approximation lead to different rejection decisions.}\label{fig:unnamed-chunk-56}
+\caption{Sensitivity analysis for the sharp null of no individual treatment effect for all units. The top panel shows upper one-sided $p$-values under the separable approximation across values of $\Gamma$, with the horizontal line at $0.05$; the bottom panel reports, across the same values of $\Gamma$, the corresponding Taylor series margin, with the zero line marking the rejection boundary. The shaded vertical band highlights values of $\Gamma$ for which the separable approximation and the Taylor series approximation lead to different rejection decisions.}\label{fig:unnamed-chunk-56}
 \end{figure}
 
 
@@ -3355,9 +3295,9 @@ When \(\Gamma = 1\), this probability \(p(\bm{z}_s)\) is
 \(1/\abs{\Omega_s}\), and the IPW Difference-in-Means reduces to the
 usual Difference-in-Means, \(\hat{\tau} = \sum_{s=1}^S (n_s/n)\hat{\tau}_s\). When
 \(\Gamma > 1\), however, \(p(\bm{z}_s)\) is no longer known exactly. In
-matched designs that may include sets with a single treated unit and
-many controls as well as sets with a single control unit and many
-treated units, \(\Gamma\) restricts the assignment probability to lie
+matched designs in which every set has either a single treated unit and
+one or more controls or a single control unit and one or more treated
+units, \(\Gamma\) restricts the assignment probability to lie
 within bounds consistent with the specified degree of departure from
 as-if randomization: \begin{align} \label{eq: prob bounds}
 \dfrac{1}{\Gamma (n_s - 1) + 1} \leq p(\bm{z}_s) \leq \dfrac{\Gamma}{(n_s - 1) + \Gamma},
@@ -3423,8 +3363,8 @@ How does this property of the expected value ensure a valid test in
 sufficiently large studies? Focusing on the case of testing against a
 larger ATE, the intuition is straightforward. If the expected value of
 the worst-case IPW Difference-in-Means is less than or equal to zero
-when the null is true, then the worst-case IPW Difference-in-Means tends to
-fall at or below zero rather than above it. In other words, the
+when the null is true, then the worst-case IPW Difference-in-Means is
+centered at or below zero rather than above it. In other words, the
 procedure intentionally ``tilts'' the worst-case IPW Difference-in-Means
 in the direction opposite the alternative, making the procedure
 conservative.
@@ -3454,12 +3394,12 @@ Together, these two properties work in the same direction:
   standardized statistic closer to zero.
 \end{itemize}
 
-As a result, when the null is true, the probability that the
+As a result, in large studies, when the null is true, the probability that the
 standardized statistic falls in the upper tail of the standard Normal
 distribution --- that is, the probability of falsely rejecting the null
 --- remains at or below the nominal significance level. Hence, the test
 is conservative (valid) asymptotically, as the number of matched sets
-grows \citep[Theorem~2]{fogarty2023}. Analogous reasoning applies when
+grows, under the regularity conditions of \citet[Theorem~2]{fogarty2023}. Analogous reasoning applies when
 testing against the alternative of a smaller effect. When the null
 hypothesis is true, the probability that the standardized statistic falls
 in the lower tail of the standard Normal distribution also stays at or
@@ -3505,7 +3445,7 @@ to obtain \(p\)-values. For the rescaled statistic
 slightly different version of this variance estimator, one that depends
 on \(\Gamma\) as well as on set sizes. Both versions are conservative
 \citep[Proposition~1]{fogarty2018}, and on our data the two give nearly
-identical sensitivity values (1.1756 and 1.1753).
+identical sensitivity values, that is, smallest values of \(\Gamma\) at which the test no longer rejects (1.1756 and 1.1753).
 
 
 
@@ -3596,7 +3536,7 @@ null hypothesis of no average effect in favor of a positive average
 effect is sensitive to departures from as-if randomization. Our qualitative
 conclusion about the null hypothesis that the ATE equals zero changes at
 \(\Gamma \approx 1.18\) (1.1756). This sensitivity value is
-similar to the sensitivity value for the sharp null of no effect, but the
+similar to the value of about 1.14 for the sharp null of no effect under the Normal approximation, but the
 two analyses use different test statistics, variance calculations, and
 approximations.
 
@@ -3606,7 +3546,7 @@ approximations.
 
 }
 
-\caption{Upper one-sided $p$-values for the weak null hypothesis of zero average effect across values of the sensitivity parameter $\Gamma$.}\label{fig:unnamed-chunk-59}
+\caption{Upper one-sided $p$-values for the weak null hypothesis of zero average effect across values of the sensitivity parameter $\Gamma$; the horizontal line marks $0.05$.}\label{fig:unnamed-chunk-59}
 \end{figure}
 
 This sensitivity analysis guarantees (in large studies) validity across
@@ -3695,7 +3635,7 @@ Several omissions are specific to matching methodology itself:
   with unordered categories).
 \item
   Second, we have not discussed the use of \textbf{prognostic
-  covariates} identified using pilot or external data. Such approaches
+  covariates} identified using pilot or external data. Using such covariates
   can substantially improve efficiency by prioritizing covariates that
   strongly predict potential outcomes. For theoretical foundations, see
   \citet{hansen2008a}, with complementary theoretical results and
@@ -3717,7 +3657,7 @@ Several omissions are specific to matching methodology itself:
   related approaches based on the stepwise intersection--union principle
   \citep{hansensales2015}.
 \item
-  Fifth, we have ignored \textbf{residual imbalance on observed
+  Fifth, we have not directly addressed \textbf{residual imbalance on observed
   covariates}. Specifically, we have proceeded under the assumption that
   matched-set membership can justify as-if randomization, even when
   small imbalances remain within matched sets. Under this approach,
@@ -3745,7 +3685,7 @@ Several omissions are specific to matching methodology itself:
 \item
   Seventh, we have not considered \textbf{quasi-experimental devices}
   \citep{campbell1957, campbellstanley1963, shadishetal2002},
-  specifically how matched designs can leverage such devices
+  specifically how matched designs can use such devices
   \citep[see][Part IV]{rosenbaum2025}. Two prominent
   quasi-experimental devices are an additional control group
   \citep{rosenbaum1987b} and outcomes with known effects

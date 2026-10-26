@@ -24,16 +24,16 @@ covs <- c("lwdeaths", "lwdurat", "ethfrac", "pop", "lmtnest", "milper",
 # Load package for data manipulation (mutate, group_by, summarize, etc.)
 library(dplyr)
 
-# Convert categorical variable "region" into 0/1 dummy indicators
+# Convert "region" into indicators equal to 1/sqrt(2) or 0
 data <- data |> # Pipe (|>) to pass left-hand result into next function call
   mutate(
     # Use mutate() to create new variables by transforming existing columns
     # ifelse() returns one value if condition is TRUE and another if FALSE
-    eeurop   = ifelse(test = region == "eeurop",   yes = 1, no = 0),
-    lamerica = ifelse(test = region == "lamerica", yes = 1, no = 0),
-    asia     = ifelse(test = region == "asia",     yes = 1, no = 0),
-    ssafrica = ifelse(test = region == "ssafrica", yes = 1, no = 0),
-    nafrme   = ifelse(test = region == "nafrme",   yes = 1, no = 0)
+    eeurop   = ifelse(test = region == "eeurop",   yes = 1/sqrt(2), no = 0),
+    lamerica = ifelse(test = region == "lamerica", yes = 1/sqrt(2), no = 0),
+    asia     = ifelse(test = region == "asia",     yes = 1/sqrt(2), no = 0),
+    ssafrica = ifelse(test = region == "ssafrica", yes = 1/sqrt(2), no = 0),
+    nafrme   = ifelse(test = region == "nafrme",   yes = 1/sqrt(2), no = 0)
   )
 
 # Covariate names with "region" replaced by dummy indicators
@@ -77,7 +77,6 @@ library(optmatch)
 dist_mat_euc <- match_on(
   x = cov_fmla,                 # Formula for covariates
   data = data,                  # Dataset used
-  standardization.scale = NULL, # No rescaling of covariates
   method = "euclidean"          # Use Euclidean distance
 )
 
@@ -98,7 +97,6 @@ round(        # Round distances for display
 dist_mat_mah <- match_on(
   x = cov_fmla,
   data = data,
-  standardization.scale = NULL,
   method = "mahalanobis" # Use Mahalanobis distance
 )
 
@@ -168,7 +166,6 @@ euc_dist_polity_cal_2 <- match_on(
   x = UN ~ bwplty2,
   caliper = 2,  # Set caliper
   data = data,
-  standardization.scale = NULL,
   method = "euclidean"
 )
 
@@ -182,7 +179,6 @@ euc_dist_polity_cal_3 <- match_on(
   x = UN ~ bwplty2,
   caliper = 3,
   data = data,
-  standardization.scale = NULL,
   method = "euclidean"
 )
 
@@ -218,7 +214,6 @@ ps_mat <- match_on(
   x = UN ~ logit_p_score,
   caliper = 0.5 * pop_sd_logit,
   data = data,
-  standardization.scale = NULL,
   method = "euclidean"
 )
 
@@ -232,7 +227,6 @@ rank_mah_mat <- match_on(
       y = "region"),
     response   = "UN"),
   data   = data,
-  standardization.scale = NULL,
   method = "rank_mahalanobis" # Use rank-based Mahalanobis distance
 )
 
@@ -242,7 +236,6 @@ eth_mat <- match_on(
   x = UN ~ ethfrac,
   caliper = 35,
   data = data,
-  standardization.scale = NULL,
   method = "euclidean"
 )
 
@@ -251,7 +244,6 @@ bwgdp_mat <- match_on(
   x = UN ~ bwgdp,
   caliper = 2,
   data = data,
-  standardization.scale = NULL,
   method = "euclidean"
 )
 
@@ -339,7 +331,7 @@ label_from_data <- function(v) {
 region_map <- c(
   regioneeurop   = "Eastern Europe",
   regionlamerica = "Latin America",
-  regionnafrme   = "North Africa & Middle East",
+  regionnafrme   = "North Africa/Middle East",
   regionssafrica = "Sub-Saharan Africa",
   regionasia     = "Asia"
 )
