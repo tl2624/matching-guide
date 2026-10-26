@@ -862,8 +862,7 @@ importance to those that do not.
 
 To see this logic in action, we first estimate a logistic propensity
 score model using all covariates except \texttt{region}, which we
-exclude because all episodes in one region (Asia) are controls, a case of
-separation in logistic regression \citep{albertanderson1984}.
+exclude because all episodes in one region (Asia) are controls, a case of quasi-complete separation in logistic regression \citep{albertanderson1984}.
 
 
 
@@ -1706,8 +1705,7 @@ randomization
 \citealp{chungromano2013} for the precursor with independent samples, and
 \citealp{ding2017} on conflicts between the two types of tests). The
 unification of sharp and weak tests does not generally extend to
-sensitivity analyses outside matched-pair designs
-\citep{fogarty2020, fogarty2023}. When researchers must choose between the two frameworks, the
+sensitivity analyses outside matched-pair designs \citep[see][]{fogarty2020, fogarty2023}. When researchers must choose between the two frameworks, the
 decision depends on both statistical properties and substantive goals.
 
 \begin{itemize}
@@ -1723,7 +1721,7 @@ decision depends on both statistical properties and substantive goals.
 \item
   Substantively, researchers usually test a constant effect in the sharp
   framework. Such a hypothesis may be unrealistic or of limited
-  scientific interest \citep[see][]{gelman2011, caugheyetal2023}. The weak
+  scientific interest (see \citealp[p.~961]{gelman2011}; \citealp{caugheyetal2023}). The weak
   framework, by contrast, accommodates heterogeneous effects across
   units, making the ATE a more relevant target in many settings.
   Nevertheless, tests of a constant effect can provide a useful
@@ -1906,7 +1904,7 @@ matched data:
   First, the harmonic-mean-weighted Difference-in-Means equals the
   coefficient on the treatment indicator from a fixed-effects (FE) regression
   that includes matched-set indicators
-  \citep[pp.~228--229]{hansenbowers2008}, an approach commonly used in
+  \citep[p.~229]{hansenbowers2008}, an approach commonly used in
   practice after matching.
 \item
   Second, the harmonic-mean-weighted Difference-in-Means coincides with
@@ -3631,8 +3629,7 @@ Several omissions are specific to matching methodology itself:
   researchers specify \emph{ex ante} the set of covariates to be
   balanced, thereby excluding screening procedures that identify
   additional covariates for adjustment based on observed imbalances
-  \citep{cochran1965}, as in tapered matching approaches
-  \citep{danieletal2008, yuetal2021}. Finally, we have not considered
+  \citep{cochran1965}, as in \citet{yuetal2021}, who use a tapered match \citep{danieletal2008}. Finally, we have not considered
   balance constraints such as fine and near-fine balance
   \citep{rosenbaumetal2007, yangetal2012, yu2023, pimenteletal2015a, pimenteletal2015b},
   which enforce exact or nearly exact equality of the marginal
@@ -3721,9 +3718,7 @@ Several omissions are specific to matching methodology itself:
   approximate matching does not. \citet[p.~276]{pashleyetal2021} add,
   however, that this distinction may matter more in theory than in
   practice. In the simulations of
-  \citet{pimentelhuang2024} and \citet{pimentelyu2024}, propensity score
-  calipers reduced, but did not always remove, the resulting excess
-  Type~I error. We thank Samuel Pimentel for helpful discussions of
+  \citet{pimentelhuang2024} and \citet{pimentelyu2024}, permutation tests that treated the matched sets as fixed showed excess Type~I error, which propensity score calipers reduced but did not always remove. We thank Samuel Pimentel for helpful discussions of
   \(\bm{Z}\)-dependence.
 \end{itemize}
 
