@@ -184,6 +184,20 @@
 \newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
 \newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
 
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
 \usepackage{bookmark}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
@@ -505,7 +519,7 @@ assigned'' (p.~89). Whether peacekeepers are present during a given
 post-conflict peace period presumably depends on baseline covariates
 measured by \citet{gilligansergenti2008}, including the logged number of
 battle deaths (\texttt{lwdeaths}), the duration of the previous war in
-months (\texttt{lwdurat}), which, despite its name, is not logged,
+months (\texttt{lwdurat}, which, despite its name, is not logged),
 ethnic fractionalization (\texttt{ethfrac}, a 0--100 index for which
 dividing by 100 is intended to represent the probability that two
 randomly chosen individuals belong to different ethnic groups), logged
@@ -672,7 +686,7 @@ distance.
     \AttributeTok{nafrme   =} \FunctionTok{ifelse}\NormalTok{(}\AttributeTok{test =}\NormalTok{ region }\SpecialCharTok{==} \StringTok{"nafrme"}\NormalTok{,   }\AttributeTok{yes =} \DecValTok{1}\SpecialCharTok{/}\FunctionTok{sqrt}\NormalTok{(}\DecValTok{2}\NormalTok{), }\AttributeTok{no =} \DecValTok{0}\NormalTok{)}
 \NormalTok{  )}
 
-\CommentTok{\# Covariate names with "region" replaced by dummy indicators}
+\CommentTok{\# Covariate names with "region" replaced by indicator variables}
 \NormalTok{expanded\_covs }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}
   \CommentTok{\# setdiff() returns elements in \textquotesingle{}x\textquotesingle{} that are not in \textquotesingle{}y\textquotesingle{}}
   \FunctionTok{setdiff}\NormalTok{(}
@@ -716,10 +730,11 @@ where the UN did not.
 
 We can obtain the full matrix of pairwise distance values using
 \texttt{match\_on()} from the \texttt{optmatch} package. We do not need
-to manually recode factor variables into dummy indicators because
+to manually recode factor variables into indicator variables because
 \texttt{match\_on()} handles this conversion automatically. (Like our
 hand calculation, \texttt{match\_on()} scales each region indicator by
-\(1/\sqrt{2}\), so its distances equal the manual calculation.)
+\(1/\sqrt{2}\), so the resulting distances equal the manual
+calculation.)
 
 \singlespacing
 
@@ -988,15 +1003,15 @@ covariates that strongly predict treatment.
 
 To illustrate these broader patterns, \Cref{fig:unnamed-chunk-11}
 compares the distributions of the estimated linear covariate index for
-treated and control groups. As \Cref{fig:unnamed-chunk-11} shows, there
-is some, but limited, overlap between treated and control groups. In
-accordance with our earlier discussion of how the estimated linear
-covariate index ``separates'' treated from control units, many control
-observations have very negative values (as low as \(-7.52\)), far from
-the treated units' range of \(-2.24\) to 2.21. Nevertheless, a
-sufficient number of treated and control observations have estimated
-linear covariate indices that cluster around \(0\), indicating covariate
-overlap for at least a subset of treated and control observations.
+treated and control groups. There is some, but limited, overlap between
+treated and control groups. In accordance with our earlier discussion of
+how the estimated linear covariate index ``separates'' treated from
+control units, many control observations have very negative values (as
+low as \(-7.52\)), far from the treated units' range of \(-2.24\) to
+2.21. Nevertheless, a sufficient number of treated and control
+observations have estimated linear covariate indices that cluster around
+\(0\), indicating covariate overlap for at least a subset of treated and
+control observations.
 
 \singlespacing
 \begin{figure}[H]
@@ -1477,7 +1492,7 @@ no controls (effectively an unmatched treated unit). Similarly,
 \texttt{1:2} indicates \(1\) treated unit and \(2\) controls, and
 \texttt{0:1} indicates no treated units and \(1\) control (effectively
 an unmatched control). For each label, the output shows how many matched
-sets have that particular structure. Here 6 of the 19 treated episodes
+sets have that particular structure. Here, 6 of the 19 treated episodes
 are left unmatched, so the inferences that follow concern only the 13
 matched UN episodes and their 23 matched controls.
 
@@ -1550,15 +1565,15 @@ be added if desired.
 Had we wanted pair matching instead, we could call \texttt{pairmatch()}
 or set \texttt{min.controls\ =\ 1} and \texttt{max.controls\ =\ 1} in
 \texttt{fullmatch()}. The two calls give the same match when every
-treated unit can be paired. Otherwise the two calls can differ, because
+treated unit can be paired. Otherwise, the two calls can differ, because
 \texttt{fullmatch()} requires every treated unit with a permissible
 match to be paired, whereas \texttt{pairmatch()} uses the group sizes in
-each subproblem (here, each region) to fix how many units may go
-unmatched. When calipers rule out so many pairs that more units would
+each exact-match stratum (here, each region) to fix how many units may
+go unmatched. When calipers rule out so many pairs that more units would
 have to go unmatched than \texttt{pairmatch()} allows,
-\texttt{pairmatch()} issues a warning and leaves that subproblem
-entirely unmatched, as \texttt{fullmatch()} does when it cannot pair
-every treated unit that has a permissible match.
+\texttt{pairmatch()} issues a warning and leaves that stratum entirely
+unmatched, as \texttt{fullmatch()} does when it cannot pair every
+treated unit that has a permissible match.
 
 \subsubsection{How Do I Decide Whether to Move Ahead with My Matched
 Design?}\label{how-do-i-decide-whether-to-move-ahead-with-my-matched-design}
@@ -1632,7 +1647,7 @@ North Africa/Middle East & 0.12 & 0.11 & $-$0.04 & 0.08 & 0.08 & 0.00\\
 Sub-Saharan Africa & 0.43 & 0.32 & $-$0.23 & 0.38 & 0.38 & 0.00\\
 \bottomrule
 \end{tabular}}
-\captionof{table}{Adjusted covariate means for treated and control groups and standardized treated--control differences, before and after matching. Asterisks denote two-tailed $p$-values less than or equal to 0.05.}
+\captionof{table}{Adjusted covariate means for treated and control groups and standardized treated--control differences, before and after matching. Stars denote two-sided $p$-values less than or equal to 0.05.}
 \label{tab: balance}
 \end{table}
 \doublespacing
@@ -1795,11 +1810,10 @@ can never be directly observed --- only one potential outcome is
 realized for each unit --- we must rely on statistical inference to draw
 conclusions about \(\bm{\tau}\) and \(\tau\).
 
-We consider inference under the sharp and weak frameworks, targeting the
-vector of unit-level effects, \(\bm{\tau}\), and the ATE, \(\tau\),
-respectively. A line of work shows how a single test can be exact for a
-sharp null and asymptotically valid for the corresponding weak null
-under as-if randomization
+We consider inference under the sharp and weak frameworks, targeting
+\(\bm{\tau}\) and \(\tau\), respectively. A line of work shows how a
+single test can be exact for a sharp null and asymptotically valid for
+the corresponding weak null under as-if randomization
 (\citealp{wuding2021, cohenfogarty2022, fogarty2023}; see
 \citealp{chungromano2013} for the precursor with independent samples,
 and \citealp{ding2017} on conflicts between the two types of tests). The
@@ -2386,7 +2400,7 @@ statistics greater than or equal to the observed test statistic.
 \doublespacing
 
 The upper \(p\)-value of a test of the sharp null of no effect against
-the alternative of a larger effect is 0.0346.
+the alternative of a larger effect is \(0.0346\).
 
 In this particular case, unlike in most applications, the matched study
 is small enough to compute the exact \(p\)-value and assess the accuracy
@@ -3084,9 +3098,8 @@ reject the null more often than we would if the true assignment
 probabilities --- governed by the actual but unobserved \(\bm{u}\) ---
 were known under the model in \eqref{eq: indiv sens prob}.
 
-\paragraph{Finding the Worst-Case Scenario of Hidden Confounding for
-Valid
-Inference}\label{finding-the-worst-case-scenario-of-hidden-confounding-for-valid-inference}
+\paragraph{Finding the Worst-Case Scenario of Hidden Bias for Valid
+Inference}\label{finding-the-worst-case-scenario-of-hidden-bias-for-valid-inference}
 
 Finding this worst-case \(\bm{u}\) exactly is difficult. As a first
 step, \citet{rosenbaumkrieger1990} show that in the unmatched (i.e.,
@@ -3156,10 +3169,10 @@ statistic, plus \(1.64\) times the standard deviation of the test
 statistic under \((\bm{u}, \, \Gamma)\). The function is nonpositive
 exactly when the observed test statistic lies at least \(1.64\) standard
 deviations above its null expectation, and positive otherwise.
-Therefore, for a given \((\bm{u}, \Gamma)\), the Normal-approximation
-test rejects the null hypothesis if and only if this function is
-nonpositive, and the sensitivity analysis at \(\Gamma\) rejects if and
-only if the function is nonpositive for every
+Therefore, for a given \((\bm{u}, \, \Gamma )\), the
+Normal-approximation test rejects the null hypothesis if and only if
+this function is nonpositive, and the sensitivity analysis at \(\Gamma\)
+rejects if and only if the function is nonpositive for every
 \(\bm{u} \in \mathcal{U}_{+}\), that is, if and only if the function's
 maximum over \(\mathcal{U}_{+}\) is nonpositive.
 
@@ -3279,8 +3292,7 @@ with the decision implied by the Taylor series approximation. The
 decision implied by the Taylor series approximation is determined by the
 sign of the Taylor series bound on the objective function that
 \texttt{sens\_objective()} codes. The \texttt{senstrat()} function
-reports this bound, stored as \texttt{cvA} in the following code, and
-the sign of this bound governs rejection of the null hypothesis.
+reports this bound, stored as \texttt{cvA} in the following code.
 Disagreement can occur only when the separable approximation yields a
 \(p\)-value at or below \(\alpha\) (in practice, typically only slightly
 below), indicating rejection, while the Taylor series approximation
@@ -3864,11 +3876,11 @@ Several omissions are specific to matching methodology itself:
   known effects \citep{rosenbaum1989}, each of which has a range of
   valuable applications. In the context of evidence factors
   \citep{rosenbaum2021}, one use of a second control group is to yield
-  stronger causal evidence that is less susceptible to hidden
-  confounding \citep{rosenbaum2023b}. For known effects, one
-  illustrative use is to support tests for hidden confounding that
-  inform sensitivity analyses by ruling out certain violations of as-if
-  randomization \citep{rosenbaum2023a}.
+  stronger causal evidence that is less susceptible to hidden bias
+  \citep{rosenbaum2023b}. For known effects, one illustrative use is to
+  support tests for hidden bias that inform sensitivity analyses by
+  ruling out certain violations of as-if randomization
+  \citep{rosenbaum2023a}.
 \item
   Eighth and finally, we have not addressed
   \textbf{\(\bm{Z}\)-dependence}

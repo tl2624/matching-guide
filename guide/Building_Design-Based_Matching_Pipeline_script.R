@@ -36,7 +36,7 @@ data <- data |> # Pipe (|>) to pass left-hand result into next function call
     nafrme   = ifelse(test = region == "nafrme",   yes = 1/sqrt(2), no = 0)
   )
 
-# Covariate names with "region" replaced by dummy indicators
+# Covariate names with "region" replaced by indicator variables
 expanded_covs <- c(
   # setdiff() returns elements in 'x' that are not in 'y'
   setdiff(
@@ -423,7 +423,7 @@ tab_tex <- sub(
   paste0(
     "\\\\captionof{table}{Adjusted covariate means for treated and control groups ",
     "and standardized treated--control differences, before and after matching. ",
-    "Asterisks denote two-tailed $p$-values less than or equal to 0.05.}\n",
+    "Stars denote two-sided $p$-values less than or equal to 0.05.}\n",
     "\\\\label{tab: balance}\n",
     "\\\\end{table}"
   ),
@@ -1351,4 +1351,4 @@ ggplot(data = weak_sens_df,
                                   by = 0.01),
                      limits = c(0, 0.1)) +
   xlab(expression(Gamma)) +
-  ylab("One-sided upper p-value")
+  ylab("Upper one-sided p-value")
